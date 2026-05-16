@@ -15,8 +15,117 @@ import fitz
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import time 
+from streamlit_autorefresh import st_autorefresh
 
+# ========== BEAUTIFUL REFINED CYBERPUNK UI ==========
+st.markdown("""
+<style>
+    /* 1. Beautiful Sci-Fi Fonts: 'Oxanium' for sleek headers, 'Space Grotesk' for clean data */
+    @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@500;700&family=Space+Grotesk:wght@400;500;600&display=swap');
 
+    /* 2. Deep Void Background with Subtle Ambient Glows */
+    .stApp {
+        background-color: #060612 !important;
+        background-image: 
+            radial-gradient(circle at 10% 20%, rgba(213, 0, 249, 0.05), transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(0, 229, 255, 0.05), transparent 40%) !important;
+    }
+
+    /* 3. Base Text - Super clean, modern tech font */
+    html, body, [class*="css"] {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.05em;
+        color: #C1D5EE !important; /* Soft ice-blue for perfect readability */
+    }
+
+    /* 4. Beautiful, Resized Glowing Headers */
+    h1, h2, h3, h4 {
+        font-family: 'Oxanium', sans-serif !important;
+        color: #00E5FF !important; /* Neon Cyan */
+        /* Multi-layered soft glow for a "beautiful" neon effect */
+        text-shadow: 0 0 8px rgba(0, 229, 255, 0.5), 0 0 15px rgba(0, 229, 255, 0.3); 
+        letter-spacing: 1.2px;
+        font-weight: 700;
+    }
+    
+    /* Explicitly scaling down the header sizes so they look elegant, not clunky */
+    h1 { font-size: 2.2rem !important; margin-bottom: 1rem !important; }
+    h2 { font-size: 1.7rem !important; margin-bottom: 0.8rem !important; }
+    h3 { font-size: 1.3rem !important; margin-bottom: 0.5rem !important; }
+
+    /* 5. Sleek Dark Glass Inputs with Cyan Focus */
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div {
+        background-color: rgba(10, 15, 30, 0.8) !important;
+        color: #00E5FF !important;
+        border: 1px solid rgba(213, 0, 249, 0.4) !important; /* Soft Purple Border */
+        border-radius: 6px !important;
+        font-family: 'Space Grotesk', sans-serif;
+        transition: all 0.3s ease;
+    }
+    
+    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
+        border-color: #00E5FF !important;
+        box-shadow: 0 0 12px rgba(0, 229, 255, 0.3) !important;
+    }
+
+    /* 6. Refined Multi-Color Neon Buttons */
+    .stButton>button {
+        background: rgba(6, 6, 18, 0.8) !important;
+        border: 1px solid transparent !important;
+        border-image: linear-gradient(90deg, #00E5FF, #D500F9) 1 !important;
+        color: #FFFFFF !important;
+        font-family: 'Oxanium', sans-serif !important;
+        font-size: 1.1rem !important;
+        letter-spacing: 1px;
+        transition: all 0.3s ease-in-out;
+    }
+
+    /* Stunning bright hover effect */
+    .stButton>button:hover {
+        background: linear-gradient(90deg, rgba(0, 229, 255, 0.2), rgba(213, 0, 249, 0.2)) !important;
+        color: #00E5FF !important;
+        box-shadow: 0 0 15px rgba(0, 229, 255, 0.4), 0 0 25px rgba(213, 0, 249, 0.3) !important;
+        transform: translateY(-2px);
+    }
+    /* Make the Clock/Time stand out and not look faded */
+    .live-clock {
+        color: #00E5FF !important;
+        font-family: 'Oxanium', sans-serif;
+        font-weight: 700;
+        font-size: 1.2rem;
+        text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+        background: rgba(0, 229, 255, 0.1);
+        padding: 5px 15px;
+        border-radius: 20px;
+        border: 1px solid rgba(0, 229, 255, 0.3);
+    }
+    
+    /* 7. Glowing Sidebar Divider */
+    [data-testid="stSidebar"] {
+        background-color: #05050C !important;
+        border-right: 1px solid rgba(213, 0, 249, 0.2);
+        box-shadow: 5px 0 20px rgba(213, 0, 249, 0.05);
+    }
+    
+    /* Sidebar Clock Panel Styling */
+    .sidebar-clock {
+        background: rgba(0, 229, 255, 0.05);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        border-radius: 10px;
+        padding: 12px;
+        color: #00E5FF !important;
+        font-family: 'Oxanium', sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        text-align: center;
+        text-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
+        margin-bottom: 15px;
+    }
+</style>
+""", unsafe_allow_html=True)
+# ====================================================
+# =====================================================
 # ================= TIMEZONE CONFIG =================
 NST = timezone(timedelta(hours=5, minutes=45))
 # ================= CONFIG =================
@@ -26,6 +135,32 @@ st.set_page_config(
     page_icon="🌊",
     layout="wide"
 )
+
+
+# ----------------------------------------
+
+# --- CUSTOM CSS ANIMATIONS ---
+st.markdown("""
+<style>
+    /* Target the content inside the tabs */
+    div[role="tabpanel"] {
+        animation: fadeInSlideUp 0.4s ease-out forwards;
+    }
+
+    /* Define the animation keyframes */
+    @keyframes fadeInSlideUp {
+        0% {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+""", unsafe_allow_html=True)
+# -----------------------------
 # ================= MOBILE RESPONSIVENESS =================
 
 st.markdown("""
@@ -123,17 +258,71 @@ os.makedirs("data", exist_ok=True)
 os.makedirs("assignment_files", exist_ok=True)
 os.makedirs("submission_files", exist_ok=True)
 os.makedirs("study_materials", exist_ok=True)
-
 # ================= ANNOUNCEMENTS =================
 
-def create_announcement(title, message, semester_id, priority, user_id):
+def create_announcement(title, message, semester_id, priority, user_id, expires_at=None):
     """
-    Create a new announcement
+    Create a new announcement with an optional expiration date
     Returns: (success, message)
     """
     try:
         c.execute("""
-        INSERT INTO announcements(title, message, semester_id, created_by, created_at, priority)
+        INSERT INTO announcements(title, message, semester_id, created_by, created_at, priority, expires_at)
+        VALUES(?,?,?,?,?,?,?)
+        """, (
+            title.strip(),
+            message.strip(),
+            int(semester_id) if semester_id else None,
+            int(user_id),
+            str(datetime.now(NST)),
+            priority,
+            expires_at  # The calculated future time goes here!
+        ))
+        
+        conn.commit()
+        return True, "Announcement created successfully"
+    except Exception as e:
+        return False, "Error: {}".format(str(e))
+
+
+def get_announcements_for_semester(semester_id=None):
+    """
+    Get valid announcements (unexpired or permanent) for a specific semester or all
+    """
+    # Get exact current time in your NST timezone for accurate comparison
+    current_time = str(datetime.now(NST))
+    
+    if semester_id:
+        df = pd.read_sql_query("""
+        SELECT announcements.*, users.full_name as author, semesters.name as semester
+        FROM announcements
+        LEFT JOIN users ON announcements.created_by = users.id
+        LEFT JOIN semesters ON announcements.semester_id = semesters.id
+        WHERE (announcements.semester_id=? OR announcements.semester_id IS NULL)
+          AND (announcements.expires_at IS NULL OR announcements.expires_at >= ?)
+        ORDER BY announcements.created_at DESC
+        """, conn, params=(int(semester_id), current_time))
+    else:
+        df = pd.read_sql_query("""
+        SELECT announcements.*, users.full_name as author, semesters.name as semester
+        FROM announcements
+        LEFT JOIN users ON announcements.created_by = users.id
+        LEFT JOIN semesters ON announcements.semester_id = semesters.id
+        WHERE announcements.expires_at IS NULL OR announcements.expires_at >= ?
+        ORDER BY announcements.created_at DESC
+        """, conn, params=(current_time,))
+    
+    return df
+# ================= SEMESTERS =================
+
+def create_(title, message, semester_id, priority, user_id):
+    """
+    Create a new 
+    Returns: (success, message)
+    """
+    try:
+        c.execute("""
+        INSERT INTO s(title, message, semester_id, created_by, created_at, priority)
         VALUES(?,?,?,?,?,?)
         """, (
             title.strip(),
@@ -145,31 +334,31 @@ def create_announcement(title, message, semester_id, priority, user_id):
         ))
         
         conn.commit()
-        return True, "Announcement created successfully"
+        return True, " created successfully"
     except Exception as e:
         return False, "Error: {}".format(str(e))
 
 
-def get_announcements_for_semester(semester_id=None):
+def get_s_for_semester(semester_id=None):
     """
-    Get announcements for a specific semester or all
+    Get s for a specific semester or all
     """
     if semester_id:
         df = pd.read_sql_query("""
-        SELECT announcements.*, users.full_name as author, semesters.name as semester
-        FROM announcements
-        LEFT JOIN users ON announcements.created_by = users.id
-        LEFT JOIN semesters ON announcements.semester_id = semesters.id
-        WHERE announcements.semester_id=? OR announcements.semester_id IS NULL
-        ORDER BY announcements.created_at DESC
+        SELECT s.*, users.full_name as author, semesters.name as semester
+        FROM s
+        LEFT JOIN users ON s.created_by = users.id
+        LEFT JOIN semesters ON s.semester_id = semesters.id
+        WHERE s.semester_id=? OR s.semester_id IS NULL
+        ORDER BY s.created_at DESC
         """, conn, params=(int(semester_id),))
     else:
         df = pd.read_sql_query("""
-        SELECT announcements.*, users.full_name as author, semesters.name as semester
-        FROM announcements
-        LEFT JOIN users ON announcements.created_by = users.id
-        LEFT JOIN semesters ON announcements.semester_id = semesters.id
-        ORDER BY announcements.created_at DESC
+        SELECT s.*, users.full_name as author, semesters.name as semester
+        FROM s
+        LEFT JOIN users ON s.created_by = users.id
+        LEFT JOIN semesters ON s.semester_id = semesters.id
+        ORDER BY s.created_at DESC
         """, conn)
     
     return df
@@ -257,9 +446,83 @@ CREATE TABLE IF NOT EXISTS study_materials(
     uploaded_by INTEGER
 )
 """)
-# ANNOUNCEMENTS
+# --- INTERNAL MARKS & SCHEME TABLES ---
+# 1. Stores the 'Rules' for each subject
 c.execute("""
-CREATE TABLE IF NOT EXISTS announcements(
+CREATE TABLE IF NOT EXISTS subject_schemes(
+    subject_id INTEGER PRIMARY KEY,
+    theory_full_marks REAL DEFAULT 40,
+    prac_full_marks REAL DEFAULT 25,
+    t_weight_att REAL DEFAULT 0.10,
+    t_weight_hw REAL DEFAULT 0.25,
+    t_weight_other REAL DEFAULT 0.15,
+    t_weight_mid REAL DEFAULT 0.25,
+    t_weight_final REAL DEFAULT 0.25,
+    p_weight_att REAL DEFAULT 0.20,
+    p_weight_perf REAL DEFAULT 0.20,
+    p_weight_report REAL DEFAULT 0.20,
+    p_weight_test REAL DEFAULT 0.20,
+    p_weight_viva REAL DEFAULT 0.20,
+    FOREIGN KEY(subject_id) REFERENCES subjects(id)
+)
+""")
+
+# 2. Stores actual student performance data
+c.execute("""
+CREATE TABLE IF NOT EXISTS student_marks(
+    student_id INTEGER,
+    subject_id INTEGER,
+    t_att_present INTEGER DEFAULT 0,
+    t_att_total INTEGER DEFAULT 0,
+    t_mid_raw REAL DEFAULT 0,
+    t_final_raw REAL DEFAULT 0,
+    t_other_raw REAL DEFAULT 0,
+    t_grace REAL DEFAULT 0,
+    p_att_present INTEGER DEFAULT 0,
+    p_att_total INTEGER DEFAULT 0,
+    p_perf_raw REAL DEFAULT 0,
+    p_report_raw REAL DEFAULT 0,
+    p_test_raw REAL DEFAULT 0,
+    p_viva_raw REAL DEFAULT 0,
+    PRIMARY KEY (student_id, subject_id),
+    FOREIGN KEY(student_id) REFERENCES users(id),
+    FOREIGN KEY(subject_id) REFERENCES subjects(id)
+)
+""")
+conn.commit()
+# --- SAFE AUTO-MIGRATION FOR EXISTING STUDENT_MARKS TABLE ---
+try:
+    c.execute("ALTER TABLE student_marks ADD COLUMN t_hw_raw REAL DEFAULT 0")
+    conn.commit()
+except Exception:
+    pass  # Column already exists
+
+try:
+    c.execute("ALTER TABLE student_marks ADD COLUMN t_mid_raw REAL DEFAULT 0")
+    conn.commit()
+except Exception:
+    pass
+
+try:
+    c.execute("ALTER TABLE student_marks ADD COLUMN t_final_raw REAL DEFAULT 0")
+    conn.commit()
+except Exception:
+    pass
+
+try:
+    c.execute("ALTER TABLE student_marks ADD COLUMN t_other_raw REAL DEFAULT 0")
+    conn.commit()
+except Exception:
+    pass
+
+try:
+    c.execute("ALTER TABLE student_marks ADD COLUMN t_grace REAL DEFAULT 0")
+    conn.commit()
+except Exception:
+    pass
+#========ANNOUNCEMENTS======================
+c.execute("""
+CREATE TABLE IF NOT EXISTS s(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT,
     message TEXT,
@@ -269,7 +532,13 @@ CREATE TABLE IF NOT EXISTS announcements(
     priority TEXT
 )
 """)
+try:
+    c.execute("ALTER TABLE announcements ADD COLUMN expires_at TEXT")
+    conn.commit()
+except Exception:
+    pass
 
+    
 conn.commit()
 
 
@@ -289,25 +558,36 @@ def check_password(p, hashed):
 
 # ================= DEFAULT LECTURER =================
 
+# 1. Pull the secure credentials from your Streamlit vault
+secure_username = st.secrets["admin_setup"]["username"]
+secure_password = st.secrets["admin_setup"]["password"]
+
+# 2. Check if THIS secure user already exists in the database
 admin_exists = pd.read_sql_query(
-    "SELECT * FROM users WHERE username='admin'",
-    
-    conn
+    "SELECT * FROM users WHERE username=?",
+    conn,
+    params=(secure_username,)
 )
 
+# 3. If they don't exist yet, create the account!
 if admin_exists.empty:
     c.execute("""
     INSERT INTO users(full_name, username, password, role, semester_id)
     VALUES(?,?,?,?,?)
     """, (
         "Administrator",
-        "admin",
-        hash_password("admin123"),
+        secure_username,
+        hash_password(secure_password),
         "lecturer",
         None
     ))
     conn.commit()
-
+try:
+    c.execute("DELETE FROM users WHERE username= 'admin'")
+    conn.commit()
+except Exception:
+    pass
+    
 # ================= SESSION =================
 
 if "logged_in" not in st.session_state:
@@ -387,11 +667,70 @@ if not st.session_state.logged_in:
                 st.session_state.username = res.iloc[0]["username"]
                 st.session_state.semester_id = res.iloc[0]["semester_id"]
                 st.session_state.full_name = res.iloc[0]["full_name"]
+                st.session_state.show_splash = True
                 st.rerun()
             else:
                 st.error("Invalid credentials")
 
         st.stop()
+# =====================================================================
+# IF LOGGED IN, THE DASHBOARD STARTS HERE
+# =====================================================================
+
+# ========== 1. TIME & GREETING SETUP ==========
+now_nst = datetime.now(NST)
+current_hour = now_nst.hour
+
+if current_hour < 12:
+    greeting = "🌅 Good Morning"
+elif 12 <= current_hour < 18:
+    greeting = "☀️ Good Afternoon"
+else:
+    greeting = "🌙 Good Evening"
+
+user_name = st.session_state.full_name
+current_date = now_nst.strftime("%A, %B %d, %Y")
+current_time = now_nst.strftime("%I:%M %p")
+
+
+# ========== 2. THE WELCOME SPLASH SCREEN ==========
+if st.session_state.get("show_splash"):
+    # Push it down to the center of the screen
+    st.markdown("<br><br><br><br>", unsafe_allow_html=True)
+    
+    # I used your #004b87 blue color to match your login screen!
+    st.markdown(f"<h1 style='text-align: center; color: #004b87;'>{greeting}, {user_name}!</h1>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='text-align: center; color: #555555;'>{current_date} &nbsp;|&nbsp; {current_time} (NST)</h3>", unsafe_allow_html=True)
+    
+    with st.spinner("Loading your secure workspace..."):
+        time.sleep(2.5) 
+        
+    # Turn off the splash screen so it doesn't loop forever
+    st.session_state.show_splash = False
+    st.rerun()
+    
+    
+# ========== 3. THE MAIN DASHBOARD HEADER ==========
+else:
+    # This draws the small header at the top
+    header_col1, header_col2 = st.columns([2, 1])
+    
+    with header_col1:
+        st.markdown(f"### {greeting}, {user_name}!")
+        
+    with header_col2:
+        st.markdown(f"""
+        <div style='text-align: right; color: #555555;'>
+            <strong>{current_date}</strong><br>
+            {current_time} (NST)
+        </div>
+        """, unsafe_allow_html=True)
+        
+    st.divider()
+
+    # =================================================================
+    # ALL YOUR SIDEBAR AND TAB CODE SHOULD CONTINUE BELOW THIS LINE
+    # =================================================================
 #=================GREETING FUNCTION===============
 def get_greeting():
     """Returns a greeting based on current Nepal Standard Time"""
@@ -409,6 +748,10 @@ def get_greeting():
 require_login()
 
 with st.sidebar:
+    st_autorefresh(interval=60000, key="sidebar_clock_refresh")
+    sidebar_time = datetime.now(NST).strftime ("%b %d, %y | %I:%M %p")
+    st.markdown(f'<div class="sidebar-clock">🕒 {sidebar_time}</div>', unsafe_allow_html=True)
+    st.divider()
     greeting = get_greeting()
     display_name = st.session_state.get('full_name', st.session_state.username)
     st.markdown(f"### 👤 {display_name}")
@@ -1126,6 +1469,90 @@ def get_student_profile(student_id):
     except Exception as e:
         st.error("Error loading profile: {}".format(str(e)))
         return None
+# ... (End of Student Profile functions) ...
+
+# ================= INTERNAL MARKS CALCULATION ENGINE (DYNAMIC VERSION) =================
+def calculate_internal_theory(row, subject_id, db_conn):
+    """
+    Dynamically fetches subject configurations from the database and 
+    calculates weighted theory marks with a strict 70% attendance gate.
+    """
+    # 1. Fetch weight scheme from database for the active subject
+    scheme_df = pd.read_sql_query(
+        "SELECT * FROM subject_schemes WHERE subject_id = ?", 
+        db_conn, 
+        params=(int(subject_id),)
+    )
+    
+    # Fallback to standard defaults if no custom configuration exists yet
+    if scheme_df.empty:
+        scheme = {
+            'theory_full_marks': 40.0,
+            't_weight_att': 0.10, 't_weight_hw': 0.25, 't_weight_other': 0.15,
+            't_weight_mid': 0.25, 't_weight_final': 0.25
+        }
+    else:
+        scheme = scheme_df.iloc[0].to_dict()
+
+    # 2. Attendance Score Calculation
+    att_ratio = row['t_att_present'] / row['t_att_total'] if row['t_att_total'] > 0 else 0
+    att_score = att_ratio * (scheme['theory_full_marks'] * scheme['t_weight_att'])
+    
+    # 3. Scale Raw Percentages (0-100) to Dynamic Scheme Weights
+    hw_score = (row['t_hw_raw'] / 100) * (scheme['theory_full_marks'] * scheme['t_weight_hw'])
+    mid_score = (row['t_mid_raw'] / 100) * (scheme['theory_full_marks'] * scheme['t_weight_mid'])
+    final_score = (row['t_final_raw'] / 100) * (scheme['theory_full_marks'] * scheme['t_weight_final'])
+    other_score = (row['t_other_raw'] / 100) * (scheme['theory_full_marks'] * scheme['t_weight_other'])
+    
+    raw_total = att_score + hw_score + mid_score + final_score + other_score
+    
+    # 4. Enforce 70% Attendance Gate for Grace Marks
+    final_total = raw_total
+    is_eligible_grace = att_ratio >= 0.70
+    
+    if is_eligible_grace and row['t_grace'] > 0:
+        final_total += min(row['t_grace'], 5) 
+        
+    return round(final_total, 2), is_eligible_grace
+
+
+def calculate_internal_practical(row, subject_id, db_conn):
+    """
+    Dynamically fetches subject configurations from the database and
+    calculates weighted practical marks out of lab components.
+    """
+    # 1. Fetch weight scheme from database
+    scheme_df = pd.read_sql_query(
+        "SELECT * FROM subject_schemes WHERE subject_id = ?", 
+        db_conn, 
+        params=(int(subject_id),)
+    )
+    
+    if scheme_df.empty:
+        scheme = {
+            'prac_full_marks': 25.0,
+            'p_weight_att': 0.20, 'p_weight_perf': 0.20, 'p_weight_report': 0.20,
+            'p_weight_test': 0.20, 'p_weight_viva': 0.20
+        }
+    else:
+        scheme = scheme_df.iloc[0].to_dict()
+
+    full_p = scheme['prac_full_marks']
+    
+    # 2. Component Math scaled to custom weight assignments
+    att_ratio = row['p_att_present'] / row['p_att_total'] if row['p_att_total'] > 0 else 0
+    att_score = att_ratio * (full_p * scheme['p_weight_att'])
+    
+    perf_score = (row['p_perf_raw'] / 100) * (full_p * scheme['p_weight_perf'])
+    report_score = (row['p_report_raw'] / 100) * (full_p * scheme['p_weight_report'])
+    test_score = (row['p_test_raw'] / 100) * (full_p * scheme['p_weight_test'])
+    viva_score = (row['p_viva_raw'] / 100) * (full_p * scheme['p_weight_viva'])
+    
+    raw_total = att_score + perf_score + report_score + test_score + viva_score
+    is_eligible = att_ratio >= 0.70
+    
+    return round(raw_total, 2), is_eligible
+  
 # ==========================================================
 # ===================== LECTURER ============================
 # ==========================================================
@@ -1143,29 +1570,37 @@ if role == "lecturer":
         "Study Materials",
         "Storage Management",
         "Student Profiles"
-        
     ])
-        # DASHBOARD
+    
+    # DASHBOARD
     with tabs[0]:
-        
+            
         st.title("📊 Dashboard")
-        
-        # ========== CREATE ANNOUNCEMENT ==========
-        with st.expander("📢 Create New Announcement"):
             
+        # ========== CREATE  ==========
+        with st.expander("📢 Create New "):
+                
             col_ann1, col_ann2 = st.columns([2, 1])
-            
+                
             with col_ann1:
-                ann_title = st.text_input("Announcement Title", key="ann_title")
+                ann_title = st.text_input(" Title", key="ann_title")
                 ann_message = st.text_area("Message", key="ann_message", height=100)
-            
+                
             with col_ann2:
                 sems_ann = pd.read_sql_query("SELECT * FROM semesters", conn)
                 ann_sem_options = ["All Semesters"] + sems_ann["name"].tolist()
-                
+                    
                 ann_sem = st.selectbox("Target Audience", ann_sem_options, key="ann_sem")
                 ann_priority = st.selectbox("Priority", ["Normal", "Important", "Urgent"], key="ann_priority")
-            
+                    
+                # --- NEW TIMER DROPDOWN ADDED HERE ---
+                timer_option = st.selectbox(
+                    "Visibility Duration", 
+                    ["Permanent (No Expiry)", "24 Hours", "3 Days", "1 Week"], 
+                    key="ann_timer"
+                )
+                # -------------------------------------
+                
             if st.button("📢 Post Announcement", type="primary"):
                 if not ann_title.strip() or not ann_message.strip():
                     st.error("Title and message required")
@@ -1173,15 +1608,29 @@ if role == "lecturer":
                     sem_id = None
                     if ann_sem != "All Semesters":
                         sem_id = int(sems_ann[sems_ann["name"] == ann_sem]["id"].values[0])
-                    
+                        
+                    # --- NEW TIME CALCULATION ---
+                    from datetime import timedelta # Ensure this is imported
+                    if timer_option == "24 Hours":
+                        calc_expiry = str(datetime.now(NST) + timedelta(days=1))
+                    elif timer_option == "3 Days":
+                        calc_expiry = str(datetime.now(NST) + timedelta(days=3))
+                    elif timer_option == "1 Week":
+                        calc_expiry = str(datetime.now(NST) + timedelta(days=7))
+                    else:
+                        calc_expiry = None
+                    # ----------------------------
+
+                    # Pass calc_expiry as the 6th argument
                     success, msg = create_announcement(
                         ann_title,
                         ann_message,
                         sem_id,
                         ann_priority,
-                        st.session_state.user_id
+                        st.session_state.user_id,
+                        calc_expiry 
                     )
-                    
+                        
                     if success:
                         with st.spinner("Broadcasting emails to students..."):
                             # Format the email content
@@ -1190,19 +1639,17 @@ if role == "lecturer":
 
                             # Fire the email engine
                             e_success, e_msg = send_email_notification(sem_id, email_subject, email_body)
+                                
                         if e_success:
                             st.success(f"✅ {msg} & {e_msg}")
                         else:
                             st.warning(f"✅ {msg}, but emails were skipped: {e_msg}")
-                        st.rerun()
                             
-                        st.success("✅ {}".format(msg))
                         st.rerun()
                     else:
-                        st.error("❌ {}".format(msg))
-        
+                        st.error(f"❌ {msg}")
+            
         st.divider()
-        
         # Get all assignments
         all_assignments = pd.read_sql_query("""
         SELECT 
@@ -1601,6 +2048,65 @@ if role == "lecturer":
                     st.dataframe(all_subjects_debug, use_container_width=True, hide_index=True)
                 else:
                     st.info("No subjects created yet.")
+            # ================= DYNAMIC SCHEME CONFIGURATOR =================
+            st.write("")
+            with st.expander("⚙️ Advanced: Configure Subject Marking Schemes (Weightage Rules)"):
+                all_subs = pd.read_sql_query("""
+                    SELECT s.id, s.name, sem.name as semester 
+                    FROM subjects s 
+                    JOIN semesters sem ON s.semester_id = sem.id
+                    ORDER BY sem.name, s.name
+                """, conn)
+                
+                if all_subs.empty:
+                    st.info("Please add subjects before configuring weightage distribution rules.")
+                else:
+                    sub_map = {f"{row['semester']} | {row['name']}": row['id'] for _, row in all_subs.iterrows()}
+                    selected_target = st.selectbox("Choose Subject to Edit Rules", list(sub_map.keys()), key="scheme_sub_picker")
+                    target_sub_id = sub_map[selected_target]
+                    
+                    # Load existing data from database if it exists, otherwise fall back to your classic standard values
+                    exist_rule = pd.read_sql_query("SELECT * FROM subject_schemes WHERE subject_id=?", conn, params=(int(target_sub_id),))
+                    
+                    sc_theory = exist_rule.iloc[0]['theory_full_marks'] if not exist_rule.empty else 40.0
+                    sc_prac = exist_rule.iloc[0]['prac_full_marks'] if not exist_rule.empty else 25.0
+                    
+                    cc1, cc2 = st.columns(2)
+                    with cc1:
+                        st.markdown("### 📝 Theory Weights")
+                        f_theory = st.number_input("Theory Full Marks Allocation", min_value=0.0, max_value=100.0, value=float(sc_theory), key="sch_f_theory")
+                        w_att = st.slider("Attendance Weight Ratio", 0.0, 1.0, 0.10, key="sch_w_att")
+                        w_hw = st.slider("Homework/Assignment Weight Ratio", 0.0, 1.0, 0.25, key="sch_w_hw")
+                        w_mid = st.slider("Mid-Term Assessment Weight Ratio", 0.0, 1.0, 0.25, key="sch_w_mid")
+                        w_final = st.slider("Final Internal Exam Weight Ratio", 0.0, 1.0, 0.25, key="sch_w_final")
+                        w_other = st.slider("Discipline/Other Continuous Weights", 0.0, 1.0, 0.15, key="sch_w_other")
+                    with cc2:
+                        st.markdown("### 🧪 Practical Weights")
+                        f_prac = st.number_input("Practical Full Marks Allocation", min_value=0.0, max_value=100.0, value=float(sc_prac), key="sch_f_prac")
+                    
+                    # Validate that the coefficients sum to 1.0 total
+                    total_ratio = w_att + w_hw + w_mid + w_final + w_other
+                    if abs(total_ratio - 1.0) > 0.01:
+                        st.warning(f"⚠️ Note: Theory distribution coefficients sum to {total_ratio:.2f}. For perfect scaling, ensure they sum precisely to 1.00.")
+                    
+                    if st.button("💾 Lock Weighting Schema Rules for Selected Subject", use_container_width=True, type="primary", key="save_scheme_btn"):
+                        c.execute("""
+                            INSERT INTO subject_schemes (
+                                subject_id, theory_full_marks, prac_full_marks, t_weight_att, 
+                                t_weight_hw, t_weight_other, t_weight_mid, t_weight_final
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                            ON CONFLICT(subject_id) DO UPDATE SET
+                                theory_full_marks=excluded.theory_full_marks,
+                                prac_full_marks=excluded.prac_full_marks,
+                                t_weight_att=excluded.t_weight_att,
+                                t_weight_hw=excluded.t_weight_hw,
+                                t_weight_other=excluded.t_weight_other,
+                                t_weight_mid=excluded.t_weight_mid,
+                               _final=excluded.t_weight_final
+                        """, (int(target_sub_id), f_theory, f_prac, w_att, w_hw, w_other, w_mid, w_final))
+                        conn.commit()
+                        st.success(f"✅ Assessment mapping and report generation rules updated across all application engines for {selected_target}!")
+                        st.rerun()
 
         # ASSIGNMENTS
     with tabs[3]:  # Adjust index based on your setup
@@ -1864,17 +2370,68 @@ if role == "lecturer":
                                     c.execute("DELETE FROM assignments WHERE id=?", (assignment['ID'],))
                                     
                                     conn.commit()
-                                    with st.spinner("Notifying students..."):
-                                        email_subject = f"📝 New Assignment: {title.strip()}"
-                                        email_body = f"Hello,\n\nA new assignment '{title.strip()}' has been posted for {selected_subject}.\nDeadline: {deadline}\n\nPlease log into The N-Streamlines to view and submit your work."
-                                        e_success, e_msg = send_email_notification(sem_id, email_subject, email_body)
-                                        # ----------------------------
+                                    
 
                                     st.success("✅ Assignment '{}' deleted successfully!".format(assignment['Title']))
                                     st.rerun()
                                     
                                 except Exception as e:
                                     st.error("Error deleting assignment: {}".format(str(e)))
+            
+        # ========== MANAGE STUDENT SUBMISSIONS ==========
+        st.divider()
+        st.subheader("🗑️ Delete a Student's Submission")
+        st.info("Use this if a student uploaded the wrong file. This deletes their file and allows them to submit again.")
+
+        # 1. Let admin pick the assignment
+        all_assignments_for_del = pd.read_sql_query("SELECT id, title FROM assignments", conn)
+        
+        if not all_assignments_for_del.empty:
+            assn_options = {row['title']: row['id'] for _, row in all_assignments_for_del.iterrows()}
+            
+            col_sel1, col_sel2 = st.columns(2)
+            with col_sel1:
+                assn_to_manage = st.selectbox("1. Select Assignment", list(assn_options.keys()), key="del_sub_assn")
+            
+            # 2. Find all submissions for that specific assignment
+            subs_query = """
+            SELECT s.id, s.submission_file, u.username, u.full_name 
+            FROM submissions s
+            JOIN users u ON s.student_id = u.id
+            WHERE s.assignment_id = ?
+            """
+            submissions_df = pd.read_sql_query(subs_query, conn, params=(int(assn_options[assn_to_manage]),))
+            
+            with col_sel2:
+                if not submissions_df.empty:
+                    sub_options = {"{} ({})".format(row['full_name'], row['username']): (row['id'], row['submission_file']) for _, row in submissions_df.iterrows()}
+                    student_to_delete = st.selectbox("2. Select Student's Submission", list(sub_options.keys()), key="del_sub_student")
+                else:
+                    st.info("No submissions yet.")
+                    sub_options = {}
+                
+            # 3. The Delete Button
+            if sub_options:
+                if st.button("🚨 Delete Student's Submission", type="primary", use_container_width=True):
+                    sub_id_to_del, file_to_del = sub_options[student_to_delete]
+                    
+                    try:
+                        # A. Delete from database
+                        c.execute("DELETE FROM submissions WHERE id=?", (int(sub_id_to_del),))
+                        conn.commit()
+                        
+                        # B. Delete the physical PDF file from the folder
+                        if file_to_del and os.path.exists(file_to_del):
+                            os.remove(file_to_del)
+                            
+                        st.success("✅ Submission deleted! {} can now upload a new file.".format(student_to_delete.split(' ')[0]))
+                        st.balloons()
+                        st.rerun()
+                    except Exception as e:
+                        st.error("❌ Error deleting submission: {}".format(str(e)))
+        else:
+            st.info("No assignments created yet.")                         
+    
     # SUBMISSIONS & AI
     with tabs[4]:
 
@@ -2048,556 +2605,569 @@ if role == "lecturer":
                     if row['ai_summary'] and str(row['ai_summary']).strip():
                         with st.expander("Previous AI Feedback"):
                             st.write(row['ai_summary'])
-
-        # ANALYTICS
-    with tabs[5]:  # Adjust index if needed
+    st.write("DEBUG: Tab 5 is loading!")
+    # ANALYTICS & GRADING HUB
+    with tabs[5]:
+        st.title("📊 Performance & Grading Hub")
         
-        st.title(" Performance Analytics")
-        st.subheader("📈 Class Performance Trend")
-        #Fetch average marks per assignment ordered chronologically by deadline
-        trend_data = pd.read_sql_query("""
-        SELECT
-            assignments.title as Assignment,
-            AVG(CAST(submissions.marks AS FLOAT)) as Average_Marks
-        FROM submissions
-        JOIN assignments ON submissions.assignment_id = assignments.id
-        WHERE submissions.marks IS NOT NULL AND submissions.marks != ''
-        GROUP BY assignments.id
-        ORDER BY assignments.deadline ASC
-        """, conn)
+        # 1. THE SWITCHBOARD: Toggle between your original charts and the new ledger
+        view_mode = st.radio(
+            "Select View Mode", 
+            ["📈 Analytics Dashboard", "📅 Daily Roll Call", "📝 Internal Theory Ledger (40 Marks)", "🧪 Practical Ledger (25 Marks)"], 
+            horizontal=True
+        )
+        st.divider()
 
-        if not trend_data.empty:
-            # Set the assignment title as the index so it becomes the X-axis label
-            trend_data.set_index('Assignment', inplace=True)
+        # ================= VIEW 1: RESTORED ORIGINAL ANALYTICS =================
+        if view_mode == "📈 Analytics Dashboard":
+            st.subheader("📈 Class Performance Trend")
+            # Fetch average marks per assignment ordered chronologically by deadline
+            trend_data = pd.read_sql_query("""
+            SELECT
+                assignments.title as Assignment,
+                AVG(CAST(submissions.marks AS FLOAT)) as Average_Marks
+            FROM submissions
+            JOIN assignments ON submissions.assignment_id = assignments.id
+            WHERE submissions.marks IS NOT NULL AND submissions.marks != ''
+            GROUP BY assignments.id
+            ORDER BY assignments.deadline ASC
+            """, conn)
 
-            # Draw a smooth area chart
-            st.area_chart(trend_data['Average_Marks'])
-        else:
-            st.info("Not enough graded submissions to generate a trend chart yet.")
-        st.divider() 
-
-        st.subheader("📊 Grade Statistics")
-        
-        sems = pd.read_sql_query("SELECT * FROM semesters ORDER BY name ASC", conn)
-        
-        if not sems.empty:
-            selected_sem = st.selectbox("Select Semester", ["All"] + sems["name"].tolist(), key="analytics_sem")
+            if not trend_data.empty:
+                trend_data.set_index('Assignment', inplace=True)
+                st.area_chart(trend_data['Average_Marks'])
+            else:
+                st.info("Not enough graded submissions to generate a trend chart yet.")
             
-            if selected_sem == "All":
-                df = pd.read_sql_query("""
-                SELECT 
-                    semesters.name as Semester,
-                    subjects.name as Subject,
-                    assignments.title as Assignment,
-                    users.full_name as Student_Name,
-                    users.username as Username,
-                    submissions.submission_time as Submission_Date,
-                    assignments.deadline as Deadline,
-                    submissions.marks as Marks,
-                    submissions.ai_summary as AI_Feedback
-                FROM submissions
-                JOIN assignments ON submissions.assignment_id=assignments.id
-                JOIN subjects ON assignments.subject_id = subjects.id
-                JOIN semesters ON subjects.semester_id = semesters.id
-                JOIN users ON submissions.student_id = users.id
-                WHERE submissions.marks IS NOT NULL AND submissions.marks != ''
-                ORDER BY semesters.name, subjects.name, assignments.title, users.full_name
-                """, conn)
-            else:
-                sem_id = int(sems[sems["name"] == selected_sem]["id"].values[0])
-                df = pd.read_sql_query("""
-                SELECT 
-                    semesters.name as Semester,
-                    subjects.name as Subject,
-                    assignments.title as Assignment,
-                    users.full_name as Student_Name,
-                    users.username as Username,
-                    submissions.submission_time as Submission_Date,
-                    assignments.deadline as Deadline,
-                    submissions.marks as Marks,
-                    submissions.ai_summary as AI_Feedback
-                FROM submissions
-                JOIN assignments ON submissions.assignment_id=assignments.id
-                JOIN subjects ON assignments.subject_id = subjects.id
-                JOIN semesters ON subjects.semester_id = semesters.id
-                JOIN users ON submissions.student_id = users.id
-                WHERE semesters.id = ? AND submissions.marks IS NOT NULL AND submissions.marks != ''
-                ORDER BY subjects.name, assignments.title, users.full_name
-                """, conn, params=(sem_id,))
+            st.divider() 
 
-            if not df.empty:
-                df["marks"] = pd.to_numeric(df["Marks"], errors="coerce")
+            st.subheader("📊 Grade Statistics")
+            
+            sems = pd.read_sql_query("SELECT * FROM semesters ORDER BY name ASC", conn)
+            
+            if not sems.empty:
+                selected_sem = st.selectbox("Select Semester for Stats", ["All"] + sems["name"].tolist(), key="analytics_sem")
                 
-                # ========== DOWNLOAD OPTIONS ==========
-                st.subheader("📥 Download Grade Reports")
-                
-                col1, col2, col3 = st.columns(3)
-                
-                # Option 1: Detailed Report (with feedback)
-                with col1:
-                    csv_detailed = df.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        label="📄 Detailed Report (with AI Feedback)",
-                        data=csv_detailed,
-                        file_name="Grades_Detailed_{}.csv".format(selected_sem),
-                        mime='text/csv',
-                        use_container_width=True
-                    )
-                
-                # Option 2: Summary Report (without feedback)
-                with col2:
-                    df_summary = df[['Semester', 'Subject', 'Assignment', 'Student_Name', 'Username', 'Submission_Date', 'Deadline', 'Marks']]
-                    csv_summary = df_summary.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        label="📊 Summary Report (No Feedback)",
-                        data=csv_summary,
-                        file_name="Grades_Summary_{}.csv".format(selected_sem),
-                        mime='text/csv',
-                        use_container_width=True
-                    )
-                
-                # Option 3: Student-wise Aggregated Report
-                with col3:
-                    # Create pivot table: Students x Assignments
-                    df_pivot = df.pivot_table(
-                        index=['Semester', 'Student_Name', 'Username', 'Subject'],
-                        columns='Assignment',
-                        values='marks',
-                        aggfunc='first'
-                    ).reset_index()
-                    
-                    # Add average column
-                    assignment_cols = [col for col in df_pivot.columns if col not in ['Semester', 'Student_Name', 'Username', 'Subject']]
-                    df_pivot['Average'] = df_pivot[assignment_cols].mean(axis=1).round(2)
-                    
-                    csv_pivot = df_pivot.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        label="📈 Student-wise Summary",
-                        data=csv_pivot,
-                        file_name="Grades_StudentWise_{}.csv".format(selected_sem),
-                        mime='text/csv',
-                        use_container_width=True
-                    )
-                
-                st.divider()
-                
-                # ========== VISUALIZATIONS ==========
-                st.subheader("📊 Average Marks by Assignment")
-                avg_marks = df.groupby("Assignment")["marks"].mean()
-                st.bar_chart(avg_marks)
-                
-                st.divider()
-                
-                # Metrics
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric("Total Submissions", len(df))
-                with col2:
-                    st.metric("Average Score", "{:.2f}/10".format(df['marks'].mean()))
-                with col3:
-                    st.metric("Highest Score", "{}/10".format(df['marks'].max()))
-                
-                st.divider()
-                
-                # ========== SUBJECT-WISE BREAKDOWN ==========
-                st.subheader("📚 Subject-wise Performance")
-                
-                subject_stats = df.groupby('Subject').agg({
-                    'marks': ['count', 'mean', 'min', 'max']
-                }).round(2)
-                subject_stats.columns = ['Total Submissions', 'Average', 'Lowest', 'Highest']
-                st.dataframe(subject_stats, use_container_width=True)
-                
-                st.divider()
-                
-                # ========== RAW DATA TABLE ==========
-                st.subheader("📋 Detailed Grade Table")
-                st.dataframe(
-                    df[['Semester', 'Subject', 'Assignment', 'Student_Name', 'Username', 'Marks']],
-                    use_container_width=True,
-                    hide_index=True
-                )
-                
-            else:
-                st.info("📭 No graded submissions yet for this semester.")
-        else:
-            st.warning("⚠️ Please create semesters first.")
+                if selected_sem == "All":
+                    df = pd.read_sql_query("""
+                    SELECT 
+                        semesters.name as Semester, subjects.name as Subject, assignments.title as Assignment,
+                        users.full_name as Student_Name, users.username as Username,
+                        submissions.submission_time as Submission_Date, assignments.deadline as Deadline,
+                        submissions.marks as Marks, submissions.ai_summary as AI_Feedback
+                    FROM submissions
+                    JOIN assignments ON submissions.assignment_id=assignments.id
+                    JOIN subjects ON assignments.subject_id = subjects.id
+                    JOIN semesters ON subjects.semester_id = semesters.id
+                    JOIN users ON submissions.student_id = users.id
+                    WHERE submissions.marks IS NOT NULL AND submissions.marks != ''
+                    ORDER BY semesters.name, subjects.name, assignments.title, users.full_name
+                    """, conn)
+                else:
+                    sem_id = int(sems[sems["name"] == selected_sem]["id"].values[0])
+                    df = pd.read_sql_query("""
+                    SELECT 
+                        semesters.name as Semester, subjects.name as Subject, assignments.title as Assignment,
+                        users.full_name as Student_Name, users.username as Username,
+                        submissions.submission_time as Submission_Date, assignments.deadline as Deadline,
+                        submissions.marks as Marks, submissions.ai_summary as AI_Feedback
+                    FROM submissions
+                    JOIN assignments ON submissions.assignment_id=assignments.id
+                    JOIN subjects ON assignments.subject_id = subjects.id
+                    JOIN semesters ON subjects.semester_id = semesters.id
+                    JOIN users ON submissions.student_id = users.id
+                    WHERE semesters.id = ? AND submissions.marks IS NOT NULL AND submissions.marks != ''
+                    ORDER BY subjects.name, assignments.title, users.full_name
+                    """, conn, params=(sem_id,))
 
-    # MANAGE STUDENTS
+                if not df.empty:
+                    df["marks"] = pd.to_numeric(df["Marks"], errors="coerce")
+                    
+                    st.subheader("📥 Download Grade Reports")
+                    col1, col2, col3 = st.columns(3)
+                    
+                    with col1:
+                        csv_detailed = df.to_csv(index=False).encode('utf-8')
+                        st.download_button("📄 Detailed Report", csv_detailed, f"Grades_Detailed_{selected_sem}.csv", 'text/csv', use_container_width=True)
+                    
+                    with col2:
+                        df_summary = df[['Semester', 'Subject', 'Assignment', 'Student_Name', 'Username', 'Marks']]
+                        csv_summary = df_summary.to_csv(index=False).encode('utf-8')
+                        st.download_button("📊 Summary Report", csv_summary, f"Grades_Summary_{selected_sem}.csv", 'text/csv', use_container_width=True)
+                    
+                    with col3:
+                        df_pivot = df.pivot_table(index=['Semester', 'Student_Name', 'Username', 'Subject'], columns='Assignment', values='marks', aggfunc='first').reset_index()
+                        assignment_cols = [col for col in df_pivot.columns if col not in ['Semester', 'Student_Name', 'Username', 'Subject']]
+                        df_pivot['Average'] = df_pivot[assignment_cols].mean(axis=1).round(2)
+                        csv_pivot = df_pivot.to_csv(index=False).encode('utf-8')
+                        st.download_button("📈 Student-wise Summary", csv_pivot, f"Grades_Student_{selected_sem}.csv", 'text/csv', use_container_width=True)
+                    
+                    st.divider()
+                    st.subheader("📊 Average Marks by Assignment")
+                    st.bar_chart(df.groupby("Assignment")["marks"].mean())
+                    
+                    st.divider()
+                    st.subheader("📋 Detailed Grade Table")
+                    st.dataframe(df[['Semester', 'Subject', 'Assignment', 'Student_Name', 'Username', 'Marks']], use_container_width=True, hide_index=True)
+                else:
+                    st.info("No graded submissions yet.")
+        # ================= REFINED: DAILY ATTENDANCE PUNCHER WITH EXPORT =================
+        elif view_mode == "📅 Daily Roll Call":
+            st.subheader("📅 Daily Attendance Puncher")
+            
+            sems_att = pd.read_sql_query("SELECT * FROM semesters ORDER BY name ASC", conn)
+            if sems_att.empty:
+                st.warning("Please create a semester first.")
+            else:
+                c1, c2, c3 = st.columns(3)
+                with c1:
+                    sel_sem_name = st.selectbox("Select Semester", sems_att["name"], key="att_sem_sel")
+                    sel_sem_id = int(sems_att[sems_att["name"] == sel_sem_name]["id"].values[0])
+                with c2:
+                    subjects_att = pd.read_sql_query("SELECT * FROM subjects WHERE semester_id=?", conn, params=(sel_sem_id,))
+                    if subjects_att.empty:
+                        st.error("No subjects found.")
+                        sub_id = None
+                    else:
+                        sel_sub_name = st.selectbox("Select Subject", subjects_att["name"], key="att_sub_sel")
+                        sub_id = int(subjects_att[subjects_att["name"] == sel_sub_name]["id"].values[0])
+                with c3:
+                    att_type = st.radio("Session Type", ["📝 Theory Class", "🧪 Practical Lab"], horizontal=True)
+
+                if sub_id:
+                    # Fetch student roster for this class
+                    students_df = pd.read_sql_query("""
+                        SELECT id as student_id, full_name as Name, username as Roll 
+                        FROM users 
+                        WHERE role='student' AND semester_id=? 
+                        ORDER BY username ASC
+                    """, conn, params=(sel_sem_id,))
+
+                    if students_df.empty:
+                        st.info("No students registered in this semester yet.")
+                    else:
+                        st.write(f"Marking attendance for: **{datetime.now(NST).strftime('%B %d, %Y')}**")
+                        
+                        # Create a display data editor where only the "Present" checkbox column is editable
+                        students_df["Present"] = True  # Default to present for quick logging
+                        
+                        edited_att_df = st.data_editor(
+                            students_df,
+                            column_config={
+                                "student_id": None,
+                                "Roll": st.column_config.TextColumn("Roll No.", disabled=True),
+                                "Name": st.column_config.TextColumn("Student Name", disabled=True),
+                                "Present": st.column_config.CheckboxColumn("Attendance Status", default=True)
+                            },
+                            use_container_width=True,
+                            hide_index=True,
+                            key="daily_attendance_grid"
+                        )
+
+                        # ================= EXCEL/CSV HISTORY EXPORTER =================
+                        st.divider()
+                        st.markdown("### 📥 Export Attendance History")
+                        
+                        export_query = """
+                            SELECT u.username as [Roll No.], u.full_name as [Student Name],
+                                   IFNULL(m.t_att_present, 0) as [Theory Present], IFNULL(m.t_att_total, 0) as [Theory Total],
+                                   IFNULL(m.p_att_present, 0) as [Practical Present], IFNULL(m.p_att_total, 0) as [Practical Total]
+                            FROM users u
+                            LEFT JOIN student_marks m ON u.id = m.student_id AND m.subject_id = ?
+                            WHERE u.role = 'student' AND u.semester_id = ?
+                            ORDER BY u.username ASC
+                        """
+                        export_df = pd.read_sql_query(export_query, conn, params=(sub_id, sel_sem_id))
+                        
+                        if not export_df.empty:
+                            file_timestamp = datetime.now(NST).strftime("%Y%m%d")
+                            clean_filename = f"Attendance_{sel_sub_name.replace(' ', '_')}_{file_timestamp}.csv"
+                            csv_buffer = export_df.to_csv(index=False).encode('utf-8')
+                            
+                            st.download_button(
+                                label="📥 Download Current Attendance Sheet (Excel/CSV Compatible)",
+                                data=csv_buffer,
+                                file_name=clean_filename,
+                                mime="text/csv",
+                                use_container_width=True
+                            )
+                        # ===================================================================
+
+                        st.write("") # Spacer
+
+                        if st.button("🚀 Submit Today's Attendance Record", use_container_width=True, type="primary"):
+                            for _, r in edited_att_df.iterrows():
+                                s_id = int(r['student_id'])
+                                
+                                # 🛡️ Safe-eval the checkbox: Handles cases where SQLite returns raw bytes or booleans
+                                val_present = r['Present']
+                                if isinstance(val_present, bytes):
+                                    is_present = 1 if b'\x01' in val_present else 0
+                                else:
+                                    is_present = 1 if bool(val_present) else 0
+                                
+                                # 1. Fetch current historical numbers from student_marks table
+                                current_record = pd.read_sql_query(
+                                    "SELECT t_att_present, t_att_total, p_att_present, p_att_total FROM student_marks WHERE student_id=? AND subject_id=?",
+                                    conn, params=(s_id, sub_id)
+                                )
+                                
+                                # 🛠️ Inner helper function to intercept and sanitize byte-string formats safely
+                                def get_safe_int(df, column):
+                                    if df.empty or pd.isna(df.iloc[0][column]):
+                                        return 0
+                                    val = df.iloc[0][column]
+                                    if isinstance(val, bytes):
+                                        return 1 if b'\x01' in val else 0
+                                    return int(float(val))
+
+                                # 2. Increment based on class type selection
+                                if att_type == "📝 Theory Class":
+                                    prev_present = get_safe_int(current_record, 't_att_present')
+                                    prev_total = get_safe_int(current_record, 't_att_total')
+                                    
+                                    new_present = prev_present + is_present
+                                    new_total = prev_total + 1
+                                    
+                                    c.execute("""
+                                        INSERT INTO student_marks (student_id, subject_id, t_att_present, t_att_total) 
+                                        VALUES (?, ?, ?, ?)
+                                        ON CONFLICT(student_id, subject_id) DO UPDATE SET 
+                                            t_att_present = ?, t_att_total = ?
+                                    """, (s_id, sub_id, new_present, new_total, new_present, new_total))
+                                    
+                                else:  # Practical Class
+                                    prev_present = get_safe_int(current_record, 'p_att_present')
+                                    prev_total = get_safe_int(current_record, 'p_att_total')
+                                    
+                                    new_present = prev_present + is_present
+                                    new_total = prev_total + 1
+                                    
+                                    c.execute("""
+                                        INSERT INTO student_marks (student_id, subject_id, p_att_present, p_att_total) 
+                                        VALUES (?, ?, ?, ?)
+                                        ON CONFLICT(student_id, subject_id) DO UPDATE SET 
+                                            p_att_present = ?, p_att_total = ?
+                                    """, (s_id, sub_id, new_present, new_total, new_present, new_total))
+                                    
+                            conn.commit()
+                            st.success(f"✅ Attendance successfully compiled and added to cumulative ledgers!")
+                            st.balloons()
+                            st.rerun()
+
+        # ================= VIEW 2: INTERNAL THEORY LEDGER =================
+        elif view_mode == "📝 Internal Theory Ledger (40 Marks)":
+            sems_grading = pd.read_sql_query("SELECT * FROM semesters ORDER BY name ASC", conn)
+            if sems_grading.empty:
+                st.warning("Please create a semester first.")
+            else:
+                col_sel1, col_sel2 = st.columns(2)
+                with col_sel1:
+                    sel_sem_name = st.selectbox("Semester", sems_grading["name"], key="grad_sem_sel_t")
+                    sel_sem_id = int(sems_grading[sems_grading["name"] == sel_sem_name]["id"].values[0])
+                with col_sel2:
+                    subjects_grading = pd.read_sql_query("SELECT * FROM subjects WHERE semester_id=?", conn, params=(sel_sem_id,))
+                    if subjects_grading.empty:
+                        st.error("No subjects found.")
+                    else:
+                        sel_sub_name = st.selectbox("Subject", subjects_grading["name"], key="grad_sub_sel_t")
+                        sel_sub_id = int(subjects_grading[subjects_grading["name"] == sel_sub_name]["id"].values[0])
+
+                        # Hydraulics Scheme
+                        hyd_scheme = {'theory_full_marks': 40, 't_weight_att': 0.10, 't_weight_hw': 0.25, 't_weight_other': 0.15, 't_weight_mid': 0.25, 't_weight_final': 0.25}
+
+                        query = """
+                            SELECT u.id as student_id, u.full_name as Name, u.username as Roll,
+                            IFNULL(m.t_att_present, 0) as t_att_present,
+                            IFNULL(m.t_att_total, 34) as t_att_total,
+                            IFNULL(m.t_hw_raw, 0) as t_hw_raw,
+                            IFNULL(m.t_mid_raw, 0) as t_mid_raw,
+                            IFNULL(m.t_final_raw, 0) as t_final_raw,
+                            IFNULL(m.t_other_raw, 0) as t_other_raw,
+                            IFNULL(m.t_grace, 0) as t_grace
+                            
+                            FROM users u LEFT JOIN student_marks m ON u.id = m.student_id AND m.subject_id = ?
+                            WHERE u.role = 'student' AND u.semester_id = ?
+                        """
+                        df_t = pd.read_sql_query(query, conn, params=(sel_sub_id, sel_sem_id))
+                        edited_t = st.data_editor(df_t, column_config={"student_id": None, "Grace": st.column_config.NumberColumn(max_value=5)}, use_container_width=True, hide_index=True, key="theory_editor")
+
+                        if st.button("💾 Synchronize Theory Marks", use_container_width=True, type="primary"):
+                            for _, r in edited_t.iterrows():
+                                c.execute("""
+                                          INSERT INTO student_marks (
+                                          student_id, subject_id, t_att_present, t_att_total,
+                                          t_hw_raw, t_mid_raw, t_final_raw, t_other_raw, t_grace
+                                          ) VALUES (?,?,?,?,?,?,?,?,?)
+                                          ON CONFLICT(student_id, subject_id) DO UPDATE SET
+                                            t_att_present=excluded.t_att_present,
+                                            t_att_total=excluded.t_att_total,
+                                            t_hw_raw=excluded.t_hw_raw,
+                                            t_mid_raw=excluded.t_mid_raw,
+                                            t_final_raw=excluded.t_final_raw,
+                                            t_other_raw=excluded.t_other_raw,
+                                            t_grace=excluded.t_grace
+                                """, (
+                                    int(r['student_id']),
+                                    int(sel_sub_id),
+                                    int(r['t_att_present']),
+                                    int(r['t_att_total']),
+                                    float(r['t_hw_raw']),
+                                    float(r['t_mid_raw']),
+                                    float(r['t_final_raw']),
+                                    float(r['t_other_raw']),
+                                    float(r['t_grace'])
+                                ))
+                            conn.commit()
+                            st.success("✅ Theory marks successfully synchronized and locked.")
+                            st.rerun()
+
+
+                        st.divider(); st.subheader("🎯 Theory Totals")
+                        res_t = [{"Name": r['Name'], "Total (/40)": calculate_internal_theory(r.to_dict(), sub_id, conn)[0], "Eligibility": "✅ Eligible" if calculate_internal_theory(r.to_dict(), sub_id, conn)[1] else "❌ Ineligible"} for _, r in edited_t.iterrows()]
+                        st.table(res_t)
+
+        # ================= VIEW 3: PRACTICAL LEDGER =================
+        elif view_mode == "🧪 Practical Ledger (25 Marks)":
+            sems_grading = pd.read_sql_query("SELECT * FROM semesters ORDER BY name ASC", conn)
+            if sems_grading.empty:
+                st.warning("Please create a semester first.")
+            else:
+                col_sel1, col_sel2 = st.columns(2)
+                with col_sel1:
+                    sel_sem_name = st.selectbox("Semester", sems_grading["name"], key="grad_sem_sel_p")
+                    sel_sem_id = int(sems_grading[sems_grading["name"] == sel_sem_name]["id"].values[0])
+                with col_sel2:
+                    subjects_grading = pd.read_sql_query("SELECT * FROM subjects WHERE semester_id=?", conn, params=(sel_sem_id,))
+                    if subjects_grading.empty:
+                        st.error("No subjects found.")
+                    else:
+                        sel_sub_name = st.selectbox("Subject", subjects_grading["name"], key="grad_sub_sel_p")
+                        sel_sub_id = int(subjects_grading[subjects_grading["name"] == sel_sub_name]["id"].values[0])
+
+                        # Practical Scheme
+                        hyd_scheme = {'prac_full_marks': 25, 'p_weight_att': 0.20, 'p_weight_perf': 0.20, 'p_weight_report': 0.20, 'p_weight_test': 0.20, 'p_weight_viva': 0.20}
+
+                        query_p = """
+                            SELECT u.id as student_id, u.full_name as Name, u.username as Roll,
+                            IFNULL(m.p_att_present, 0) as p_att_present,
+                            IFNULL(m.p_att_total, 12) as p_att_total,
+                            IFNULL(m.p_perf_raw, 0) as p_perf_raw, 
+                            IFNULL(m.p_report_raw, 0) as p_report_raw,
+                            IFNULL(m.p_test_raw, 0) as p_test_raw, 
+                            IFNULL(m.p_viva_raw, 0) as p_viva_raw
+                            FROM users u 
+                            LEFT JOIN student_marks m ON u.id = m.student_id AND m.subject_id = ?
+                            WHERE u.role = 'student' AND u.semester_id = ?
+                        """
+                        df_p = pd.read_sql_query(query_p, conn, params=(sel_sub_id, sel_sem_id))
+                        edited_p = st.data_editor(df_p, column_config={"student_id": None}, use_container_width=True, hide_index=True, key="p_editor")
+
+                        if st.button("💾 Synchronize Practical Marks", use_container_width=True, type="primary"):
+                            for _, r in edited_p.iterrows():
+                                c.execute("INSERT INTO student_marks (student_id, subject_id, p_att_present, p_att_total, p_perf_raw, p_report_raw, p_test_raw, p_viva_raw) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(student_id, subject_id) DO UPDATE SET p_att_present=excluded.p_att_present, p_att_total=excluded.p_att_total, p_perf_raw=excluded.p_perf_raw, p_report_raw=excluded.p_report_raw, p_test_raw=excluded.p_test_raw, p_viva_raw=excluded.p_viva_raw", (int(r['student_id']), int(sel_sub_id), int(r['p_att_present']), int(r['p_att_total']), float(r['p_perf_raw']), float(r['p_report_raw']), float(r['p_test_raw']), float(r['p_viva_raw'])))
+                            conn.commit(); st.success("Practical Saved."); st.rerun()
+
+                        st.divider(); st.subheader("🧪 Practical Totals")
+                        res_p = [{"Name": r['Name'], "Total (/25)": calculate_internal_practical(r.to_dict(), sub_id, conn)[0], "Eligibility": "✅ Eligible" if calculate_internal_practical(r.to_dict(), sub_id, conn)[1] else "❌ Ineligible"} for _, r in edited_p.iterrows()]
+                        st.table(res_p)
+       
+            # ================= MANAGE STUDENTS (TABS[6]) =================
     with tabs[6]:
-        
-        # TEMPORARY FIX BUTTON - Remove after fixing all students
         st.subheader("⚠️ Emergency Fix for Existing Students")
-        
         if st.button("🔧 Fix ALL Students with NULL semester"):
-            # Get first semester as default
             default_sem = pd.read_sql_query("SELECT id FROM semesters ORDER BY id ASC LIMIT 1", conn)
-            
             if not default_sem.empty:
                 default_sem_id = int(default_sem.iloc[0]['id'])
-                
-                # Update all students with NULL semester_id
-                c.execute("""
-                UPDATE users 
-                SET semester_id = ? 
-                WHERE role = 'student' AND semester_id IS NULL
-                """, (default_sem_id,))
-                
+                c.execute("UPDATE users SET semester_id = ? WHERE role = 'student' AND semester_id IS NULL", (default_sem_id,))
                 conn.commit()
-                
-                affected = c.rowcount
-                st.success("✅ Fixed {} students - assigned to semester_id {}".format(affected, default_sem_id))
+                st.success("✅ Fixed {} students - assigned to semester_id {}".format(c.rowcount, default_sem_id))
                 st.rerun()
             else:
                 st.error("No semesters available to assign")
-        
+    
         st.divider()
-        
+    
         st.subheader("Add Student Manually")
-
         col1, col2 = st.columns(2)
 
         with col1:
             student_name = st.text_input("Full Name", key="student_name")
             username = st.text_input("Username", key="student_username")
-            email = st.text_input("Email Address", key="student_email")
+            email_input = st.text_input("Email Address", key="student_email")
             password = st.text_input("Password", type="password", key="student_password")
 
         with col2:
             sems = pd.read_sql_query("SELECT * FROM semesters ORDER BY name ASC", conn)
-
             if sems.empty:
                 st.warning("Please create semesters first.")
             else:
                 semester_name = st.selectbox("Assign Semester", sems["name"], key="student_semester")
                 semester_id = int(sems[sems["name"] == semester_name]["id"].values[0])
-                
-                # Show what will be inserted
                 st.info("Will assign semester_id: {}".format(semester_id))
 
                 if st.button("Create Student"):
-
-                    if not username or not password:
-                        st.error("Username and password required.")
-                    elif not student_name:
-                        st.error("Full name is required.")
+                    if not username or not password or not student_name:
+                        st.error("All fields except email are required.")
                     else:
                         try:
-                            # Use explicit integer conversion
-                            semester_id_to_insert = int(semester_id)
-                            
-                            st.write("DEBUG: Inserting with semester_id = {} (type: {})".format(
-                                semester_id_to_insert, 
-                                type(semester_id_to_insert)
-                            ))
-                            
                             c.execute("""
-                            INSERT INTO users(full_name, username, password, role, semester_id)
-                            VALUES(?, ?, ?, ?, ?)
+                                INSERT INTO users(full_name, username, password, role, semester_id, email)
+                                VALUES(?, ?, ?, ?, ?, ?)
                             """, (
                                 student_name.strip(),
                                 username.strip(),
                                 hash_password(password.strip()),
                                 "student",
-                                semester_id_to_insert,
-                                email.strip() if email else None
+                                semester_id,
+                                email_input.strip() if email_input else None
                             ))
                             conn.commit()
-                            
-                            # Verify insertion
-                            verify = pd.read_sql_query(
-                                "SELECT * FROM users WHERE username=?",
-                                conn,
-                                params=(username.strip(),)
-                            )
-                            
-                            if not verify.empty:
-                                st.success("✅ Student '{}' created!".format(username))
-                                st.write("**Verification:** semester_id saved as: {}".format(verify.iloc[0]['semester_id']))
-                                st.rerun()
-                            else:
-                                st.error("Student created but verification failed")
-                                
+                            st.success("✅ Student '{}' created successfully!".format(username))
+                            st.rerun()
                         except sqlite3.IntegrityError:
                             st.error("Username already exists.")
                         except Exception as e:
-                            st.error("Error creating student: {}".format(str(e)))
-                            import traceback
-                            st.code(traceback.format_exc())
+                            st.error("Error: {}".format(str(e)))
 
         st.divider()
 
         st.subheader("Bulk Upload Students via CSV")
         st.info("CSV format: name,username,password,semester,email")
-
         csv_file = st.file_uploader("Upload CSV", type=["csv"], key="student_csv")
 
         if csv_file:
             df_csv = pd.read_csv(csv_file)
-
-            #1. clean the headers instantly 
-            df_csv.columns=df_csv.columns.str.strip().str.lower()
+            df_csv.columns = df_csv.columns.str.strip().str.lower()
             required_cols = {"name", "username", "password", "semester", "email"}
 
             if not required_cols.issubset(df_csv.columns):
-                st.error("CSV must contain columns: Name, Username, password, Semester")
-                st.write("Your columns are currently reading as:", list(df_csv.columns))
+                st.error("CSV missing columns. Ensure it has: name, username, password, semester, email")
             else:
                 st.write("🔍 Data Preview:", df_csv.head())
                 if st.button("🚀 Process & Register Students"):
-                    sems = pd.read_sql_query("SELECT * FROM semesters", conn)
-                    success_count = 0
-                    error_count = 0
+                    sems_list = pd.read_sql_query("SELECT * FROM semesters", conn)
+                    success_count, error_count = 0, 0
 
                     for _, row in df_csv.iterrows():
-                        clean_name = str(row["name"]).strip()
-                        clean_user = str(row["username"]).strip()
-                        clean_sem = str(row["semester"]).strip()
-                        clean_email = str(row["email"]).strip() if "email" in row and not pd.isna(row["email"]) else None
-                        raw_pw = str(row["password"]).replace('.0', '').strip()
-                        
-                        sem_match = sems[sems["name"] == clean_sem]
-
-                        if sem_match.empty:
-                            st.warning(f"⚠️ Semester '{clean_sem}' not found for user {clean_user}. Skipping.")
-                            
-                            error_count += 1
-                            continue
-
-                        sem_id = int(sem_match["id"].values[0])
-
                         try:
-                            c.execute("""
-                            INSERT INTO users(full_name, username, password, role, semester_id)
-                            VALUES(?,?,?,?,?)
-                            """, (
-                                clean_name,
-                                clean_user,
-                                hash_password(raw_pw),
-                                "student",
-                                int(sem_id),
-                                clean_email
-                            ))
-                            success_count += 1
+                            clean_name = str(row["name"]).strip()
+                            clean_user = str(row["username"]).strip()
+                            clean_sem = str(row["semester"]).strip()
+                            clean_email = str(row["email"]).strip() if not pd.isna(row["email"]) else None
+                            raw_pw = str(row["password"]).replace('.0', '').strip()
+                        
+                            sem_match = sems_list[sems_list["name"] == clean_sem]
+                            if not sem_match.empty:
+                                sem_id = int(sem_match["id"].values[0])
+                                c.execute("""
+                                    INSERT INTO users(full_name, username, password, role, semester_id, email)
+                                    VALUES(?,?,?,?,?,?)
+                                """, (clean_name, clean_user, hash_password(raw_pw), "student", sem_id, clean_email))
+                                success_count += 1
+                            else:
+                                error_count += 1
                         except:
                             error_count += 1
-                            continue
-
+                
                     conn.commit()
-                    st.success("{} students uploaded successfully. {} failed.".format(success_count, error_count))
+                    st.success("✅ {} students uploaded! ❌ {} failed.".format(success_count, error_count))
                     st.rerun()
 
         st.divider()
+
         st.subheader("📋 Registered Student List")
-
-        # 1. Filter Dropdown for Sorting/Viewing
         all_sems_list = pd.read_sql_query("SELECT * FROM semesters ORDER BY name ASC", conn)
-        filter_col1, filter_col2 = st.columns([1, 2])
-        
-        with filter_col1:
-            list_filter = st.selectbox("View Students by Semester", ["All"] + all_sems_list["name"].tolist(), key="view_filter")
+        list_filter = st.selectbox("View Students by Semester", ["All"] + all_sems_list["name"].tolist(), key="view_filter")
 
-        # 2. Build Query: Sorted by Semester, then Alphabetically by Name
         if list_filter == "All":
-            students_df = pd.read_sql_query("""
-                SELECT 
-                    users.id as ID,
-                    users.full_name as Name, 
-                    users.username as Username, 
-                    COALESCE(semesters.name, 'No Semester') as Semester
+            query = """
+                SELECT users.id as ID, users.full_name as Name, users.username as Username, 
+                       users.email as Email, COALESCE(semesters.name, 'No Semester') as Semester
                 FROM users 
                 LEFT JOIN semesters ON users.semester_id = semesters.id 
                 WHERE users.role='student' 
                 ORDER BY semesters.name ASC, users.full_name ASC
-            """, conn)
+            """
+            students_df = pd.read_sql_query(query, conn)
         else:
-            students_df = pd.read_sql_query("""
-                SELECT 
-                    users.id as ID,
-                    users.full_name as Name, 
-                    users.username as Username, 
-                    semesters.name as Semester
+            query = """
+                SELECT users.id as ID, users.full_name as Name, users.username as Username, 
+                       users.email as Email, semesters.name as Semester
                 FROM users 
                 JOIN semesters ON users.semester_id = semesters.id 
                 WHERE users.role='student' AND semesters.name = ?
                 ORDER BY users.full_name ASC
-            """, conn, params=(list_filter,))
+            """
+            students_df = pd.read_sql_query(query, conn, params=(list_filter,))
 
-        # 3. Display the List (hide ID column from view)
         if not students_df.empty:
-            st.dataframe(
-                students_df[['Name', 'Username', 'Semester']], 
-                use_container_width=True, 
-                hide_index=True
-            )
-            
-            # Show total count
+            st.dataframe(students_df[['Name', 'Username', 'Email', 'Semester']], use_container_width=True, hide_index=True)
             st.info(f"📊 Total Students: **{len(students_df)}**")
+        
+            csv_data = students_df[['Name', 'Username', 'Email', 'Semester']].to_csv(index=False).encode('utf-8')
+            st.download_button(f"📥 Download {list_filter} List (CSV)", csv_data, f"Students_{list_filter}.csv", "text/csv", use_container_width=True)
         else:
             st.info("No students found.")
 
-        # 4. DOWNLOAD STUDENT LIST AS CSV
-        if not students_df.empty:
-            csv_students = students_df[['Name', 'Username', 'Semester']].to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label=f"📥 Download {list_filter} Student List (CSV)",
-                data=csv_students,
-                file_name=f"Students_{list_filter}.csv",
-                mime='text/csv',
-                use_container_width=True
-            )
-
         st.divider()
+
         st.subheader("🗑️ Delete Student")
-
-        # Create options list for deletion based on current filtered view
         if not students_df.empty:
-            # Use ID as the unique key for deletion
-            student_options = {
-                "{} | {} | {}".format(
-                    row['Semester'] if row['Semester'] else 'No Semester', 
-                    row['Username'], 
-                    row['Name']
-                ): row['ID']
-                for _, row in students_df.iterrows()
-            }
-
-            selected_student = st.selectbox(
-                "Select Student to Remove",
-                list(student_options.keys()),
-                key="delete_student_select"
-            )
-
-            col_del1, col_del2 = st.columns([1, 3])
-            
-            with col_del1:
+            student_options = {f"{row['Semester']} | {row['Username']} | {row['Name']}": row['ID'] for _, row in students_df.iterrows()}
+            selected_to_delete = st.selectbox("Select Student to Remove", list(student_options.keys()))
+        
+            col_d1, col_d2 = st.columns([1, 3])
+            with col_d1:
                 if st.button("🗑️ Confirm Delete", type="primary", use_container_width=True):
-                    student_id = student_options[selected_student]
-                    
-                    try:
-                        # Delete submissions first (foreign key constraint)
-                        c.execute("DELETE FROM submissions WHERE student_id=?", (int(student_id),))
-                        # Then delete user
-                        c.execute("DELETE FROM users WHERE id=?", (int(student_id),))
-                        conn.commit()
-                        
-                        st.success("✅ Student removed successfully!")
-                        st.rerun()
-                        
-                    except Exception as e:
-                        st.error("Error deleting student: {}".format(str(e)))
-            
-            with col_del2:
-                st.warning("⚠️ This action cannot be undone. All submissions will be deleted.")
-
-        else:
-            st.info("No students to delete.")
+                    s_id = student_options[selected_to_delete]
+                    c.execute("DELETE FROM submissions WHERE student_id=?", (int(s_id),))
+                    c.execute("DELETE FROM users WHERE id=?", (int(s_id),))
+                    conn.commit()
+                    st.success("Student removed.")
+                    st.rerun()
+            with col_d2:
+                st.warning("⚠️ Deleting will remove all submissions for this student.")
 
         st.divider()
-        st.subheader("🔧 Update Student Semester Assignment")
 
-        # Get all students for semester update
-        all_students = pd.read_sql_query("""
-        SELECT id, username, full_name, semester_id 
-        FROM users 
-        WHERE role='student'
-        ORDER BY username ASC
-        """, conn)
-
+        st.subheader("🔧 Update Semester Assignment")
+        all_students = pd.read_sql_query("SELECT id, username, full_name FROM users WHERE role='student' ORDER BY username ASC", conn)
         if not all_students.empty:
-            student_update_options = {
-                "{} ({})".format(row['username'], row['full_name']): row['id']
-                for _, row in all_students.iterrows()
-            }
-            
-            col_update1, col_update2 = st.columns(2)
-            
-            with col_update1:
-                selected_student_update = st.selectbox(
-                    "Select Student",
-                    list(student_update_options.keys()),
-                    key="update_student_select"
-                )
-            
-            with col_update2:
-                sems_update = pd.read_sql_query("SELECT * FROM semesters ORDER BY name ASC", conn)
-                
-                if not sems_update.empty:
-                    new_semester = st.selectbox(
-                        "Assign to Semester",
-                        sems_update["name"].tolist(),
-                        key="update_semester_select"
-                    )
-                    
-                    if st.button("💾 Update Semester Assignment", use_container_width=True):
-                        student_id_update = student_update_options[selected_student_update]
-                        new_sem_id = int(sems_update[sems_update["name"] == new_semester]["id"].values[0])
-                        
-                        try:
-                            c.execute(
-                                "UPDATE users SET semester_id=? WHERE id=?",
-                                (int(new_sem_id), int(student_id_update))
-                            )
-                            conn.commit()
-                            
-                            st.success("✅ Student assigned to {} successfully!".format(new_semester))
-                            st.rerun()
-                            
-                        except Exception as e:
-                            st.error("Error updating: {}".format(str(e)))
-                else:
-                    st.warning("No semesters available. Please create semesters first.")
-        else:
-            st.info("No students to update.")
-    #========STUDENT PASSWORD RESET===================
+            student_map = {f"{row['username']} ({row['full_name']})": row['id'] for _, row in all_students.iterrows()}
+            c_up1, c_up2 = st.columns(2)
+            with c_up1:
+                target_student = st.selectbox("Select Student", list(student_map.keys()), key="up_stud")
+            with c_up2:
+                new_sem_list = pd.read_sql_query("SELECT id, name FROM semesters ORDER BY name ASC", conn)
+                target_sem = st.selectbox("New Semester", new_sem_list["name"], key="up_sem")
+        
+            if st.button("💾 Update Assignment", use_container_width=True):
+                new_id = int(new_sem_list[new_sem_list["name"] == target_sem]["id"].values[0])
+                c.execute("UPDATE users SET semester_id=? WHERE id=?", (new_id, student_map[target_student]))
+                conn.commit()
+                st.success("Assignment updated!")
+                st.rerun()
+
         st.divider()
+
         st.subheader("🔑 Emergency Password Reset")
-        st.info("As the administrator, you can force-reset a student's password if they get locked out.")
-
-        all_students_reset = pd.read_sql_query("""
-        SELECT id, username, full_name 
-        FROM users 
-        WHERE role='student'
-        ORDER BY username ASC
-        """, conn)
-
-        if not all_students_reset.empty:
-            reset_options = {
-                "{} ({})".format(row['username'], row['full_name']): row['id']
-                for _, row in all_students_reset.iterrows()
-            }
+        if not all_students.empty:
+            reset_map = {f"{row['username']} ({row['full_name']})": row['id'] for _, row in all_students.iterrows()}
+            c_res1, c_res2 = st.columns(2)
+            with c_res1:
+                reset_student = st.selectbox("Select Student", list(reset_map.keys()), key="res_stud")
+            with c_res2:
+                new_pw = st.text_input("New Temporary Password", type="password")
             
-            col_res1, col_res2 = st.columns(2)
-            
-            with col_res1:
-                student_to_reset = st.selectbox(
-                    "Select Student",
-                    list(reset_options.keys()),
-                    key="reset_student_select"
-                )
-            
-            with col_res2:
-                new_admin_pw = st.text_input("New Temporary Password", type="password", key="admin_new_pw")
-                
             if st.button("🚨 Force Reset Password", type="primary", use_container_width=True):
-                if len(new_admin_pw) < 6:
-                    st.error("⚠️ Password must be at least 6 characters long.")
+                if len(new_pw) < 6:
+                    st.error("Password too short.")
                 else:
-                    student_id_reset = reset_options[student_to_reset]
-                    
-                    try:
-                        c.execute(
-                            "UPDATE users SET password=? WHERE id=?",
-                            (hash_password(new_admin_pw), int(student_id_reset))
-                        )
-                        conn.commit()
-                        
-                        st.success("✅ Password for {} has been reset! You can now share this temporary password with them.".format(student_to_reset.split(' ')[0]))
-                        st.balloons()
-                    except Exception as e:
-                        st.error("Error resetting password: {}".format(str(e)))
-        else:
-            st.info("No students available to reset.")    
+                    c.execute("UPDATE users SET password=? WHERE id=?", (hash_password(new_pw), reset_map[reset_student]))
+                    conn.commit()
+                    st.success(f"Password reset for {reset_student}!")
+                    st.balloons()
     # STUDY MATERIALS
     with tabs[7]:
         
@@ -3267,18 +3837,18 @@ elif role == "student":
                     color = '#ff9800'
                     icon = '⚠️'
                 else:
-                    color = '#4CAF50'
+                    color = '#004b87'
                     icon = '📢'
                 
                 st.markdown("""
-                <div style='background-color: {}; padding: 15px; border-radius: 8px; 
-                            border-left: 5px solid {}; margin-bottom: 10px;'>
-                    <h4 style='margin:0; color: white;'>{} {}</h4>
-                    <p style='color: white; margin: 10px 0;'>{}</p>
-                    <small style='color: #f0f0f0;'>Posted by {} on {}</small>
+                <div style='background-color: #f8f9fa; padding: 15px; border-radius: 8px; 
+                            border-left: 6px solid {}; margin-bottom: 10px;'>
+                    <h4 style='margin:0; color: {};'>{} {}</h4>
+                    <p style='color: #333333; margin: 10px 0; font-size: 1.1em;'>{}</p>
+                    <small style='color: #666666;'>Posted by {} on {}</small>
                 </div>
                 """.format(
-                    color + '22', 
+                    color, 
                     color,
                     icon,
                     ann['title'],
@@ -3652,102 +4222,97 @@ elif role == "student":
                                     st.error("File not found")
                     
                     st.divider()
-    # ================= RESULTS (ACCOUNTABILITY MODE) =================
+    # ================= STUDENT RESULTS (ENHANCED ACCOUNTABILITY) =================
     with tabs[2]:
-        st.subheader("📝 My Academic Performance Record")
+        st.header("📝 My Official Internal Performance")
+        
+        # 1. Core Data Retrieval
+        student_id = int(st.session_state.user_id)
+        # Use the sem_id already defined in your student section
+        
+        # Define the Hydraulics weightages for calculations
+        hyd_scheme = {
+            'theory_full_marks': 40, 'prac_full_marks': 25,
+            't_weight_att': 0.10, 't_weight_hw': 0.25, 't_weight_other': 0.15, 
+            't_weight_mid': 0.25, 't_weight_final': 0.25,
+            'p_weight_att': 0.20, 'p_weight_perf': 0.20, 'p_weight_report': 0.20, 
+            'p_weight_test': 0.20, 'p_weight_viva': 0.20
+        }
 
-        # JOIN assignments first to ensure we see EVERY task, even those NOT submitted
-        query = """
-        SELECT 
-            subjects.name as Subject, 
-            assignments.title as Assignment, 
-            assignments.deadline as Deadline,
-            submissions.marks as Marks,
-            submissions.submission_time as Submitted_On
-        FROM assignments
-        INNER JOIN subjects ON assignments.subject_id = subjects.id
-        LEFT JOIN submissions ON assignments.id = submissions.assignment_id AND submissions.student_id = ?
-        WHERE subjects.semester_id = ?
-        ORDER BY assignments.deadline DESC
+        # 2. Display Official Internal Summary
+        st.subheader("📊 Official Internal Totals")
+        subjects = pd.read_sql_query("SELECT id, name FROM subjects WHERE semester_id=?", conn, params=(sem_id,))
+        
+        for _, sub in subjects.iterrows():
+            with st.expander(f"📘 {sub['name']} - Official Standing"):
+                # Fetch official internal marks
+                m = pd.read_sql_query("SELECT * FROM student_marks WHERE student_id=? AND subject_id=?", 
+                                     conn, params=(student_id, sub['id']))
+                
+                if m.empty:
+                    st.info("The lecturer has not finalized official internal totals for this subject yet.")
+                else:
+                    row = m.iloc[0].to_dict()
+                    t_total, t_eligible = calculate_internal_theory(row, sub['id'],conn)
+                    p_total, p_eligible = calculate_internal_practical(row, sub['id'],conn)
+                    
+                    c1, c2 = st.columns(2)
+                    with c1:
+                        st.metric("Theory Internal", f"{t_total}/40")
+                        if t_eligible: st.success("✅ Eligible (Theory)")
+                        else: st.error("❌ Ineligible (Att < 70%)")
+                    with c2:
+                        st.metric("Practical Internal", f"{p_total}/25")
+                        if p_eligible: st.success("✅ Eligible (Lab)")
+                        else: st.error("❌ Ineligible (Lab Att < 70%)")
+
+        st.divider()
+
+        # 3. Individual Assignment Breakdown (Your Original Accountability Logic)
+        st.subheader("📑 Individual Assignment Breakdown")
+        query_assignments = """
+        SELECT s.name as Subject, a.title as Assignment, a.deadline as Deadline, 
+               sub.marks as Marks, sub.submission_time as Submitted_On
+        FROM assignments a
+        INNER JOIN subjects s ON a.subject_id = s.id
+        LEFT JOIN submissions sub ON a.id = sub.assignment_id AND sub.student_id = ?
+        WHERE s.semester_id = ?
+        ORDER BY a.deadline DESC
         """
+        results_df = pd.read_sql_query(query_assignments, conn, params=(student_id, sem_id))
 
-        try:
-            student_id = int(st.session_state.user_id)
-            # Use the sem_id we calculated at the start of the student section
-            results_df = pd.read_sql_query(query, conn, params=(student_id, sem_id))
-
-            if results_df.empty:
-                st.info("📭 No assignments have been posted for your semester yet.")
-            else:
-                display_data = []
+        if not results_df.empty:
+            display_data = []
+            for _, row in results_df.iterrows():
+                deadline_date = datetime.strptime(str(row['Deadline']), '%Y-%m-%d').date()
                 current_date = datetime.now(NST).date()
-
-                for _, row in results_df.iterrows():
-                        # Parse deadline
-                        deadline_date = datetime.strptime(str(row['Deadline']), '%Y-%m-%d').date()
-                        current_date = datetime.now(NST).date()
-                    
-                        # Convert marks to a clean variable to check for empty/NaN
-                        raw_marks = row['Marks']
-                        has_marks = raw_marks is not None and str(raw_marks).lower() != 'nan' and str(raw_marks).strip() != ""
-                    
-                        status = ""
-                        score = ""
-                    
-                        # --- REFINED PRIORITY LOGIC ---
-                    
-                        # 1. Check if actually submitted first
-                        if row['Submitted_On'] is not None:
-                            if has_marks:
-                                status = "✅ Graded"
-                                score = f"{raw_marks}/10"
-                            else:
-                                status = "Pending"
-                                score = "N/A"
-                    
-                        # 2. If NOT submitted, check if the deadline has passed
-                        elif current_date > deadline_date:
-                            status = "❌ MISSED (Negligence)"
-                            score = "0/10"
-                    
-                        # 3. If NOT submitted and deadline is still in the future
-                        else:
-                            status = "📖 Open for Submission"
-                            score = "Pending"
-
-                        display_data.append({
-                            "Subject": row['Subject'],
-                            "Assignment": row['Assignment'],
-                            "Deadline": row['Deadline'],
-                            "Status": status,
-                            "Marks": score
-                        })
-
-                # Create final dataframe
-                final_df = pd.DataFrame(display_data)
                 
-                # Display to student
-                st.dataframe(
-                    final_df, 
-                    use_container_width=True, 
-                    hide_index=True
-                )
+                raw_marks = row['Marks']
+                has_marks = raw_marks is not None and str(raw_marks).strip() != ""
                 
-                # Accountability Summary
-                missed = len(final_df[final_df['Status'] == "❌ MISSED (Negligence)"])
-                if missed > 0:
-                    st.error(f"⚠️ You have **{missed}** missed assignment(s). A score of **0/10** has been recorded.")
-                
-        except Exception as e:
-            st.error("⚠️ System error loading results. Please contact Er. Nirajan Katuwal.")
+                if row['Submitted_On'] is not None:
+                    status = "✅ Graded" if has_marks else "⏳ Pending"
+                    score = f"{raw_marks}/10" if has_marks else "N/A"
+                elif current_date > deadline_date:
+                    status = "❌ MISSED"
+                    score = "0/10"
+                else:
+                    status = "📖 Open"
+                    score = "Pending"
 
+                display_data.append({
+                    "Subject": row['Subject'], "Assignment": row['Assignment'],
+                    "Deadline": row['Deadline'], "Status": status, "Marks": score
+                })
+            
+            st.dataframe(pd.DataFrame(display_data), use_container_width=True, hide_index=True)
     # ================= PROFILE & SETTINGS =================
     with tabs[3]:
         st.title("⚙️ Profile & Settings")
         
         # --- NEW EMAIL UPDATE SECTION ---
         st.subheader("📧 Update Email Address")
-        st.info("Please provide your email address to receive important platform announcements and assignment deadlines.")
+        st.info("Please provide your email address to receive important platform s and assignment deadlines.")
         
         # Get current email to display
         current_user_info = pd.read_sql_query("SELECT email FROM users WHERE id=?", conn, params=(int(st.session_state.user_id),))
