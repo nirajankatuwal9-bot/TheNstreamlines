@@ -3029,51 +3029,106 @@ if role == "lecturer":
                     
                     st.dataframe(res_t, use_container_width=True, hide_index=True)
 
-        # ================= VIEW 3: PRACTICAL LEDGER =================
+        # ================= VIEW 3: PRACTICAL LEDGER (FULL WIDTH) =================
         elif view_mode == "🧪 Practical Ledger (25 Marks)":
-            sems_grading = pd.read_sql_query("SELECT * FROM semesters ORDER BY name ASC", conn)
-            if sems_grading.empty:
+            st.markdown("## 🧪 Practical Assessment Ledger (25 Marks)")
+            
+            sems_grading_p = pd.read_sql_query("SELECT * FROM semesters ORDER BY name ASC", conn)
+            if sems_grading_p.empty:
                 st.warning("Please create a semester first.")
             else:
-                col_sel1, col_sel2 = st.columns(2)
-                with col_sel1:
-                    sel_sem_name = st.selectbox("Semester", sems_grading["name"], key="grad_sem_sel_p")
-                    sel_sem_id = int(sems_grading[sems_grading["name"] == sel_sem_name]["id"].values[0])
-                with col_sel2:
-                    subjects_grading = pd.read_sql_query("SELECT * FROM subjects WHERE semester_id=?", conn, params=(sel_sem_id,))
-                    if subjects_grading.empty:
+                # 1. Dropdowns sit at the top in clean horizontal columns
+                col_sel_p1, col_sel_p2 = st.columns(2)
+                with col_sel_p1:
+                    sel_sem_name_p = st.selectbox("Semester", sems_grading_p["name"], key="grad_sem_sel_p")
+                    sel_sem_id_p = int(sems_grading_p[sems_grading_p["name"] == sel_sem_name_p]["id"].values[0])
+                with col_sel_p2:
+                    subjects_grading_p = pd.read_sql_query("SELECT * FROM subjects WHERE semester_id=?", conn, params=(sel_sem_id_p,))
+                    if subjects_grading_p.empty:
                         st.error("No subjects found.")
+                        sel_sub_id_p = None
                     else:
-                        sel_sub_name = st.selectbox("Subject", subjects_grading["name"], key="grad_sub_sel_p")
-                        sel_sub_id = int(subjects_grading[subjects_grading["name"] == sel_sub_name]["id"].values[0])
+                        sel_sub_name_p = st.selectbox("Subject", subjects_grading_p["name"], key="grad_sub_sel_p")
+                        sel_sub_id_p = int(subjects_grading_p[subjects_grading_p["name"] == sel_sub_name_p]["id"].values[0])
 
-                        # Practical Scheme
-                        hyd_scheme = {'prac_full_marks': 25, 'p_weight_att': 0.20, 'p_weight_perf': 0.20, 'p_weight_report': 0.20, 'p_weight_test': 0.20, 'p_weight_viva': 0.20}
+                # 2. OUTSIDE the column layouts - Taking up beautiful 100% container width
+                if 'sel_sub_id_p' in locals() and sel_sub_id_p:
+                    st.divider()
+                    st.markdown("### 📊 Step 1: Input Raw Practical & Lab Scores")
+                    
+                    query_p = """
+                        SELECT u.id as student_id, u.username as Roll, u.full_name as Name,
+                        IFNULL(m.p_att_present, 0) as p_att_present,
+                        IFNULL(m.p_att_total, 12) as p_att_total,
+                        IFNULL(m.p_perf_raw, 0.0) as p_perf_raw,
+                        IFNULL(m.p_report_raw, 0.0) as p_report_raw,
+                        IFNULL(m.p_test_raw, 0.0) as p_test_raw,
+                        IFNULL(m.p_viva_raw, 0.0) as p_viva_raw
+                        FROM users u LEFT JOIN student_marks m ON u.id = m.student_id AND m.subject_id = ?
+                        WHERE u.role = 'student' AND u.semester_id = ?
+                        ORDER BY u.username ASC
+                    """
+                    df_p = pd.read_sql_query(query_p, conn, params=(sel_sub_id_p, sel_sem_id_p))
+                    
+                    # Full-Width Interactive Laboratory Data Editor
+                    edited_p = st.data_editor(
+                        df_p, 
+                        column_config={
+                            "student_id": None, 
+                            "Roll": st.column_config.TextColumn("Roll No.", disabled=True),
+                            "Name": st.column_config.TextColumn("Student Name", disabled=True),
+                            "p_att_present": st.column_config.NumberColumn("Lab Attended", min_value=0, step=1),
+                            "p_att_total": st.column_config.NumberColumn("Total Labs", min_value=1, step=1),
+                            "p_perf_raw": st.column_config.NumberColumn("Lab Performance"),
+                            "p_report_raw": st.column_config.NumberColumn("Lab Reports"),
+                            "p_test_raw": st.column_config.NumberColumn("Practical Test"),
+                            "p_viva_raw": st.column_config.NumberColumn("Viva Voce")
+                        }, 
+                        use_container_width=True, 
+                        hide_index=True, 
+                        key="practical_editor"
+                    )
 
-                        query_p = """
-                            SELECT u.id as student_id, u.full_name as Name, u.username as Roll,
-                            IFNULL(m.p_att_present, 0) as p_att_present,
-                            IFNULL(m.p_att_total, 12) as p_att_total,
-                            IFNULL(m.p_perf_raw, 0) as p_perf_raw, 
-                            IFNULL(m.p_report_raw, 0) as p_report_raw,
-                            IFNULL(m.p_test_raw, 0) as p_test_raw, 
-                            IFNULL(m.p_viva_raw, 0) as p_viva_raw
-                            FROM users u 
-                            LEFT JOIN student_marks m ON u.id = m.student_id AND m.subject_id = ?
-                            WHERE u.role = 'student' AND u.semester_id = ?
-                        """
-                        df_p = pd.read_sql_query(query_p, conn, params=(sel_sub_id, sel_sem_id))
-                        edited_p = st.data_editor(df_p, column_config={"student_id": None}, use_container_width=True, hide_index=True, key="p_editor")
+                    if st.button("💾 Synchronize Practical Marks", use_container_width=True, type="primary"):
+                        for _, r in edited_p.iterrows():
+                            c.execute("""
+                                INSERT INTO student_marks (
+                                    student_id, subject_id, p_att_present, p_att_total,
+                                    p_perf_raw, p_report_raw, p_test_raw, p_viva_raw
+                                ) VALUES (?,?,?,?,?,?,?,?)
+                                ON CONFLICT(student_id, subject_id) DO UPDATE SET 
+                                    p_att_present=excluded.p_att_present,
+                                    p_att_total=excluded.p_att_total,
+                                    p_perf_raw=excluded.p_perf_raw,
+                                    p_report_raw=excluded.p_report_raw,
+                                    p_test_raw=excluded.p_test_raw,
+                                    p_viva_raw=excluded.p_viva_raw
+                            """, (
+                                int(r['student_id']), int(sel_sub_id_p),
+                                int(r['p_att_present']), int(r['p_att_total']),
+                                float(r['p_perf_raw']), float(r['p_report_raw']),
+                                float(r['p_test_raw']), float(r['p_viva_raw'])
+                            ))
+                        conn.commit()
+                        st.success("✅ Practical lab records successfully synchronized and locked.")
+                        st.rerun()
 
-                        if st.button("💾 Synchronize Practical Marks", use_container_width=True, type="primary"):
-                            for _, r in edited_p.iterrows():
-                                c.execute("INSERT INTO student_marks (student_id, subject_id, p_att_present, p_att_total, p_perf_raw, p_report_raw, p_test_raw, p_viva_raw) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(student_id, subject_id) DO UPDATE SET p_att_present=excluded.p_att_present, p_att_total=excluded.p_att_total, p_perf_raw=excluded.p_perf_raw, p_report_raw=excluded.p_report_raw, p_test_raw=excluded.p_test_raw, p_viva_raw=excluded.p_viva_raw", (int(r['student_id']), int(sel_sub_id), int(r['p_att_present']), int(r['p_att_total']), float(r['p_perf_raw']), float(r['p_report_raw']), float(r['p_test_raw']), float(r['p_viva_raw'])))
-                            conn.commit(); st.success("Practical Saved."); st.rerun()
-
-                        st.divider(); st.subheader("🧪 Practical Totals")
-                        res_p = [{"Name": r['Name'], "Total (/25)": calculate_internal_practical(r.to_dict(), sub_id, conn)[0], "Eligibility": "✅ Eligible" if calculate_internal_practical(r.to_dict(), sub_id, conn)[1] else "❌ Ineligible"} for _, r in edited_p.iterrows()]
-                        st.table(res_p)
-       
+                    # 3. Processed Tabulation Output
+                    st.write("")
+                    st.divider()
+                    st.subheader("🧪 Step 2: Processed Practical Totals")
+                    
+                    res_p = []
+                    for _, r in edited_p.iterrows():
+                        calc_res_p = calculate_internal_practical(r.to_dict(), sel_sub_id_p, conn)
+                        res_p.append({
+                            "Roll No.": r['Roll'],
+                            "Student Name": r['Name'],
+                            "Total (/25)": f"{calc_res_p[0]:.2f}" if isinstance(calc_res_p[0], (int, float)) else calc_res_p[0],
+                            "Eligibility": "✅ Eligible" if calc_res_p[1] else "❌ Ineligible"
+                        })
+                    
+                    st.dataframe(res_p, use_container_width=True, hide_index=True)
             # ================= MANAGE STUDENTS (TABS[6]) =================
     with tabs[6]:
         st.subheader("⚠️ Emergency Fix for Existing Students")
