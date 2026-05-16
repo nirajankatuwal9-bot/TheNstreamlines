@@ -90,27 +90,16 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(0, 229, 255, 0.4), 0 0 25px rgba(213, 0, 249, 0.3) !important;
         transform: translateY(-2px);
     }
-    /* Make the Clock/Time stand out and not look faded */
-    .live-clock {
-        color: #00E5FF !important;
-        font-family: 'Oxanium', sans-serif;
-        font-weight: 700;
-        font-size: 1.2rem;
-        text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
-        background: rgba(0, 229, 255, 0.1);
-        padding: 5px 15px;
-        border-radius: 20px;
-        border: 1px solid rgba(0, 229, 255, 0.3);
-    }
+
     /* 7. Glowing Sidebar Divider */
     [data-testid="stSidebar"] {
         background-color: #05050C !important;
         border-right: 1px solid rgba(213, 0, 249, 0.2);
         box-shadow: 5px 0 20px rgba(213, 0, 249, 0.05);
     }
-   
 </style>
 """, unsafe_allow_html=True)
+# ====================================================
 
 
 # ====================================================
