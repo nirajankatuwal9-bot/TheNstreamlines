@@ -2810,130 +2810,120 @@ if role == "lecturer":
                             key="daily_attendance_grid"
                         )
 
-                        # ================= UPGRADED: DYNAMIC CSV HISTORY EXPORTER WITH PERCENTAGE =================
+                        # ================= UPGRADED: HISTORICAL DATE-BY-DATE ATTENDANCE ENGINE =================
                         st.divider()
-                        st.markdown(f"### 📥 Export Today's Tracking Sheet")
                         
-                        # 1. Dynamically switch the database query based on the Session Type selected
-                        if att_type == "📝 Theory Class":
-                            export_query = """
-                                SELECT u.username as [Roll No.], u.full_name as [Student Name],
-                                       IFNULL(m.t_att_present, 0) as [Theory Present], IFNULL(m.t_att_total, 0) as [Theory Total]
-                                FROM users u
-                                LEFT JOIN student_marks m ON u.id = m.student_id AND m.subject_id = ?
-                                WHERE u.role = 'student' AND u.semester_id = ?
-                                ORDER BY u.username ASC
-                            """
-                            file_prefix = "Theory"
-                        else:  # 🧪 Practical Lab
-                            export_query = """
-                                SELECT u.username as [Roll No.], u.full_name as [Student Name],
-                                       IFNULL(m.p_att_present, 0) as [Practical Present], IFNULL(m.p_att_total, 0) as [Practical Total]
-                                FROM users u
-                                LEFT JOIN student_marks m ON u.id = m.student_id AND m.subject_id = ?
-                                WHERE u.role = 'student' AND u.semester_id = ?
-                                ORDER BY u.username ASC
-                            """
-                            file_prefix = "Practical"
-                        
-                        export_df = pd.read_sql_query(export_query, conn, params=(sub_id, sel_sem_id))
-                        
-                        if not export_df.empty:
-                            # 2. Automatically calculate and append the Percentage column
-                            # Using a lambda function to prevent divide-by-zero errors if total classes are 0
-                            export_df['Percentage (%)'] = export_df.apply(
-                                lambda row: round((row[f'{file_prefix} Present'] / row[f'{file_prefix} Total'] * 100), 2) 
-                                if row[f'{file_prefix} Total'] > 0 else 0.0, 
-                                axis=1
+                        # 1. Initialize the historical daily log table relational framework automatically if missing
+                        c.execute("""
+                            CREATE TABLE IF NOT EXISTS attendance_logs (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                student_id INTEGER,
+                                subject_id INTEGER,
+                                log_date TEXT,
+                                session_type TEXT,
+                                status TEXT,
+                                UNIQUE(student_id, subject_id, log_date, session_type)
                             )
+                        """)
+                        conn.commit()
 
-                            # 3. Format the Current Date & Filename
+                        st.markdown(f"### 📥 Export Master Cumulative Register")
+                        session_label = "Theory" if att_type == "📝 Theory Class" else "Practical"
+                        
+                        # Fetch all historical calendar logs for this selected subject/session type combo
+                        log_data = pd.read_sql_query("""
+                            SELECT u.username as [Roll No.], u.full_name as [Student Name], l.log_date, l.status
+                            FROM attendance_logs l
+                            JOIN users u ON l.student_id = u.id
+                            WHERE l.subject_id = ? AND l.session_type = ?
+                            ORDER BY l.log_date ASC, u.username ASC
+                        """, conn, params=(sub_id, session_label))
+                        
+                        if not log_data.empty:
+                            # Use pandas pivot tool to rotate the log_date rows into horizontal Excel columns
+                            master_pivot = log_data.pivot(index=["Roll No.", "Student Name"], columns="log_date", values="status").reset_index()
+                            
+                            present_col = f"{session_label} Present"
+                            total_col = f"{session_label} Total"
+                            
+                            # Append overall metrics to the right end of the timeline dataframe
+                            master_pivot[present_col] = log_data[log_data['status'] == 'Present'].groupby('Roll No.').size().reindex(master_pivot['Roll No.'], fill_value=0).values
+                            master_pivot[total_col] = log_data.groupby('Roll No.').size().reindex(master_pivot['Roll No.'], fill_value=0).values
+                            master_pivot['Percentage (%)'] = master_pivot.apply(lambda r: round((r[present_col]/r[total_col]*100), 2) if r[total_col] > 0 else 0.0, axis=1)
+                            
+                            # Build Excel top metadata identifier info row
                             current_date_str = datetime.now(NST).strftime("%B %d, %Y")
-                            file_timestamp = datetime.now(NST).strftime("%Y%m%d")
-                            clean_filename = f"{file_prefix}_Attendance_{sel_sub_name.replace(' ', '_')}_{file_timestamp}.csv"
+                            header_info = f"Master Cumulative Register,,Generated On:,{current_date_str},Subject:,{sel_sub_name},Type:,{session_label} Log\n"
+                            spacer_row = "," * (len(master_pivot.columns) - 1) + "\n"
                             
-                            # 4. Create a custom Header Row for Excel (Date in the very first row)
-                            header_info = f"Report Date:,{current_date_str},Subject:,{sel_sub_name},Type:,{file_prefix} Record\n"
-                            spacer_row = ",,,,,\n" # Blank row to separate header from data
-                            
-                            # 5. Convert DataFrame to CSV string without the default index
-                            csv_raw = export_df.to_csv(index=False)
-                            
-                            # 6. Stitch the custom header and the data together, then encode to bytes
-                            final_csv_bytes = (header_info + spacer_row + csv_raw).encode('utf-8')
+                            csv_output = master_pivot.to_csv(index=False)
+                            final_download_bytes = (header_info + spacer_row + csv_output).encode('utf-8')
                             
                             st.download_button(
-                                label=f"📥 Download {file_prefix} Attendance Sheet",
-                                data=final_csv_bytes,
-                                file_name=clean_filename,
+                                label=f"📥 Download Complete {session_label} Date-by-Date Register",
+                                data=final_download_bytes,
+                                file_name=f"Master_{session_label}_Register_{sel_sub_name.replace(' ', '_')}.csv",
                                 mime="text/csv",
                                 use_container_width=True
                             )
-                        # ===================================================================
-                        # ===================================================================
+                        else:
+                            st.info("No historical date logs found yet for this subject. Submit a daily roll call first to begin building the timeline register.")
 
                         st.write("") # Spacer
 
-                        if st.button("🚀 Submit Today's Attendance Record", use_container_width=True, type="primary"):
+                        # 2. Upgraded Active Roll Call Submission Engine
+                        if st.button("🚀 Submit & Log Today's Attendance Record", use_container_width=True, type="primary"):
+                            today_date = datetime.now(NST).strftime("%Y-%m-%d")
+                            
                             for _, r in edited_att_df.iterrows():
                                 s_id = int(r['student_id'])
                                 
-                                # 🛡️ Safe-eval the checkbox: Handles cases where SQLite returns raw bytes or booleans
+                                # 🛡️ Safe-eval checkout logic: handles raw byte strings or simple booleans cleanly
                                 val_present = r['Present']
                                 if isinstance(val_present, bytes):
                                     is_present = 1 if b'\x01' in val_present else 0
                                 else:
                                     is_present = 1 if bool(val_present) else 0
-                                
-                                # 1. Fetch current historical numbers from student_marks table
-                                current_record = pd.read_sql_query(
-                                    "SELECT t_att_present, t_att_total, p_att_present, p_att_total FROM student_marks WHERE student_id=? AND subject_id=?",
-                                    conn, params=(s_id, sub_id)
-                                )
-                                
-                                # 🛠️ Inner helper function to intercept and sanitize byte-string formats safely
-                                def get_safe_int(df, column):
-                                    if df.empty or pd.isna(df.iloc[0][column]):
-                                        return 0
-                                    val = df.iloc[0][column]
-                                    if isinstance(val, bytes):
-                                        return 1 if b'\x01' in val else 0
-                                    return int(float(val))
-
-                                # 2. Increment based on class type selection
-                                if att_type == "📝 Theory Class":
-                                    prev_present = get_safe_int(current_record, 't_att_present')
-                                    prev_total = get_safe_int(current_record, 't_att_total')
                                     
-                                    new_present = prev_present + is_present
-                                    new_total = prev_total + 1
+                                status_str = "Present" if is_present else "Absent"
+                                
+                                # A. Write the permanent tracking entry for this specific calendar date
+                                c.execute("""
+                                    INSERT INTO attendance_logs (student_id, subject_id, log_date, session_type, status)
+                                    VALUES (?, ?, ?, ?, ?)
+                                    ON CONFLICT(student_id, subject_id, log_date, session_type) 
+                                    DO UPDATE SET status = excluded.status
+                                """, (s_id, sub_id, today_date, session_label, status_str))
+                                
+                                # B. Calculate aggregate sum totals to feed the grading ledger perfectly
+                                if session_label == "Theory":
+                                    p_count = c.execute("SELECT COUNT(*) FROM attendance_logs WHERE student_id=? AND subject_id=? AND session_type='Theory' AND status='Present'", (s_id, sub_id)).fetchone()[0]
+                                    t_count = c.execute("SELECT COUNT(*) FROM attendance_logs WHERE student_id=? AND subject_id=? AND session_type='Theory'", (s_id, sub_id)).fetchone()[0]
                                     
                                     c.execute("""
-                                        INSERT INTO student_marks (student_id, subject_id, t_att_present, t_att_total) 
+                                        INSERT INTO student_marks (student_id, subject_id, t_att_present, t_att_total)
                                         VALUES (?, ?, ?, ?)
-                                        ON CONFLICT(student_id, subject_id) DO UPDATE SET 
-                                            t_att_present = ?, t_att_total = ?
-                                    """, (s_id, sub_id, new_present, new_total, new_present, new_total))
-                                    
-                                else:  # Practical Class
-                                    prev_present = get_safe_int(current_record, 'p_att_present')
-                                    prev_total = get_safe_int(current_record, 'p_att_total')
-                                    
-                                    new_present = prev_present + is_present
-                                    new_total = prev_total + 1
+                                        ON CONFLICT(student_id, subject_id) DO UPDATE SET
+                                            t_att_present = excluded.t_att_present,
+                                            t_att_total = excluded.t_att_total
+                                    """, (s_id, sub_id, p_count, t_count))
+                                else: # Practical
+                                    p_count = c.execute("SELECT COUNT(*) FROM attendance_logs WHERE student_id=? AND subject_id=? AND session_type='Practical' AND status='Present'", (s_id, sub_id)).fetchone()[0]
+                                    t_count = c.execute("SELECT COUNT(*) FROM attendance_logs WHERE student_id=? AND subject_id=? AND session_type='Practical'", (s_id, sub_id)).fetchone()[0]
                                     
                                     c.execute("""
-                                        INSERT INTO student_marks (student_id, subject_id, p_att_present, p_att_total) 
+                                        INSERT INTO student_marks (student_id, subject_id, p_att_present, p_att_total)
                                         VALUES (?, ?, ?, ?)
-                                        ON CONFLICT(student_id, subject_id) DO UPDATE SET 
-                                            p_att_present = ?, p_att_total = ?
-                                    """, (s_id, sub_id, new_present, new_total, new_present, new_total))
+                                        ON CONFLICT(student_id, subject_id) DO UPDATE SET
+                                            p_att_present = excluded.p_att_present,
+                                            p_att_total = excluded.p_att_total
+                                    """, (s_id, sub_id, p_count, t_count))
                                     
                             conn.commit()
-                            st.success(f"✅ Attendance successfully compiled and added to cumulative ledgers!")
+                            st.success(f"✅ Attendance for {today_date} logged! Cumulative grading metrics recalculated successfully.")
                             st.balloons()
                             st.rerun()
-
+                        # ===================================================================
         # ================= VIEW 2: INTERNAL THEORY LEDGER (FULL WIDTH) =================
         elif view_mode == "📝 Internal Theory Ledger (40 Marks)":
             st.markdown("## 📝 Internal Theory Assessment Ledger (40 Marks)")
