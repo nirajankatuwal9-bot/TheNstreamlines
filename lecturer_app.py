@@ -19,13 +19,13 @@ import time
 from streamlit_autorefresh import st_autorefresh
 
 
-# ========== BEAUTIFUL REFINED CYBERPUNK UI ==========
+# ========== BEAUTIFUL REFINED CYBERPUNK UI (HIGH VISIBILITY EDITION) ==========
 st.markdown("""
 <style>
-    /* 1. Beautiful Sci-Fi Fonts: 'Oxanium' for sleek headers, 'Space Grotesk' for clean data */
+    /* 1. Beautiful Sci-Fi Fonts */
     @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@500;700&family=Space+Grotesk:wght@400;500;600&display=swap');
 
-    /* 2. Deep Void Background with Subtle Ambient Glows */
+    /* 2. Deep Void Background */
     .stApp {
         background-color: #060612 !important;
         background-image: 
@@ -33,44 +33,76 @@ st.markdown("""
             radial-gradient(circle at 90% 80%, rgba(0, 229, 255, 0.05), transparent 40%) !important;
     }
 
-    /* 3. Base Text - Super clean, modern tech font */
-    html, body, [class*="css"] {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 1.05em;
-        color: #C1D5EE !important; /* Soft ice-blue for perfect readability */
+    /* 3. Force Global Text, Labels, and Inactive Radio Options to be Fully Visible */
+    html, body, span, p, label, 
+    [data-testid="stWidgetLabel"], 
+    [data-testid="stMarkdownContainer"] p,
+    [data-testid="stRadio"] label span {
+        font-family: 'Space Grotesk', sans-serif !important;
+        color: #E2EFFF !important; /* Crisp, bright soft ice-white */
+        font-size: 1.02rem !important;
     }
 
-    /* 4. Beautiful, Resized Glowing Headers */
+    /* 4. Beautiful Resized Glowing Headers */
     h1, h2, h3, h4 {
         font-family: 'Oxanium', sans-serif !important;
         color: #00E5FF !important; /* Neon Cyan */
-        /* Multi-layered soft glow for a "beautiful" neon effect */
         text-shadow: 0 0 8px rgba(0, 229, 255, 0.5), 0 0 15px rgba(0, 229, 255, 0.3); 
         letter-spacing: 1.2px;
         font-weight: 700;
     }
-    
-    /* Explicitly scaling down the header sizes so they look elegant, not clunky */
     h1 { font-size: 2.2rem !important; margin-bottom: 1rem !important; }
     h2 { font-size: 1.7rem !important; margin-bottom: 0.8rem !important; }
     h3 { font-size: 1.3rem !important; margin-bottom: 0.5rem !important; }
 
-    /* 5. Sleek Dark Glass Inputs with Cyan Focus */
-    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div {
-        background-color: rgba(10, 15, 30, 0.8) !important;
-        color: #00E5FF !important;
-        border: 1px solid rgba(213, 0, 249, 0.4) !important; /* Soft Purple Border */
-        border-radius: 6px !important;
-        font-family: 'Space Grotesk', sans-serif;
-        transition: all 0.3s ease;
-    }
-    
-    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
-        border-color: #00E5FF !important;
-        box-shadow: 0 0 12px rgba(0, 229, 255, 0.3) !important;
+    /* 5. Fix Top Navigation Tabs (Remove Red Line & Add Cyan Hover Glow) */
+    button[data-baseweb="tab"] {
+        color: #C1D5EE !important; /* Clear visibility for inactive tabs */
+        font-family: 'Space Grotesk', sans-serif !important;
+        background: transparent !important;
+        border: none !important;
+        transition: all 0.3s ease !important;
     }
 
-    /* 6. Refined Multi-Color Neon Buttons */
+    /* Target the text container inside the tab button directly */
+    button[data-baseweb="tab"] div {
+        color: inherit !important;
+    }
+
+    /* Hover State: Make tabs glow cyan when mouse moves over them */
+    button[data-baseweb="tab"]:hover {
+        color: #00E5FF !important;
+        text-shadow: 0 0 10px rgba(0, 229, 255, 0.8) !important;
+        cursor: pointer;
+    }
+
+    /* Active Selected Tab: Replace default red highlight bar with Neon Cyan line */
+    button[aria-selected="true"] {
+        color: #00E5FF !important;
+        border-bottom: 2px solid #00E5FF !important;
+        text-shadow: 0 0 8px rgba(0, 229, 255, 0.5) !important;
+    }
+    
+    /* Suppress default Streamlit indicator lines that cause the red color bleed */
+    [data-testid="stTabs"] div[role="tablist"] div {
+        background-color: transparent !important;
+    }
+
+    /* 6. Sleek Dark Glass Input Dropdowns & Text Boxes */
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div {
+        background-color: rgba(10, 15, 30, 0.9) !important;
+        color: #00E5FF !important; /* Active selected text is cyan */
+        border: 1px solid rgba(0, 229, 255, 0.4) !important; /* Cyan borders */
+        border-radius: 6px !important;
+        font-family: 'Space Grotesk', sans-serif;
+    }
+
+    /* Force option text dropdown items to be clearly readable */
+    div[data-baseweb="select"] * {
+        color: #00E5FF !important;
+    }
+
+    /* 7. Refined Multi-Color Neon Action Buttons */
     .stButton>button {
         background: rgba(6, 6, 18, 0.8) !important;
         border: 1px solid transparent !important;
@@ -81,33 +113,31 @@ st.markdown("""
         letter-spacing: 1px;
         transition: all 0.3s ease-in-out;
     }
-
-    /* Stunning bright hover effect */
     .stButton>button:hover {
         background: linear-gradient(90deg, rgba(0, 229, 255, 0.2), rgba(213, 0, 249, 0.2)) !important;
         color: #00E5FF !important;
         box-shadow: 0 0 15px rgba(0, 229, 255, 0.4), 0 0 25px rgba(213, 0, 249, 0.3) !important;
         transform: translateY(-2px);
     }
-    /* Make the Clock/Time stand out and not look faded */
-    .live-clock {
+
+    /* 8. Sidebar Clock Styling */
+    .sidebar-clock {
+        background: rgba(0, 229, 255, 0.05);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        border-radius: 10px;
+        padding: 12px;
         color: #00E5FF !important;
         font-family: 'Oxanium', sans-serif;
         font-weight: 700;
-        font-size: 1.2rem;
-        text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
-        background: rgba(0, 229, 255, 0.1);
-        padding: 5px 15px;
-        border-radius: 20px;
-        border: 1px solid rgba(0, 229, 255, 0.3);
+        font-size: 1.1rem;
+        text-align: center;
+        text-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
+        margin-bottom: 15px;
     }
-    /* 7. Glowing Sidebar Divider */
     [data-testid="stSidebar"] {
         background-color: #05050C !important;
         border-right: 1px solid rgba(213, 0, 249, 0.2);
-        box-shadow: 5px 0 20px rgba(213, 0, 249, 0.05);
     }
-    
 </style>
 """, unsafe_allow_html=True)
 
