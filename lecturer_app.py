@@ -2871,10 +2871,20 @@ if role == "lecturer":
 
                         st.write("") # Spacer
 
-                        # 2. Upgraded Active Roll Call Submission Engine
-                        if st.button("🚀 Submit & Log Today's Attendance Record", use_container_width=True, type="primary"):
-                            today_date = datetime.now(NST).strftime("%Y-%m-%d")
-                            
+                        # ================= UPGRADED: CHOOSE DATE FOR ANY CLASS =================
+                        st.write("") # Spacer
+                        
+                        # Freedom to pick any date (Defaults to today, but lets you backdate easily)
+                        chosen_date = st.date_input(
+                            "📅 Select Class/Lab Date for this Roll Call:", 
+                            value=datetime.now(NST).date(),
+                            key="attendance_calendar_picker"
+                        )
+                        
+                        # Convert the chosen date object to string format for database entries
+                        target_date_str = chosen_date.strftime("%Y-%m-%d")
+
+                        if st.button(f"🚀 Submit & Log Attendance for {target_date_str}", use_container_width=True, type="primary"):
                             for _, r in edited_att_df.iterrows():
                                 s_id = int(r['student_id'])
                                 
@@ -2887,13 +2897,13 @@ if role == "lecturer":
                                     
                                 status_str = "Present" if is_present else "Absent"
                                 
-                                # A. Write the permanent tracking entry for this specific calendar date
+                                # A. Write the entry for the SELECTED calendar date instead of forcing today's automatic date
                                 c.execute("""
                                     INSERT INTO attendance_logs (student_id, subject_id, log_date, session_type, status)
                                     VALUES (?, ?, ?, ?, ?)
                                     ON CONFLICT(student_id, subject_id, log_date, session_type) 
                                     DO UPDATE SET status = excluded.status
-                                """, (s_id, sub_id, today_date, session_label, status_str))
+                                """, (s_id, sub_id, target_date_str, session_label, status_str))
                                 
                                 # B. Calculate aggregate sum totals to feed the grading ledger perfectly
                                 if session_label == "Theory":
@@ -2920,9 +2930,10 @@ if role == "lecturer":
                                     """, (s_id, sub_id, p_count, t_count))
                                     
                             conn.commit()
-                            st.success(f"✅ Attendance for {today_date} logged! Cumulative grading metrics recalculated successfully.")
+                            st.success(f"✅ Attendance for {target_date_str} logged! Cumulative grading metrics recalculated successfully.")
                             st.balloons()
                             st.rerun()
+                        # ===================================================================
                         # ===================================================================
         # ================= VIEW 2: INTERNAL THEORY LEDGER (FULL WIDTH) =================
         elif view_mode == "📝 Internal Theory Ledger (40 Marks)":
