@@ -4438,20 +4438,35 @@ elif role == "student":
                     st.info("The lecturer has not finalized official internal totals for this subject yet.")
                 else:
                     row = m.iloc[0].to_dict()
-                    t_total, t_eligible = calculate_internal_theory(row, sub['id'],conn)
-                    p_total, p_eligible = calculate_internal_practical(row, sub['id'],conn)
+                    t_total, t_eligible = calculate_internal_theory(row, sub['id'], conn)
+                    p_total, p_eligible = calculate_internal_practical(row, sub['id'], conn)
                     
+                    # Calculate attendance percentages for display
+                    t_pct = round((row['t_att_present'] / row['t_att_total'] * 100), 1) if row['t_att_total'] > 0 else 0.0
+                    p_pct = round((row['p_att_present'] / row['p_att_total'] * 100), 1) if row['p_att_total'] > 0 else 0.0
+
                     c1, c2 = st.columns(2)
                     with c1:
-                        st.metric("Theory Internal", f"{t_total}/40")
-                        if t_eligible: st.success("✅ Eligible (Theory)")
-                        else: st.error("❌ Ineligible (Att < 70%)")
+                        st.markdown("#### 📝 Theory Evaluation")
+                        st.metric("Theory Internal Mark", f"{t_total} / 40")
+                        # Explicit Attendance Count Display
+                        st.markdown(f"**Lecture Attendance:** `{row['t_att_present']}` / `{row['t_att_total']}` classes ({t_pct}%)")
+                        
+                        if t_eligible: 
+                            st.success("✅ Eligible (Theory)")
+                        else: 
+                            st.error("❌ Ineligible (Attendance < 70%)")
+                            
                     with c2:
-                        st.metric("Practical Internal", f"{p_total}/25")
-                        if p_eligible: st.success("✅ Eligible (Lab)")
-                        else: st.error("❌ Ineligible (Lab Att < 70%)")
-
-        st.divider()
+                        st.markdown("#### 🧪 Practical Evaluation")
+                        st.metric("Practical Internal Mark", f"{p_total} / 25")
+                        # Explicit Attendance Count Display
+                        st.markdown(f"**Laboratory Attendance:** `{row['p_att_present']}` / `{row['p_att_total']}` labs ({p_pct}%)")
+                        
+                        if p_eligible: 
+                            st.success("✅ Eligible (Lab)")
+                        else: 
+                            st.error("❌ Ineligible (Lab Attendance < 70%)")
 
         # 3. Individual Assignment Breakdown (Your Original Accountability Logic)
         st.subheader("📑 Individual Assignment Breakdown")
