@@ -2810,33 +2810,66 @@ if role == "lecturer":
                             key="daily_attendance_grid"
                         )
 
-                        # ================= EXCEL/CSV HISTORY EXPORTER =================
+                        # ================= UPGRADED: DYNAMIC CSV HISTORY EXPORTER WITH PERCENTAGE =================
                         st.divider()
-                        st.markdown("### 📥 Export Attendance History")
+                        st.markdown(f"### 📥 Export Today's Tracking Sheet")
                         
-                        export_query = """
-                            SELECT u.username as [Roll No.], u.full_name as [Student Name],
-                                   IFNULL(m.t_att_present, 0) as [Theory Present], IFNULL(m.t_att_total, 0) as [Theory Total],
-                                   IFNULL(m.p_att_present, 0) as [Practical Present], IFNULL(m.p_att_total, 0) as [Practical Total]
-                            FROM users u
-                            LEFT JOIN student_marks m ON u.id = m.student_id AND m.subject_id = ?
-                            WHERE u.role = 'student' AND u.semester_id = ?
-                            ORDER BY u.username ASC
-                        """
+                        # 1. Dynamically switch the database query based on the Session Type selected
+                        if att_type == "📝 Theory Class":
+                            export_query = """
+                                SELECT u.username as [Roll No.], u.full_name as [Student Name],
+                                       IFNULL(m.t_att_present, 0) as [Theory Present], IFNULL(m.t_att_total, 0) as [Theory Total]
+                                FROM users u
+                                LEFT JOIN student_marks m ON u.id = m.student_id AND m.subject_id = ?
+                                WHERE u.role = 'student' AND u.semester_id = ?
+                                ORDER BY u.username ASC
+                            """
+                            file_prefix = "Theory"
+                        else:  # 🧪 Practical Lab
+                            export_query = """
+                                SELECT u.username as [Roll No.], u.full_name as [Student Name],
+                                       IFNULL(m.p_att_present, 0) as [Practical Present], IFNULL(m.p_att_total, 0) as [Practical Total]
+                                FROM users u
+                                LEFT JOIN student_marks m ON u.id = m.student_id AND m.subject_id = ?
+                                WHERE u.role = 'student' AND u.semester_id = ?
+                                ORDER BY u.username ASC
+                            """
+                            file_prefix = "Practical"
+                        
                         export_df = pd.read_sql_query(export_query, conn, params=(sub_id, sel_sem_id))
                         
                         if not export_df.empty:
+                            # 2. Automatically calculate and append the Percentage column
+                            # Using a lambda function to prevent divide-by-zero errors if total classes are 0
+                            export_df['Percentage (%)'] = export_df.apply(
+                                lambda row: round((row[f'{file_prefix} Present'] / row[f'{file_prefix} Total'] * 100), 2) 
+                                if row[f'{file_prefix} Total'] > 0 else 0.0, 
+                                axis=1
+                            )
+
+                            # 3. Format the Current Date & Filename
+                            current_date_str = datetime.now(NST).strftime("%B %d, %Y")
                             file_timestamp = datetime.now(NST).strftime("%Y%m%d")
-                            clean_filename = f"Attendance_{sel_sub_name.replace(' ', '_')}_{file_timestamp}.csv"
-                            csv_buffer = export_df.to_csv(index=False).encode('utf-8')
+                            clean_filename = f"{file_prefix}_Attendance_{sel_sub_name.replace(' ', '_')}_{file_timestamp}.csv"
+                            
+                            # 4. Create a custom Header Row for Excel (Date in the very first row)
+                            header_info = f"Report Date:,{current_date_str},Subject:,{sel_sub_name},Type:,{file_prefix} Record\n"
+                            spacer_row = ",,,,,\n" # Blank row to separate header from data
+                            
+                            # 5. Convert DataFrame to CSV string without the default index
+                            csv_raw = export_df.to_csv(index=False)
+                            
+                            # 6. Stitch the custom header and the data together, then encode to bytes
+                            final_csv_bytes = (header_info + spacer_row + csv_raw).encode('utf-8')
                             
                             st.download_button(
-                                label="📥 Download Current Attendance Sheet (Excel/CSV Compatible)",
-                                data=csv_buffer,
+                                label=f"📥 Download {file_prefix} Attendance Sheet",
+                                data=final_csv_bytes,
                                 file_name=clean_filename,
                                 mime="text/csv",
                                 use_container_width=True
                             )
+                        # ===================================================================
                         # ===================================================================
 
                         st.write("") # Spacer
