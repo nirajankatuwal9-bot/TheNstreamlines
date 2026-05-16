@@ -18,13 +18,11 @@ from email.mime.multipart import MIMEMultipart
 import time 
 from streamlit_autorefresh import st_autorefresh
 
-
-
 # ========== BEAUTIFUL REFINED CYBERPUNK UI ==========
 st.markdown("""
 <style>
     /* 1. Beautiful Sci-Fi Fonts: 'Oxanium' for sleek headers, 'Space Grotesk' for clean data */
-    @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@500;700&family=Space+Grotesk:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght=500;700&family=Space+Grotesk:wght=400;500;600&display=swap');
 
     /* 2. Deep Void Background with Subtle Ambient Glows */
     .stApp {
@@ -34,9 +32,13 @@ st.markdown("""
             radial-gradient(circle at 90% 80%, rgba(0, 229, 255, 0.05), transparent 40%) !important;
     }
 
-    /* 3. Base Text - Super clean, modern tech font */
-    html, body, [class*="css"] {
-        font-family: 'Space Grotesk', sans-serif;
+    /* 3. Base Text & Explicit Widget Label Overrides for High Visibility */
+    html, body, [class*="css"], 
+    [data-testid="stWidgetLabel"], 
+    [data-testid="stMarkdownContainer"] p,
+    [data-testid="stRadio"] label span,
+    span p, label {
+        font-family: 'Space Grotesk', sans-serif !important;
         font-size: 1.05em;
         color: #C1D5EE !important; /* Soft ice-blue for perfect readability */
     }
@@ -71,6 +73,11 @@ st.markdown("""
         box-shadow: 0 0 12px rgba(0, 229, 255, 0.3) !important;
     }
 
+    /* Ensure dropdown popover lists inherit the proper readable cyan values */
+    div[data-baseweb="select"] * {
+        color: #00E5FF !important;
+    }
+
     /* 6. Refined Multi-Color Neon Buttons */
     .stButton>button {
         background: rgba(6, 6, 18, 0.8) !important;
@@ -90,6 +97,7 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(0, 229, 255, 0.4), 0 0 25px rgba(213, 0, 249, 0.3) !important;
         transform: translateY(-2px);
     }
+
     /* Make the Clock/Time stand out and not look faded */
     .live-clock {
         color: #00E5FF !important;
@@ -102,20 +110,64 @@ st.markdown("""
         border-radius: 20px;
         border: 1px solid rgba(0, 229, 255, 0.3);
     }
+
     /* 7. Glowing Sidebar Divider */
     [data-testid="stSidebar"] {
         background-color: #05050C !important;
         border-right: 1px solid rgba(213, 0, 249, 0.2);
         box-shadow: 5px 0 20px rgba(213, 0, 249, 0.05);
     }
-    
+
+    /* 8. Refined Global Top Navigation Tabs (No Red Line + Smooth Hover Cyan Glow) */
+    button[data-baseweb="tab"] {
+        color: #A1B5CC !important; /* Clearly readable gray-blue text for inactive tabs */
+        font-family: 'Space Grotesk', sans-serif !important;
+        background: transparent !important;
+        border: none !important;
+        transition: all 0.25s ease-in-out !important;
+    }
+
+    button[data-baseweb="tab"] div {
+        color: inherit !important;
+    }
+
+    /* Hover Glow State */
+    button[data-baseweb="tab"]:hover {
+        color: #00E5FF !important;
+        text-shadow: 0 0 10px rgba(0, 229, 255, 0.6) !important;
+        cursor: pointer;
+    }
+
+    /* Selected Tab State - Neon Cyan Underline replacing default red border */
+    button[aria-selected="true"] {
+        color: #00E5FF !important;
+        border-bottom: 2px solid #00E5FF !important;
+        text-shadow: 0 0 8px rgba(0, 229, 255, 0.4) !important;
+    }
+
+    /* Suppress original red line indicators */
+    [data-testid="stTabs"] div[role="tablist"] div {
+        background-color: transparent !important;
+    }
+
+    /* 9. Sidebar Clock Container Panel */
+    .sidebar-clock {
+        background: rgba(0, 229, 255, 0.05);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        border-radius: 10px;
+        padding: 12px;
+        color: #00E5FF !important;
+        font-family: 'Oxanium', sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        text-align: center;
+        text-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
+        margin-bottom: 15px;
+    }
 </style>
 """, unsafe_allow_html=True)
-# ===================================================
-# =====================================================
-# ===================================================
-# ===================================================
-# ====================================================
+
+
 
 
 # ====================================================
