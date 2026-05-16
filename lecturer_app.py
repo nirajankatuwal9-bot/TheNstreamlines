@@ -41,13 +41,13 @@ st.markdown("""
         color: #C1D5EE !important; /* Soft ice-blue for perfect readability */
     }
 
-    /* 4. Beautiful, Resized Glowing Headers */
-    h1, h2, h3, h4 {
-        font-family: 'Oxanium', sans-serif !important;
-        color: #00E5FF !important; /* Neon Cyan */
-        /* Multi-layered soft glow for a "beautiful" neon effect */
-        text-shadow: 0 0 8px rgba(0, 229, 255, 0.5), 0 0 15px rgba(0, 229, 255, 0.3); 
-        letter-spacing: 1.2px;
+    /* 4. Rich Gradient Headers (Icy Aurora) */
+    h1, h2, h3 {
+        font-family: 'Outfit', sans-serif !important;
+        background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 50%, #02AAB0 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.5px;
         font-weight: 700;
     }
     
