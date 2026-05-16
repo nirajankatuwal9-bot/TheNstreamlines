@@ -20,73 +20,86 @@ from streamlit_autorefresh import st_autorefresh
 
 
 
-# ========== ULTRA-FUTURISTIC CYBERPUNK UI ==========
+# ========== PREMIUM AURORA GLASSMORPHISM UI ==========
 st.markdown("""
 <style>
-    /* 1. Sleeker, narrower Sci-Fi Fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Titillium+Web:wght@400;600&display=swap');
+    /* 1. Import Ultra-Premium Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
 
-    /* 2. Base App Background with Ambient Color Orbs */
+    /* 2. Deep Midnight Background with Soft Aurora Glows */
     .stApp {
-        background-color: #050510 !important; /* Deepest void black */
+        background-color: #0A0A14 !important;
         background-image: 
-            radial-gradient(circle at 15% 50%, rgba(185, 0, 255, 0.08), transparent 30%),
-            radial-gradient(circle at 85% 30%, rgba(0, 229, 255, 0.08), transparent 30%) !important;
+            radial-gradient(circle at 15% 20%, rgba(120, 40, 200, 0.15) 0%, transparent 40%),
+            radial-gradient(circle at 85% 80%, rgba(220, 140, 40, 0.12) 0%, transparent 40%),
+            radial-gradient(circle at 50% 50%, rgba(0, 100, 200, 0.1) 0%, transparent 50%) !important;
     }
 
-    /* 3. Apply Titillium Web to body text (Crisp, modern, less wide) */
+    /* 3. Base Text - Clean, highly legible Apple-style font */
     html, body, [class*="css"] {
-        font-family: 'Titillium Web', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 1.05em;
-        color: #E0F7FA !important;
+        color: #E2E8F0 !important;
     }
 
-    /* 4. Apply Chakra Petch to Headers (Sleek tech look, not overly wide) */
+    /* 4. Rich Gradient Headers (Gold/Rose Gold/Coral) */
     h1, h2, h3 {
-        font-family: 'Chakra Petch', sans-serif !important;
-        color: #00E5FF !important;
-        text-shadow: 0 0 15px rgba(0, 229, 255, 0.5); /* Cyan Glow */
-        letter-spacing: 0.5px;
+        font-family: 'Outfit', sans-serif !important;
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF6347 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.5px;
+        font-weight: 700;
     }
 
-    /* 5. Cyber-Inputs with Purple/Cyan Gradient Borders */
-    .stTextInput>div>div>input {
-        background-color: rgba(10, 15, 30, 0.7) !important;
-        color: #00E5FF !important;
-        border: 1px solid #B900FF !important; /* Purple Border */
-        box-shadow: inset 0 0 8px rgba(185, 0, 255, 0.2), 0 0 10px rgba(0, 229, 255, 0.1) !important;
-        border-radius: 4px;
-        font-family: 'Titillium Web', sans-serif;
-    }
-
-    /* 6. Multi-Color Neon Buttons */
-    .stButton>button {
-        background: rgba(5, 5, 16, 0.6) !important;
-        border: 1px solid transparent !important;
-        border-image: linear-gradient(45deg, #00E5FF, #B900FF) 1 !important; /* Gradient Border! */
+    /* 5. Frosted Glass Inputs (High-End Luxury Feel) */
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        backdrop-filter: blur(12px) !important;
         color: #FFFFFF !important;
-        box-shadow: 0 0 15px rgba(185, 0, 255, 0.2);
-        font-family: 'Chakra Petch', sans-serif !important;
-        letter-spacing: 1px;
-        transition: all 0.3s ease-in-out;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
     }
 
-    /* 7. Insane Hover Effect for Buttons */
+    /* Input focus glow */
+    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
+        border-color: rgba(220, 140, 40, 0.5) !important;
+        box-shadow: 0 0 15px rgba(220, 140, 40, 0.1);
+    }
+
+    /* 6. Premium "Liquid Violet" Buttons */
+    .stButton>button {
+        background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: #FFFFFF !important;
+        border-radius: 8px !important;
+        padding: 0.6rem 1.2rem;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3) !important;
+        transition: all 0.3s ease !important;
+    }
+
+    /* Smooth lift and glow on hover */
     .stButton>button:hover {
-        background: linear-gradient(45deg, rgba(0, 229, 255, 0.15), rgba(185, 0, 255, 0.15)) !important;
-        color: #00E5FF !important;
-        box-shadow: 0 0 20px rgba(0, 229, 255, 0.6), 0 0 30px rgba(185, 0, 255, 0.4) !important;
         transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(118, 75, 162, 0.5) !important;
+        filter: brightness(1.1);
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
     }
 
-    /* 8. Glowing Sidebar Divider */
+    /* 7. Frosted Glass Sidebar */
     [data-testid="stSidebar"] {
-        background-color: #04040A !important;
-        border-right: 1px solid rgba(185, 0, 255, 0.3);
-        box-shadow: 5px 0 15px rgba(185, 0, 255, 0.05);
+        background: rgba(10, 10, 20, 0.6) !important;
+        backdrop-filter: blur(20px) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
     }
 </style>
 """, unsafe_allow_html=True)
+# =====================================================
 # ===================================================
 # ===================================================
 # ====================================================
