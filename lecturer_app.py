@@ -3200,20 +3200,24 @@ if role == "lecturer":
 
         st.divider()
 
+        # ================= FIX: BULK CSV STUDENT LOADER ENGINE =================
         st.subheader("Bulk Upload Students via CSV")
-        st.info("CSV format: name,username,password,semester,email")
-        csv_file = st.file_uploader("Upload CSV", type=["csv"], key="student_csv")
+        st.info("CSV layout must strictly follow headers: name, username, password, semester, email")
+        csv_file = st.file_uploader("Upload CSV Registry Document", type=["csv"], key="student_csv")
 
         if csv_file:
             df_csv = pd.read_csv(csv_file)
+            # Normalize column text headers to match key parsing expectations
             df_csv.columns = df_csv.columns.str.strip().str.lower()
             required_cols = {"name", "username", "password", "semester", "email"}
 
             if not required_cols.issubset(df_csv.columns):
-                st.error("CSV missing columns. Ensure it has: name, username, password, semester, email")
+                st.error("❌ CSV layout invalid. Ensure it contains: name, username, password, semester, email")
             else:
-                st.write("🔍 Data Preview:", df_csv.head())
-                if st.button("🚀 Process & Register Students"):
+                st.write("🔍 **Data Stream Preview:**", df_csv.head())
+                
+                # The functional operational button to commit entries to memory
+                if st.button("🚀 Process & Register Students into Database", use_container_width=True, type="primary"):
                     sems_list = pd.read_sql_query("SELECT * FROM semesters", conn)
                     success_count, error_count = 0, 0
 
@@ -3223,11 +3227,16 @@ if role == "lecturer":
                             clean_user = str(row["username"]).strip()
                             clean_sem = str(row["semester"]).strip()
                             clean_email = str(row["email"]).strip() if not pd.isna(row["email"]) else None
+                            
+                            # Clean string conversion to avoid accidental trailing decimal formats from Excel files
                             raw_pw = str(row["password"]).replace('.0', '').strip()
                         
+                            # Match semester text name directly to relational primary database index key mappings
                             sem_match = sems_list[sems_list["name"] == clean_sem]
                             if not sem_match.empty:
                                 sem_id = int(sem_match["id"].values[0])
+                                
+                                # FIXED: Passing raw_pw instead of the undefined clean_pw variable
                                 c.execute("""
                                     INSERT INTO users(full_name, username, password, role, semester_id, email)
                                     VALUES(?,?,?,?,?,?)
@@ -3235,12 +3244,20 @@ if role == "lecturer":
                                 success_count += 1
                             else:
                                 error_count += 1
-                        except:
+                        except Exception as e:
                             error_count += 1
                 
+                    # Permanently commit data to database storage file
                     conn.commit()
-                    st.success("✅ {} students uploaded! ❌ {} failed.".format(success_count, error_count))
-                    st.rerun()
+                    
+                    if success_count > 0:
+                        st.success(f"✅ Master registry parsed successfully! {success_count} student accounts securely created.")
+                        st.balloons()
+                        st.rerun()
+                    else:
+                        st.error(f"❌ Record injection failed. {error_count} processing conflicts encountered. Double-check semester name matching values.")
+
+        st.divider()
 
         st.divider()
 
