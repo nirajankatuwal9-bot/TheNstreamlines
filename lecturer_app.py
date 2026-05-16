@@ -20,71 +20,95 @@ from streamlit_autorefresh import st_autorefresh
 
 
 
-# ========== ULTRA-FUTURISTIC CYBERPUNK UI ==========
+# ========== BEAUTIFUL REFINED CYBERPUNK UI ==========
 st.markdown("""
 <style>
-    /* 1. Sleeker, narrower Sci-Fi Fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Titillium+Web:wght@400;600&display=swap');
+    /* 1. Beautiful Sci-Fi Fonts: 'Oxanium' for sleek headers, 'Space Grotesk' for clean data */
+    @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@500;700&family=Space+Grotesk:wght@400;500;600&display=swap');
 
-    /* 2. Base App Background with Ambient Color Orbs */
+    /* 2. Deep Void Background with Subtle Ambient Glows */
     .stApp {
-        background-color: #050510 !important; /* Deepest void black */
+        background-color: #060612 !important;
         background-image: 
-            radial-gradient(circle at 15% 50%, rgba(185, 0, 255, 0.08), transparent 30%),
-            radial-gradient(circle at 85% 30%, rgba(0, 229, 255, 0.08), transparent 30%) !important;
+            radial-gradient(circle at 10% 20%, rgba(213, 0, 249, 0.05), transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(0, 229, 255, 0.05), transparent 40%) !important;
     }
 
-    /* 3. Apply Titillium Web to body text (Crisp, modern, less wide) */
+    /* 3. Base Text - Super clean, modern tech font */
     html, body, [class*="css"] {
-        font-family: 'Titillium Web', sans-serif;
+        font-family: 'Space Grotesk', sans-serif;
         font-size: 1.05em;
-        color: #E0F7FA !important;
+        color: #C1D5EE !important; /* Soft ice-blue for perfect readability */
     }
 
-    /* 4. Apply Chakra Petch to Headers (Sleek tech look, not overly wide) */
-    h1, h2, h3 {
-        font-family: 'Chakra Petch', sans-serif !important;
+    /* 4. Beautiful, Resized Glowing Headers */
+    h1, h2, h3, h4 {
+        font-family: 'Oxanium', sans-serif !important;
+        color: #00E5FF !important; /* Neon Cyan */
+        /* Multi-layered soft glow for a "beautiful" neon effect */
+        text-shadow: 0 0 8px rgba(0, 229, 255, 0.5), 0 0 15px rgba(0, 229, 255, 0.3); 
+        letter-spacing: 1.2px;
+        font-weight: 700;
+    }
+    
+    /* Explicitly scaling down the header sizes so they look elegant, not clunky */
+    h1 { font-size: 2.2rem !important; margin-bottom: 1rem !important; }
+    h2 { font-size: 1.7rem !important; margin-bottom: 0.8rem !important; }
+    h3 { font-size: 1.3rem !important; margin-bottom: 0.5rem !important; }
+
+    /* 5. Sleek Dark Glass Inputs with Cyan Focus */
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div {
+        background-color: rgba(10, 15, 30, 0.8) !important;
         color: #00E5FF !important;
-        text-shadow: 0 0 15px rgba(0, 229, 255, 0.5); /* Cyan Glow */
-        letter-spacing: 0.5px;
+        border: 1px solid rgba(213, 0, 249, 0.4) !important; /* Soft Purple Border */
+        border-radius: 6px !important;
+        font-family: 'Space Grotesk', sans-serif;
+        transition: all 0.3s ease;
+    }
+    
+    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
+        border-color: #00E5FF !important;
+        box-shadow: 0 0 12px rgba(0, 229, 255, 0.3) !important;
     }
 
-    /* 5. Cyber-Inputs with Purple/Cyan Gradient Borders */
-    .stTextInput>div>div>input {
-        background-color: rgba(10, 15, 30, 0.7) !important;
-        color: #00E5FF !important;
-        border: 1px solid #B900FF !important; /* Purple Border */
-        box-shadow: inset 0 0 8px rgba(185, 0, 255, 0.2), 0 0 10px rgba(0, 229, 255, 0.1) !important;
-        border-radius: 4px;
-        font-family: 'Titillium Web', sans-serif;
-    }
-
-    /* 6. Multi-Color Neon Buttons */
+    /* 6. Refined Multi-Color Neon Buttons */
     .stButton>button {
-        background: rgba(5, 5, 16, 0.6) !important;
+        background: rgba(6, 6, 18, 0.8) !important;
         border: 1px solid transparent !important;
-        border-image: linear-gradient(45deg, #00E5FF, #B900FF) 1 !important; /* Gradient Border! */
+        border-image: linear-gradient(90deg, #00E5FF, #D500F9) 1 !important;
         color: #FFFFFF !important;
-        box-shadow: 0 0 15px rgba(185, 0, 255, 0.2);
-        font-family: 'Chakra Petch', sans-serif !important;
+        font-family: 'Oxanium', sans-serif !important;
+        font-size: 1.1rem !important;
         letter-spacing: 1px;
         transition: all 0.3s ease-in-out;
     }
 
-    /* 7. Insane Hover Effect for Buttons */
+    /* Stunning bright hover effect */
     .stButton>button:hover {
-        background: linear-gradient(45deg, rgba(0, 229, 255, 0.15), rgba(185, 0, 255, 0.15)) !important;
+        background: linear-gradient(90deg, rgba(0, 229, 255, 0.2), rgba(213, 0, 249, 0.2)) !important;
         color: #00E5FF !important;
-        box-shadow: 0 0 20px rgba(0, 229, 255, 0.6), 0 0 30px rgba(185, 0, 255, 0.4) !important;
+        box-shadow: 0 0 15px rgba(0, 229, 255, 0.4), 0 0 25px rgba(213, 0, 249, 0.3) !important;
         transform: translateY(-2px);
     }
-
-    /* 8. Glowing Sidebar Divider */
-    [data-testid="stSidebar"] {
-        background-color: #04040A !important;
-        border-right: 1px solid rgba(185, 0, 255, 0.3);
-        box-shadow: 5px 0 15px rgba(185, 0, 255, 0.05);
+    /* Make the Clock/Time stand out and not look faded */
+    .live-clock {
+        color: #00E5FF !important;
+        font-family: 'Oxanium', sans-serif;
+        font-weight: 700;
+        font-size: 1.2rem;
+        text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+        background: rgba(0, 229, 255, 0.1);
+        padding: 5px 15px;
+        border-radius: 20px;
+        border: 1px solid rgba(0, 229, 255, 0.3);
     }
+    /* 7. Glowing Sidebar Divider */
+    [data-testid="stSidebar"] {
+        background-color: #05050C !important;
+        border-right: 1px solid rgba(213, 0, 249, 0.2);
+        box-shadow: 5px 0 20px rgba(213, 0, 249, 0.05);
+    }
+    
 </style>
 """, unsafe_allow_html=True)
 # ===================================================
