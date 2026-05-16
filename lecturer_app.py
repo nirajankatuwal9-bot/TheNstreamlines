@@ -107,20 +107,7 @@ st.markdown("""
         border-right: 1px solid rgba(213, 0, 249, 0.2);
         box-shadow: 5px 0 20px rgba(213, 0, 249, 0.05);
     }
-    /* Add this right before the </style> tag in your CSS block */
-    .sidebar-clock {
-        background: rgba(0, 229, 255, 0.05);
-        border: 1px solid rgba(0, 229, 255, 0.3);
-        border-radius: 10px;
-        padding: 12px;
-        color: #00E5FF !important;
-        font-family: 'Oxanium', sans-serif;
-        font-weight: 700;
-        font-size: 1.1rem;
-        text-align: center;
-        text-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
-        margin-bottom: 15px;
-    }
+    
 </style>
 """, unsafe_allow_html=True)
 
