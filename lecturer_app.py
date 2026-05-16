@@ -41,14 +41,12 @@ st.markdown("""
         color: #E0F7FA !important;
     }
 
-    /* 4. Rich Gradient Headers (Titanium Pearl) */
+    /* 4. Apply Chakra Petch to Headers (Sleek tech look, not overly wide) */
     h1, h2, h3 {
-        font-family: 'Outfit', sans-serif !important;
-        background: linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 50%, #94A3B8 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        letter-spacing: -0.5px;
-        font-weight: 700;
+        font-family: 'Chakra Petch', sans-serif !important;
+        color: #00E5FF !important;
+        text-shadow: 0 0 15px rgba(0, 229, 255, 0.5); /* Cyan Glow */
+        letter-spacing: 0.5px;
     }
 
     /* 5. Cyber-Inputs with Purple/Cyan Gradient Borders */
@@ -89,6 +87,7 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
+# ===================================================
 # ===================================================
 # ====================================================
 
