@@ -18,11 +18,12 @@ from email.mime.multipart import MIMEMultipart
 import time 
 from streamlit_autorefresh import st_autorefresh
 
-# ========== BEAUTIFUL REFINED CYBERPUNK UI (HIGH CONTRAST EDITION) ==========
+
+# ========== BEAUTIFUL REFINED CYBERPUNK UI ==========
 st.markdown("""
 <style>
     /* 1. Beautiful Sci-Fi Fonts: 'Oxanium' for sleek headers, 'Space Grotesk' for clean data */
-    @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght=500;700&family=Space+Grotesk:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@500;700&family=Space+Grotesk:wght@400;500;600&display=swap');
 
     /* 2. Deep Void Background with Subtle Ambient Glows */
     .stApp {
@@ -32,22 +33,24 @@ st.markdown("""
             radial-gradient(circle at 90% 80%, rgba(0, 229, 255, 0.05), transparent 40%) !important;
     }
 
-    /* 3. Base Text - Enhanced for modern Streamlit elements to maximize readability */
-    html, body, [class*="css"], [data-testid="stMarkdownContainer"] p, span, label, .stWidgetLabel {
-        font-family: 'Space Grotesk', sans-serif !important;
+    /* 3. Base Text - Super clean, modern tech font */
+    html, body, [class*="css"] {
+        font-family: 'Space Grotesk', sans-serif;
         font-size: 1.05em;
-        color: #C1D5EE !important; /* Original Soft ice-blue */
+        color: #C1D5EE !important; /* Soft ice-blue for perfect readability */
     }
 
     /* 4. Beautiful, Resized Glowing Headers */
     h1, h2, h3, h4 {
         font-family: 'Oxanium', sans-serif !important;
         color: #00E5FF !important; /* Neon Cyan */
+        /* Multi-layered soft glow for a "beautiful" neon effect */
         text-shadow: 0 0 8px rgba(0, 229, 255, 0.5), 0 0 15px rgba(0, 229, 255, 0.3); 
         letter-spacing: 1.2px;
         font-weight: 700;
     }
     
+    /* Explicitly scaling down the header sizes so they look elegant, not clunky */
     h1 { font-size: 2.2rem !important; margin-bottom: 1rem !important; }
     h2 { font-size: 1.7rem !important; margin-bottom: 0.8rem !important; }
     h3 { font-size: 1.3rem !important; margin-bottom: 0.5rem !important; }
@@ -66,11 +69,6 @@ st.markdown("""
         border-color: #00E5FF !important;
         box-shadow: 0 0 12px rgba(0, 229, 255, 0.3) !important;
     }
-    
-    /* Forces selectbox menu options to maintain visible contrast */
-    div[data-baseweb="select"] * {
-        color: #00E5FF !important;
-    }
 
     /* 6. Refined Multi-Color Neon Buttons */
     .stButton>button {
@@ -84,13 +82,13 @@ st.markdown("""
         transition: all 0.3s ease-in-out;
     }
 
+    /* Stunning bright hover effect */
     .stButton>button:hover {
         background: linear-gradient(90deg, rgba(0, 229, 255, 0.2), rgba(213, 0, 249, 0.2)) !important;
         color: #00E5FF !important;
         box-shadow: 0 0 15px rgba(0, 229, 255, 0.4), 0 0 25px rgba(213, 0, 249, 0.3) !important;
         transform: translateY(-2px);
     }
-
     /* Make the Clock/Time stand out and not look faded */
     .live-clock {
         color: #00E5FF !important;
@@ -103,15 +101,13 @@ st.markdown("""
         border-radius: 20px;
         border: 1px solid rgba(0, 229, 255, 0.3);
     }
-
     /* 7. Glowing Sidebar Divider */
     [data-testid="stSidebar"] {
         background-color: #05050C !important;
         border-right: 1px solid rgba(213, 0, 249, 0.2);
         box-shadow: 5px 0 20px rgba(213, 0, 249, 0.05);
     }
-
-    /* Sidebar Clock Panel Styling */
+    /* Add this right before the </style> tag in your CSS block */
     .sidebar-clock {
         background: rgba(0, 229, 255, 0.05);
         border: 1px solid rgba(0, 229, 255, 0.3);
@@ -127,6 +123,7 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
+
 # ====================================================
 # =====================================================
 # ================= TIMEZONE CONFIG =================
