@@ -711,34 +711,30 @@ if not st.session_state.logged_in:
         """, unsafe_allow_html=True)
     #-------------------------------------------
     with st.container(border=True):
-        # 🔧 Added .strip() to safely remove any accidental leading/trailing spaces
-        user_input = st.text_input("Username").strip()
-        pw_input = st.text_input("Password", type="password").strip()
+        user = st.text_input("Username")
+        pw = st.text_input("Password", type="password")
 
-        if st.button("Enter the Flow", use_container_width=True, type="primary"):
-            
-            # Avoid querying the database if fields are completely empty
-            if not user_input or not pw_input:
-                st.warning("Please enter both your Username and Password.")
+        if st.button("Enter the Flow"):
+
+            res = pd.read_sql_query(
+                "SELECT * FROM users WHERE username=?",
+                conn,
+                params=(user,)
+            )
+
+            if not res.empty and check_password(pw, res.iloc[0]["password"]):
+                st.session_state.logged_in = True
+                st.session_state.user_id = res.iloc[0]["id"]
+                st.session_state.role = res.iloc[0]["role"]
+                st.session_state.username = res.iloc[0]["username"]
+                st.session_state.semester_id = res.iloc[0]["semester_id"]
+                st.session_state.full_name = res.iloc[0]["full_name"]
+                st.session_state.show_splash = True
+                st.rerun()
             else:
-                res = pd.read_sql_query(
-                    "SELECT * FROM users WHERE username=?",
-                    conn,
-                    params=(user_input,)
-                )
+                st.error("Invalid credentials")
 
-                if not res.empty and check_password(pw_input, res.iloc[0]["password"]):
-                    st.session_state.logged_in = True
-                    st.session_state.user_id = res.iloc[0]["id"]
-                    st.session_state.role = res.iloc[0]["role"]
-                    st.session_state.username = res.iloc[0]["username"]
-                    st.session_state.semester_id = res.iloc[0]["semester_id"]
-                    st.session_state.full_name = res.iloc[0]["full_name"]
-                    st.session_state.show_splash = True
-                    st.rerun()
-                else:
-                    # 🚨 Completed the missing error handling condition block cleanly
-                    st.error("❌ Invalid Username or Password. Please check for typos and try again.")
+        st.stop()
 # =====================================================================
 # IF LOGGED IN, THE DASHBOARD STARTS HERE
 # =====================================================================
