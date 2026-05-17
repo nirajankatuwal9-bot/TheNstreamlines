@@ -168,10 +168,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-
-
-# ====================================================
-# =====================================================
 # ================= TIMEZONE CONFIG =================
 NST = timezone(timedelta(hours=5, minutes=45))
 # ================= CONFIG =================
@@ -697,9 +693,9 @@ def require_login():
         st.warning("⏰ Your session has expired due to inactivity. Please login again.")
         st.session_state.clear()
         st.rerun()
-# ================= LOGIN =================
+# ================= LOGIN FLOW GATE =================
 
-if not st.session_state.logged_in:
+if not st.session_state.get("logged_in", False):
 
     st.markdown("""
         <div style='text-align: center; padding-bottom: 20px;'>
@@ -711,33 +707,36 @@ if not st.session_state.logged_in:
         """, unsafe_allow_html=True)
     #-------------------------------------------
     with st.container(border=True):
-        user = st.text_input("Username")
-        pw = st.text_input("Password", type="password")
+        user_input = st.text_input("Username").strip()
+        pw_input = st.text_input("Password", type="password").strip()
 
-        if st.button("Enter the Flow"):
-
-            res = pd.read_sql_query(
-                "SELECT * FROM users WHERE username=?",
-                conn,
-                params=(user,)
-            )
-
-            if not res.empty and check_password(pw, res.iloc[0]["password"]):
-                st.session_state.logged_in = True
-                st.session_state.user_id = res.iloc[0]["id"]
-                st.session_state.role = res.iloc[0]["role"]
-                st.session_state.username = res.iloc[0]["username"]
-                st.session_state.semester_id = res.iloc[0]["semester_id"]
-                st.session_state.full_name = res.iloc[0]["full_name"]
-                st.session_state.show_splash = True
-                st.rerun()
+        if st.button("Enter the Flow", use_container_width=True, type="primary"):
+            if not user_input or not pw_input:
+                st.warning("Please enter both your Username and Password.")
             else:
-                st.error("Invalid credentials")
+                res = pd.read_sql_query(
+                    "SELECT * FROM users WHERE username=?",
+                    conn,
+                    params=(user_input,)
+                )
 
-        st.stop()
-# =====================================================================
-# IF LOGGED IN, THE DASHBOARD STARTS HERE
-# =====================================================================
+                if not res.empty and check_password(pw_input, res.iloc[0]["password"]):
+                    st.session_state.logged_in = True
+                    st.session_state.user_id = res.iloc[0]["id"]
+                    st.session_state.role = res.iloc[0]["role"]
+                    st.session_state.username = res.iloc[0]["username"]
+                    st.session_state.semester_id = res.iloc[0]["semester_id"]
+                    st.session_state.full_name = res.iloc[0]["full_name"]
+                    st.session_state.show_splash = True
+                    st.rerun()
+                else:
+                    st.error("❌ Invalid Username or Password. Please check for typos and try again.")
+    
+    # 🛑 Hard stop here for unauthenticated visitors so down-stream code like Line 757 never executes!
+    st.stop()
+
+# ================= AUTHENTICATED DASHBOARD CODE SECURE ZONE =================
+# Line 757 will safely execute down here because the script only reaches this point after a successful login!
 
 # ========== 1. TIME & GREETING SETUP ==========
 now_nst = datetime.now(NST)
