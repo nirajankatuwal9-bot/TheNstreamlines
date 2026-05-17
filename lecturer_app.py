@@ -3275,6 +3275,7 @@ if role == "lecturer":
 
         if csv_file:
             df_csv = pd.read_csv(csv_file)
+            # Normalize column text headers to match key parsing expectations
             df_csv.columns = df_csv.columns.str.strip().str.lower()
             
             # ➕ Updated to explicitly check for the section field column header
@@ -3303,6 +3304,7 @@ if role == "lecturer":
                                 
                             raw_pw = str(row["password"]).replace('.0', '').strip()
                         
+                            # Match semester text name directly to relational primary database index key mappings
                             sem_match = sems_list[sems_list["name"] == clean_sem]
                             if not sem_match.empty:
                                 sem_id = int(sem_match["id"].values[0])
@@ -3317,6 +3319,7 @@ if role == "lecturer":
                         except Exception as e:
                             error_count += 1
                 
+                    # Permanently commit data to database storage file
                     conn.commit()
                     
                     if success_count > 0:
