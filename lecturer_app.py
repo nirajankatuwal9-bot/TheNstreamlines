@@ -690,6 +690,29 @@ def score_to_words(score_num):
         36: "Thirty Six", 37: "Thirty Seven", 38: "Thirty Eight", 39: "Thirty Nine", 40: "Forty"
     }
     return words_map.get(val, str(val))
+#=======ELIGIBILITY CRITERIA=============================
+def check_ioe_eligibility(t_pct, p_pct, t_score, p_score):
+    """
+    Evaluates Theory and Practical board exam eligibility independently.
+    Returns: (theory_status, practical_status)
+    """
+    # Evaluate Theory Component independently
+    if t_pct < 70.0:
+        theory_status = "❌ NQ (Theory Attendance < 70%)"
+    elif float(t_score or 0) < 16.0:
+        theory_status = "❌ NQ (Theory Score < 16)"
+    else:
+        theory_status = "✅ Eligible"
+        
+    # Evaluate Practical Component independently
+    if p_pct < 70.0:
+        practical_status = "❌ NQ (Practical Attendance < 70%)"
+    elif float(p_score or 0) < 10.0:
+        practical_status = "❌ NQ (Practical Score < 10)"
+    else:
+        practical_status = "✅ Eligible"
+        
+    return theory_status, practical_status
 # ================= DATABASE SAFE MIGRATION TUNNEL =================
 # 1. Ensure email column exists
 try:
@@ -1907,62 +1930,21 @@ def get_student_profile(student_id):
 # ================= INTERNAL MARKS CALCULATION ENGINE (DYNAMIC VERSION) =================
 def calculate_internal_theory(row, subject_id, db_conn):
     """
-    Dynamically fetches subject configurations from the database and 
-    calculates weighted theory marks with a strict 70% attendance gate.
+    Unified Institutional Marking Engine:
+    Normalizes continuous term assessments using custom database raw ceilings,
+    integrates dynamic cumulative assignment scoring (max 50) scaled linearly,
+    and enforces a strict 70% attendance gate threshold for structural grace points.
     """
-    # 1. Fetch weight scheme from database for the active subject
+    import pandas as pd
+    
+    # 1. Fetch weight scheme and raw testing ceilings from the database
     scheme_df = pd.read_sql_query(
         "SELECT * FROM subject_schemes WHERE subject_id = ?", 
         db_conn, 
         params=(int(subject_id),)
     )
     
-    # Fallback to standard defaults if no custom configuration exists yet
-    if scheme_df.empty:
-        scheme = {
-            'theory_full_marks': 40.0,
-            't_weight_att': 0.10, 't_weight_hw': 0.25, 't_weight_other': 0.15,
-            't_weight_mid': 0.25, 't_weight_final': 0.25
-        }
-    else:
-        scheme = scheme_df.iloc[0].to_dict()
-
-    # 2. Attendance Score Calculation
-    att_ratio = row['t_att_present'] / row['t_att_total'] if row['t_att_total'] > 0 else 0
-    att_score = att_ratio * (scheme['theory_full_marks'] * scheme['t_weight_att'])
-    
-    # 3. Scale Raw Percentages (0-100) to Dynamic Scheme Weights
-    hw_score = (row['t_hw_raw'] / 100) * (scheme['theory_full_marks'] * scheme['t_weight_hw'])
-    mid_score = (row['t_mid_raw'] / 100) * (scheme['theory_full_marks'] * scheme['t_weight_mid'])
-    final_score = (row['t_final_raw'] / 100) * (scheme['theory_full_marks'] * scheme['t_weight_final'])
-    other_score = (row['t_other_raw'] / 100) * (scheme['theory_full_marks'] * scheme['t_weight_other'])
-    
-    raw_total = att_score + hw_score + mid_score + final_score + other_score
-    
-    # 4. Enforce 70% Attendance Gate for Grace Marks
-    final_total = raw_total
-    is_eligible_grace = att_ratio >= 0.70
-    
-    if is_eligible_grace and row['t_grace'] > 0:
-        final_total += min(row['t_grace'], 5) 
-        
-    return round(final_total, 2), is_eligible_grace
-
-
-def calculate_internal_theory(row, subject_id, db_conn):
-    """
-    Dynamically reads both syllabus weightages and the lecturer's custom 
-    raw testing ceilings to perfectly normalize any continuous assessment data 
-    down to the official 40-mark theory internal ledger envelope.
-    """
-    # 1. Fetch weight scheme and raw ceilings from database
-    scheme_df = pd.read_sql_query(
-        "SELECT * FROM subject_schemes WHERE subject_id = ?", 
-        db_conn, 
-        params=(int(subject_id),)
-    )
-    
-    # Absolute fallbacks if configuration record is missing
+    # Absolute institutional fallbacks if configuration record is missing
     if scheme_df.empty:
         scheme = {
             'theory_full_marks': 40.0,
@@ -1972,15 +1954,64 @@ def calculate_internal_theory(row, subject_id, db_conn):
     else:
         scheme = scheme_df.iloc[0].to_dict()
 
-    # 2. Attendance Component Math (10% standard weight)
+    # 2. Attendance Component Math (Standard 10% weight allocation)
     att_ratio = row['t_att_present'] / row['t_att_total'] if row['t_att_total'] > 0 else 0
     att_score = att_ratio * (scheme['theory_full_marks'] * scheme['t_weight_att'])
     
-    # 3. 🧠 UNIVERSAL NORMALIZATION MATHEMATICS
-    # Scale Homework/Assignments using its dynamic testing ceiling denominator
-    raw_max_hw = scheme.get('t_max_raw_hw', 50.0)
-    hw_score = (row['t_hw_raw'] / raw_max_hw) * (scheme['theory_full_marks'] * scheme['t_weight_hw'])
+    # 3. 🧠 CUMULATIVE ASSIGNMENT CALCULATOR (INCREMENTAL GROWTH TRACKING)
+    q_all_assigns = "SELECT id FROM assignments WHERE subject_id = ?"
+    all_assign_df = pd.read_sql_query(q_all_assigns, db_conn, params=(int(subject_id),))
+    total_assignments_count = len(all_assign_df)
     
+    # Explicitly calculate denominator based on assignment count (e.g., 5 assignments * 10 = 50.0)
+    max_cumulative_raw_ceiling = total_assignments_count * 10.0 if total_assignments_count > 0 else 50.0
+        
+    # 🛡️ BULLETPROOF MULTI-TENANT STUDENT ID EXTRACTOR
+    target_student_id = None
+    
+    # Check if the active execution context is passing a database ledger row series/dict
+    if isinstance(row, dict) or (hasattr(row, 'keys') and callable(getattr(row, 'keys'))):
+        if 'id' in row and row['id'] is not None and str(row['id']).strip() != "":
+            target_student_id = int(row['id'])
+        elif 'student_id' in row and row['student_id'] is not None and str(row['student_id']).strip() != "":
+            target_student_id = int(row['student_id'])
+            
+    # If row extraction yields nothing, inspect global Streamlit Session Memory Core
+    if target_student_id is None:
+        import streamlit as st
+        possible_keys = ['user_id', 'student_id', 'uid', 'username_id', 'id']
+        for k in possible_keys:
+            if k in st.session_state and st.session_state[k] is not None and str(st.session_state[k]).strip() != "":
+                try:
+                    target_student_id = int(st.session_state[k])
+                    break
+                except:
+                    pass
+                    
+    # Fallback absolute emergency safety lock to prevent 0-index calculation drops
+    if target_student_id is None:
+        target_student_id = 0
+
+    # Query the live database to accumulate the active student's exact earned assignment marks
+    q_student_marks = """
+    SELECT NULLIF(marks, '') as marks FROM submissions 
+    WHERE assignment_id IN (SELECT id FROM assignments WHERE subject_id = ?) AND student_id = ?
+    """
+    marks_df = pd.read_sql_query(q_student_marks, db_conn, params=(int(subject_id), target_student_id))
+    cumulative_raw_earned = 0.0
+    if not marks_df.empty:
+        for _, marks_row in marks_df.iterrows():
+            m_val = marks_row['marks']
+            if m_val is not None and str(m_val).strip() != "":
+                try: 
+                    cumulative_raw_earned += float(m_val)
+                except ValueError: 
+                    pass
+
+    # Normalized homework formula: (Earned / Max cumulative ceiling) * weight allocation envelope
+    hw_score = (cumulative_raw_earned / max_cumulative_raw_ceiling) * (scheme['theory_full_marks'] * scheme['t_weight_hw'])
+    
+    # 4. 🎛️ UNIVERSAL EXAM/TEST NORMALIZATION MATHEMATICS
     # Scale Mid-Term Exam using its dynamic testing ceiling denominator
     raw_max_mid = scheme.get('t_max_raw_mid', 40.0)
     mid_score = (row['t_mid_raw'] / raw_max_mid) * (scheme['theory_full_marks'] * scheme['t_weight_mid'])
@@ -1993,10 +2024,10 @@ def calculate_internal_theory(row, subject_id, db_conn):
     raw_max_other = scheme.get('t_max_raw_other', 100.0)
     other_score = (row['t_other_raw'] / raw_max_other) * (scheme['theory_full_marks'] * scheme['t_weight_other'])
     
-    # Aggregate compiled internal credits tally
+    # Aggregate compiled internal credits tally out of 40 marks
     raw_total = att_score + hw_score + mid_score + final_score + other_score
     
-    # 4. Enforce 70% Attendance Gate Check
+    # 5. Enforce 70% Attendance Gate Check for Grace Marks Allocation
     final_total = raw_total
     is_eligible_grace = att_ratio >= 0.70
     
@@ -2230,6 +2261,14 @@ if role == "lecturer":
             for _, assignment in all_assignments.iterrows():
                 days, status, color = get_deadline_status(assignment['deadline'])
                 
+                # ⏱️ Handle Soft Window Evaluation directly in the overview tracking log
+                deadline_date = datetime.strptime(str(assignment['deadline']), '%Y-%m-%d').date()
+                current_date = datetime.now(NST).date()
+                
+                today_dt = datetime.now(NST)
+                deadline_dt = datetime.combine(deadline_date, datetime.min.time()).replace(tzinfo=NST)
+                hours_late = (today_dt - deadline_dt).total_seconds() / 3600.0 if current_date > deadline_date else 0.0
+
                 assignment_info = {
                     'title': assignment['title'],
                     'subject': assignment['subject'],
@@ -2238,14 +2277,18 @@ if role == "lecturer":
                     'days': days,
                     'status': status,
                     'color': color,
-                    'id': assignment['id']
+                    'id': assignment['id'],
+                    'hours_late': hours_late
                 }
                 
-                if status == "Overdue":
+                # 🧠 RE-ALIGNED MATRIX CLASSIFICATION GATES
+                if current_date > deadline_date and hours_late > 48.0:
+                    # Only assign to hard Overdue block if it crosses the full 48-hour threshold
                     overdue.append(assignment_info)
                 elif status == "Due Today":
                     due_today.append(assignment_info)
-                elif status == "Due Soon" or status == "This Week":
+                elif (current_date > deadline_date and hours_late <= 48.0) or status == "Due Soon" or status == "This Week":
+                    # Keep active grace window entries sitting inside the yellow "Due This Week" tracker panel
                     due_soon.append(assignment_info)
                 else:
                     upcoming.append(assignment_info)
@@ -2254,11 +2297,11 @@ if role == "lecturer":
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
-                st.metric("🔴 Overdue", len(overdue))
+                st.metric("🔴 Completely Expired (>48h)", len(overdue))
             with col2:
                 st.metric("🟠 Due Today", len(due_today))
             with col3:
-                st.metric("🟡 Due This Week", len(due_soon))
+                st.metric("🟡 In Grace Window / Due Soon", len(due_soon))
             with col4:
                 st.metric("🔵 Upcoming", len(upcoming))
             
@@ -2266,19 +2309,16 @@ if role == "lecturer":
             
             # Show details
             if overdue:
-                st.error("🔴 **OVERDUE ASSIGNMENTS**")
+                st.error("🔴 **COMPLETELY EXPIRED ASSIGNMENTS (PORTAL LOCKED)**")
                 for assign in overdue:
-                    with st.expander("{} - {} ({})".format(assign['semester'], assign['subject'], assign['title'])):
-                        st.write("**Deadline:** {}".format(assign['deadline']))
-                        st.write("**Overdue by:** {} days".format(abs(assign['days'])))
+                    with st.expander(f"🔒 {assign['semester']} - {assign['subject']} ({assign['title']})"):
+                        st.write(f"**Deadline Was:** {assign['deadline']}")
+                        st.write(f"**Locked For:** {int(assign['hours_late'] - 48)} hours past the final grace threshold")
                         
-                        # Show submission stats
                         submissions = pd.read_sql_query("""
-                        SELECT COUNT(*) as count FROM submissions
-                        WHERE assignment_id=?
+                        SELECT COUNT(*) as count FROM submissions WHERE assignment_id=?
                         """, conn, params=(assign['id'],))
-                        
-                        st.metric("Submissions Received", submissions.iloc[0]['count'])
+                        st.metric("Final Submissions Count Locked In", submissions.iloc[0]['count'])
             
             if due_today:
                 st.warning("🟠 **DUE TODAY**")
@@ -2939,22 +2979,40 @@ if role == "lecturer":
                                     key="edit_title_{}".format(assignment['ID'])
                                 )
                             
+                            with col_edit1:
+                                new_title = st.text_input(
+                                    "New Title",
+                                    value=assignment['Title'],
+                                    key="form_v2_title_{}".format(assignment['ID'])
+                                )
+                                
+                                # ➕ Fetch the existing rubric from database to pre-populate the input area
+                                existing_rubric_q = pd.read_sql_query("SELECT rubric FROM assignments WHERE id = ?", conn, params=(int(assignment['ID']),))
+                                current_rubric_val = existing_rubric_q.iloc[0]['rubric'] if not existing_rubric_q.empty and existing_rubric_q.iloc[0]['rubric'] is not None else ""
+                                
+                                new_rubric = st.text_area(
+                                    "New Marking Rubric / Model Answer",
+                                    value=current_rubric_val,
+                                    key="form_v2_rubric_{}".format(assignment['ID']),
+                                    height=100
+                                )
+                            
                             with col_edit2:
                                 current_deadline = datetime.strptime(assignment['Deadline'], '%Y-%m-%d').date()
                                 new_deadline = st.date_input(
                                     "New Deadline",
                                     value=current_deadline,
-                                    key="edit_deadline_{}".format(assignment['ID'])
+                                    key="form_v2_deadline_{}".format(assignment['ID'])
                                 )
                             
-                            if st.button("💾 Save Changes", key="save_edit_{}".format(assignment['ID']), type="primary"):
-                                
+                            if st.button("💾 Save Changes", key="form_v2_save_{}".format(assignment['ID']), type="primary"):
                                 if not new_title.strip():
                                     st.error("Title cannot be empty")
-                                elif new_title == assignment['Title'] and str(new_deadline) == assignment['Deadline']:
+                                elif new_title == assignment['Title'] and str(new_deadline) == assignment['Deadline'] and new_rubric.strip() == current_rubric_val:
                                     st.info("No changes made")
                                 else:
-                                    success, message = update_assignment(assignment['ID'], new_title, new_deadline)
+                                    # ✅ Cleanly providing all 4 matching arguments with safely namespaced keys
+                                    success, message = update_assignment(assignment['ID'], new_title, new_deadline, new_rubric)
                                     
                                     if success:
                                         st.success("✅ {}".format(message))
@@ -3188,12 +3246,24 @@ if role == "lecturer":
                                                 marks = extract_marks(result)
                                                 
                                                 if marks is not None:
+                                                    final_ai_score = float(marks)
+                                                    penalty_msg = ""
+                                                    
+                                                    # Apply late deduction to AI score before database entry
+                                                    sub_time_str = str(row['submission_time'])
+                                                    if "[LATE-10%]" in sub_time_str:
+                                                        final_ai_score = final_ai_score * 0.9
+                                                        penalty_msg = " (-10% Late Penalty applied)"
+                                                    elif "[LATE-50%]" in sub_time_str:
+                                                        final_ai_score = final_ai_score * 0.5
+                                                        penalty_msg = " (-50% Late Penalty applied)"
+
                                                     c.execute(
                                                         "UPDATE submissions SET marks=?, ai_summary=? WHERE id=?",
-                                                        (marks, result, row["id"])
+                                                        (round(final_ai_score, 2), result, row["id"])
                                                     )
                                                     conn.commit()
-                                                    st.success("Updated marks: {}/10".format(marks))
+                                                    st.success(f"Updated marks via AI: {final_ai_score:.1f}/10{penalty_msg}")
                                                     st.rerun()
                                                 else:
                                                     st.warning("Could not extract marks from AI response. Please enter manually below")
@@ -3228,12 +3298,24 @@ if role == "lecturer":
                                 key="manual_{}".format(row['id'])
                             )
                             if st.button("Save Manual Marks", key="save_{}".format(row['id'])):
+                                final_score = float(manual_marks)
+                                penalty_msg = ""
+                                
+                                # Check the submission timestamp for our custom late penalty tags
+                                sub_time_str = str(row['submission_time'])
+                                if "[LATE-10%]" in sub_time_str:
+                                    final_score = final_score * 0.9
+                                    penalty_msg = " (Includes automatic 10% late penalty deduction)"
+                                elif "[LATE-50%]" in sub_time_str:
+                                    final_score = final_score * 0.5
+                                    penalty_msg = " (Includes automatic 50% late penalty deduction)"
+                                    
                                 c.execute(
                                     "UPDATE submissions SET marks=? WHERE id=?",
-                                    (manual_marks, row["id"])
+                                    (round(final_score, 2), row["id"])
                                 )
                                 conn.commit()
-                                st.success("Marks updated to {}/10".format(manual_marks))
+                                st.success(f"Marks updated to {final_score:.1f}/10{penalty_msg}")
                                 st.rerun()
                     
                     # Display historical calculation feedback logs if present
@@ -3433,14 +3515,17 @@ if role == "lecturer":
                         st.info("💡 Click the compilation button below to generate a standardized print-ready attendance log roster formatted with incremental sequence counts and recurring page titles.")
 
                         if st.button("📄 Compile Standardized Attendance Sheet Ledger", use_container_width=True, type="primary", key="print_attendance_ledger_btn"):
-                            session_label = "Theory" if att_type == "📝 Theory Class" else "Practical"
+                            # SAFE STRING OVERRIDE: Matches 'Theory' or 'Practical' cleanly regardless of icons/emojis
+                            session_label = "Theory" if "Theory" in att_type else "Practical"
                             
                             # Fetch historical calendar date tracking logs chronologically
                             log_data = pd.read_sql_query("""
                                 SELECT u.username as [Roll No.], u.full_name as [Student Name], l.log_date, l.status
                                 FROM attendance_logs l
                                 JOIN users u ON l.student_id = u.id
-                                WHERE l.subject_id = ? AND l.session_type = ? AND u.section = ?
+                                WHERE l.subject_id = ? 
+                                  AND l.session_type = ? 
+                                  AND u.section = ?
                                 ORDER BY l.log_date ASC, u.username ASC
                             """, conn, params=(sub_id, session_label, sel_section))
 
@@ -3455,7 +3540,10 @@ if role == "lecturer":
                                     ORDER BY username ASC
                                 """, conn, params=(sel_sem_id, sel_section))
 
-                                # Generate the core printer HTML element wrapper injection profile
+                                
+                                # ===================================================================
+                                # 🖨️ RE-ALIGNED OFFICIAL ATTENDANCE SHEET REGISTER LEDGER
+                                # ===================================================================
                                 current_date_str = datetime.now(NST).strftime("%Y-%m-%d")
                                 
                                 att_html = f"""
@@ -3473,13 +3561,11 @@ if role == "lecturer":
                                 <style>
                                     @page {{
                                         size: landscape;
-                                        margin: 12mm 10mm 12mm 10mm;
+                                        margin: 10mm 10mm 10mm 10mm;
                                     }}
                                     @media print {{
                                         div[data-testid="stSidebar"], button, header, .stAppDeployButton, .no-print {{ display: none !important; }}
                                         body, .main .block-container {{ padding: 0 !important; margin: 0 !important; background: #fff !important; }}
-                                        
-                                        /* Forces table headers to repeat across continuous page break increments cleanly */
                                         .repeat-header {{ display: table-header-group !important; }}
                                         .attendance-row {{ page-break-inside: avoid !important; break-inside: avoid !important; }}
                                     }}
@@ -3490,18 +3576,32 @@ if role == "lecturer":
                                     }}
                                     .print-table {{
                                         width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; color: #111111;
+                                        margin: 0 auto;
                                     }}
                                     .print-table th, .print-table td {{
-                                        border: 1px solid #111111; padding: 5px; text-align: center; font-size: 11px;
+                                        border: 1px solid #000000 !important; padding: 6px 4px; text-align: center; font-size: 11px;
                                     }}
                                     .text-left {{ text-align: left !important; }}
                                     .absent-text {{ color: #dc2626 !important; font-weight: bold; background-color: #ffe4e6 !important; }}
-                                    .meta-title-block {{
-                                        text-align: center; font-weight: bold; line-height: 1.4; margin-bottom: 12px; font-family: Arial, sans-serif;
+                                    
+                                    /* 🎨 MASTER METADATA SUB-TABLE GRID RE-ALIGNMENT */
+                                    .meta-info-table {{
+                                        width: 100%;
+                                        border-collapse: collapse !important;
+                                        margin-top: 5px;
+                                    }}
+                                    .meta-info-table td {{
+                                        border: none !important; 
+                                        padding: 3px 0px !important; /* Zero padding pulls metadata completely left to mirror column margins */
+                                        font-size: 12px !important;
+                                        font-weight: bold !important;
+                                        text-align: left !important;
+                                        line-height: 1.5;
+                                        color: #111111 !important;
                                     }}
                                 </style>
                                 
-                                <div style="background-color: #ffffff; padding: 15px; color: #111111;">
+                                <div style="background-color: #ffffff; padding: 5px; color: #111111;">
                                     <button class="download-btn no-print" onclick="downloadAttendanceExcel()">📥 Download Excel Spreadsheet</button>
                                     <button class="download-btn no-print" style="background-color: #3b82f6; margin-right: 10px;" onclick="window.print()">🖨️ Print / Save PDF</button>
                                     <div style="clear: both;"></div>
@@ -3509,40 +3609,40 @@ if role == "lecturer":
                                     <table class="print-table" id="attendance_master_print_table">
                                         <thead class="repeat-header">
                                             <tr>
-                                                <th colspan="{len(unique_dates) + 5}" style="background-color: #ffffff; border: none; padding-bottom: 15px;">
-                                                    <div class="meta-title-block">
-                                                        <div style="font-size: 16px; text-transform: uppercase;">{st.session_state.g_univ}</div>
+                                                <th colspan="{len(unique_dates) + 5}" style="background-color: #ffffff; border: none !important; padding-bottom: 12px;">
+                                                    <div style="text-align: center; font-weight: bold; line-height: 1.3; margin-bottom: 10px;">
+                                                        <div style="font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px;">{st.session_state.g_univ}</div>
                                                         <div style="font-size: 13px;">{st.session_state.g_inst_body}</div>
-                                                        <div style="font-size: 15px; letter-spacing:0.3px;">{st.session_state.g_college}</div>
-                                                        <div style="font-size: 13px; font-weight: bold; margin-top: 3px;">Student Attendance Sheet Register</div>
+                                                        <div style="font-size: 14px; font-weight: bold;">{st.session_state.g_college}</div>
+                                                        <div style="font-size: 13px; font-weight: bold; margin-top: 3px; color: #222;">Student Attendance Sheet Register</div>
                                                     </div>
                                                     
-                                                    <table style="width: 100%; font-size: 11px; font-weight: bold; border: none; text-align: left; line-height: 1.5;">
+                                                    <table class="meta-info-table">
                                                         <tr>
-                                                            <td style="width: 35%; border:none; padding: 2px 0;">Subject: {sel_sub_name.upper()}</td>
-                                                            <td style="width: 35%; border:none; padding: 2px 0;">Department/Batch: {st.session_state.g_dept} | Batch: {st.session_state.g_batch}</td>
-                                                            <td style="width: 30%; border:none; padding: 2px 0; text-align: right;">Section: {sel_section}</td>
+                                                            <td style="width: 38.5%;">Subject: {sel_sub_name.upper()}</td>
+                                                            <td style="width: 33.5%;">Department/Batch: {st.session_state.g_dept} | Batch: {st.session_state.g_batch}</td>
+                                                            <td style="width: 28%; text-align: right !important;">Section: {sel_section}</td>
                                                         </tr>
                                                         <tr>
-                                                            <td style="border:none; padding: 2px 0;">Subject Teacher: {st.session_state.g_teacher}</td>
-                                                            <td style="border:none; padding: 2px 0;">Year/Part: {st.session_state.g_yp}</td>
-                                                            <td style="border:none; padding: 2px 0; text-align: right;">Nature: {session_label} Session</td>
+                                                            <td>Subject Teacher: {st.session_state.g_teacher}</td>
+                                                            <td>Year/Part: {st.session_state.g_yp}</td>
+                                                            <td style="text-align: right !important;">Nature: {session_label} Session</td>
                                                         </tr>
                                                     </table>
                                                 </th>
                                             </tr>
                                             <tr style="background-color: #fafafa; font-weight: bold;">
-                                                <th style="width: 3%;">S.N.</th>
-                                                <th style="width: 12%;">CRN</th>
-                                                <th style="text-align: left; padding-left: 8px; width: 22%;">Student Name</th>
-                                                """
+                                                <th style="width: 4%;">S.N.</th>
+                                                <th style="width: 14%;">CRN</th>
+                                                <th style="text-align: left; padding-left: 8px; width: 26%;">Student Name</th>
+                                """
                                 for d in unique_dates:
                                     formatted_month_day = d[5:].replace("-", "/")
                                     att_html += f'<th style="font-size: 9px; padding: 4px 2px; width: 3.5%;">{formatted_month_day}</th>'
                                     
                                 att_html += """
-                                                <th style="width: 6%;">Total Attd.</th>
-                                                <th style="width: 6%;">Score %</th>
+                                                <th style="width: 8%;">Total Attd.</th>
+                                                <th style="width: 8%;">Score %</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -3572,7 +3672,6 @@ if role == "lecturer":
                                             status = match_state.iloc[0]['status']
                                             if status == "Present":
                                                 presence_counter += 1
-                                                # Marks dynamic sequence increment count directly inside the matrix layout row
                                                 att_html += f'<td>{presence_counter}</td>'
                                             else:
                                                 att_html += '<td class="absent-text">A</td>'
@@ -3589,13 +3688,13 @@ if role == "lecturer":
                                         </tbody>
                                     </table>
                                     
-                                    <table style="width: 100%; margin-top: 40px; font-size: 11px; font-weight: bold; font-family: Arial, sans-serif;">
+                                    <table style="width: 100%; margin-top: 40px; font-size: 11px; font-weight: bold; font-family: Arial, sans-serif; border-collapse: collapse;">
                                         <tr>
-                                            <td style="width: 50%; text-align: left; border: none;">
+                                            <td style="width: 50%; text-align: left; border: none !important; padding: 0px;">
                                                 This Attendance sheet must be submitted to department.<br><br>
                                                 Issued Date: {current_date_str}
                                             </td>
-                                            <td style="width: 50%; text-align: right; border: none; vertical-align: bottom;">
+                                            <td style="width: 50%; text-align: right; border: none !important; padding: 0px; vertical-align: bottom;">
                                                 ...........................................................<br>
                                                 Certified Subject Teacher Signature
                                             </td>
@@ -3621,6 +3720,8 @@ if role == "lecturer":
                         target_date_str = chosen_date.strftime("%Y-%m-%d")
 
                         if st.button(f"🚀 Submit & Log Attendance for {target_date_str}", use_container_width=True, type="primary"):
+                            
+                                
                             # ===================================================================
                             # 🛡️ CRITICAL RUNTIME FIX: DEFINED EXPLICITLY INSIDE THE EXECUTION PATH
                             # ===================================================================
@@ -3673,7 +3774,56 @@ if role == "lecturer":
                             st.success(f"✅ Attendance for {target_date_str} logged! Cumulative grading metrics recalculated successfully.")
                             st.balloons()
                             st.rerun()
-                        # ===================================================================
+                            st.write("")
+                        if st.button(f"🗑️ Clear & Reset All Logs for {target_date_str}", use_container_width=True, type="secondary", key="clear_accidental_day_btn"):
+                            # 28 spaces (7 tabs) at the front of ALL these lines
+                            session_label = "Theory" if "Theory" in att_type else "Practical"
+                            
+                            # 1. Fetch targeted student IDs for the active section cleanly
+                            target_students = pd.read_sql_query(
+                                "SELECT id FROM users WHERE role='student' AND section=?", 
+                                conn, params=(sel_section,)
+                            )
+                            
+                            if not target_students.empty:
+                                student_ids = target_students['id'].tolist()
+                                placeholders = ",".join("?" for _ in student_ids)
+                                
+                                # 2. Purge only the logs for this specific day, section, and subject
+                                c.execute(f"DELETE FROM attendance_logs WHERE subject_id = ? AND session_type = ? AND log_date = ? AND student_id IN ({placeholders})", [sub_id, session_label, target_date_str] + student_ids)
+                                
+                                # 3. Dynamic Re-tally Engine Loop: Fix summary totals for the marks ledger
+                                for s_id in student_ids:
+                                    if session_label == "Theory":
+                                        p_count = c.execute("SELECT COUNT(*) FROM attendance_logs WHERE student_id=? AND subject_id=? AND session_type='Theory' AND status='Present'", (s_id, sub_id)).fetchone()[0]
+                                        t_count = c.execute("SELECT COUNT(*) FROM attendance_logs WHERE student_id=? AND subject_id=? AND session_type='Theory'", (s_id, sub_id)).fetchone()[0]
+                                        
+                                        c.execute("""
+                                            INSERT INTO student_marks (student_id, subject_id, t_att_present, t_att_total)
+                                            VALUES (?, ?, ?, ?)
+                                            ON CONFLICT(student_id, subject_id) DO UPDATE SET
+                                                t_att_present = excluded.t_att_present,
+                                                t_att_total = excluded.t_att_total
+                                        """, (s_id, sub_id, p_count, t_count))
+                                    else:
+                                        p_count = c.execute("SELECT COUNT(*) FROM attendance_logs WHERE student_id=? AND subject_id=? AND session_type='Practical' AND status='Present'", (s_id, sub_id)).fetchone()[0]
+                                        t_count = c.execute("SELECT COUNT(*) FROM attendance_logs WHERE student_id=? AND subject_id=? AND session_type='Practical'", (s_id, sub_id)).fetchone()[0]
+                                        
+                                        c.execute("""
+                                            INSERT INTO student_marks (student_id, subject_id, p_att_present, p_att_total)
+                                            VALUES (?, ?, ?, ?)
+                                            ON CONFLICT(student_id, subject_id) DO UPDATE SET
+                                                p_att_present = excluded.p_att_present,
+                                                p_att_total = excluded.p_att_total
+                                        """, (s_id, sub_id, p_count, t_count))
+                                
+                                conn.commit()
+                                st.success(f"💥 Cleaned up! All logs for {target_date_str} (Section {sel_section}) have been erased, and marks are fixed.")
+                                time.sleep(1.2)
+                                st.rerun()
+                            else:
+                                st.error("❌ No students found in this active section to clear.")
+                        
                         # ===================================================================
        # ================= Free-Standing Full Width Theory Ledger =================
         elif view_mode == "📝 Internal Theory Ledger (40 Marks)":
@@ -3774,11 +3924,23 @@ if role == "lecturer":
                     res_t = []
                     for _, r in edited_t.iterrows():
                         calc_res = calculate_internal_theory(r.to_dict(), sel_sub_id, conn)
+                        t_score_calc = calc_res[0]
+                        
+                        t_pct_val = (r['t_att_present'] / r['t_att_total'] * 100) if r['t_att_total'] > 0 else 0.0
+                        
+                        # Evaluate strictly for Theory Eligibility parameters
+                        if t_pct_val < 70.0:
+                            t_standing = "❌ NQ (Attendance < 70%)"
+                        elif t_score_calc < 16.0:
+                            t_standing = "❌ NQ (Internal Score < 16)"
+                        else:
+                            t_standing = "✅ Eligible"
+
                         res_t.append({
                             "Roll No.": r['Roll'],
                             "Student Name": r['Name'],
-                            "Total Score (/40)": f"{calc_res[0]:.2f}",
-                            "Exam Board Standing": "✅ Eligible" if calc_res[1] else "❌ Ineligible (Attendance < 70%)"
+                            "Total Score (/40)": f"{t_score_calc:.2f}",
+                            "Theory Exam Standing": t_standing
                         })
                     st.dataframe(res_t, use_container_width=True, hide_index=True)
                 # === REMOVED CLUTTERING LOCAL INPUT FIELDS - READS FROM REGISTRY ===
@@ -3809,7 +3971,7 @@ if role == "lecturer":
                         <style>
                             @page {{ 
                                 size: landscape; 
-                                margin: 12mm 10mm 12mm 10mm; 
+                                margin: 10mm 10mm 10mm 10mm; 
                             }}
                             @media print {{
                                 div[data-testid="stSidebar"], button, header, .stAppDeployButton, .no-print {{ display: none !important; }}
@@ -3824,16 +3986,54 @@ if role == "lecturer":
                             }}
                             .print-table {{
                                 width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; color: #111111;
+                                margin: 0 auto;
                             }}
-                            /* EXCEL GRID CARRIER ENGINE: Forces borders on all headers and standard cells */
                             .print-table th, .print-table td {{
                                 border: 1px solid #000000 !important; padding: 6px 4px; text-align: center; font-size: 11px;
                             }}
                             .text-left {{ text-align: left !important; }}
                             .nq-text {{ color: #dc2626 !important; font-weight: bold; background-color: #fee2e2 !important; }}
+                            
+                            /* 🎨 REFINED SYSTEM SCHEME CLASSES */
+                            .meta-info-table {{
+                                width: 100%;
+                                border-collapse: collapse !important;
+                                margin-top: 5px;
+                            }}
+                            .meta-info-table td {{
+                                border: none !important; /* Strips ugly outer line contamination */
+                                padding: 3px 0px !important;
+                                font-size: 12px !important;
+                                text-align: left !important;
+                            }}
+                            .breakdown-box-table {{
+                                width: 100%;
+                                border-collapse: collapse !important;
+                                background-color: #ffffff;
+                            }}
+                            .breakdown-box-table th {{
+                                background-color: #fafafa !important;
+                                color: #000000 !important;
+                                border: 1px solid #000000 !important;
+                                font-size: 11px !important;
+                                padding: 5px !important;
+                                font-weight: bold !important;
+                                text-transform: uppercase;
+                            }}
+                            .breakdown-box-table td {{
+                                border: 1px solid #000000 !important;
+                                font-size: 10px !important;
+                                padding: 3px 8px !important;
+                                text-align: left !important; /* Force identical uniform starting point line */
+                            }}
+                            .breakdown-label {{
+                                display: inline-block;
+                                width: 110px;
+                                font-weight: 500;
+                            }}
                         </style>
                         
-                        <div style="background-color: #ffffff; padding: 15px; color: #111111;">
+                        <div style="background-color: #ffffff; padding: 5px; color: #111111;">
                             <button class="download-btn no-print" onclick="downloadExcel()">📥 Download Excel Spreadsheet</button>
                             <button class="download-btn no-print" style="background-color: #3b82f6; margin-right: 10px;" onclick="window.print()">🖨️ Print / Save PDF</button>
                             <div style="clear: both;"></div>
@@ -3841,41 +4041,52 @@ if role == "lecturer":
                             <table class="print-table" id="theory_ledger_table">
                                 <thead class="repeat-header">
                                     <tr>
-                                        <th colspan="10" style="background-color: #ffffff; border: none !important; padding-bottom: 12px;">
-                                            <div style="text-align: center; font-weight: bold; line-height: 1.4; margin-bottom: 15px;">
-                                                <div style="font-size: 16px; text-transform: uppercase;">{st.session_state.g_univ}</div>
-                                                <div style="font-size: 14px;">{st.session_state.g_inst_body}</div>
-                                                <div style="font-size: 15px;">{st.session_state.g_college}</div>
-                                                <div style="font-size: 13px; margin-top: 4px; padding-bottom: 5px; font-weight: bold;">
+                                        <th colspan="10" style="background-color: #ffffff; border: none !important; padding-bottom: 8px;">
+                                            <div style="text-align: center; font-weight: bold; line-height: 1.3; margin-bottom: 10px;">
+                                                <div style="font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px;">{st.session_state.g_univ}</div>
+                                                <div style="font-size: 13px;">{st.session_state.g_inst_body}</div>
+                                                <div style="font-size: 14px; font-weight: bold;">{st.session_state.g_college}</div>
+                                                <div style="font-size: 12px; margin-top: 4px; padding-bottom: 2px; font-weight: bold; color: #222;">
                                                     {st.session_state.g_exam_title}
                                                 </div>
                                             </div>
                                             
-                                            <table style="width: 100%; font-size: 12px; margin-bottom: 5px; font-weight: bold; border-collapse: collapse; text-align: left; line-height: 1.5;">
+                                            <table class="meta-info-table">
                                                 <tr>
-                                                    <td style="width: 40%; border: none !important; padding: 2px 0;">Batch: {st.session_state.g_batch}</td>
-                                                    <td style="width: 30%; border: none !important; padding: 2px 0;">Level: Bachelor</td>
-                                                    <td style="border: 1px solid #000000 !important; text-align: center; background-color: #ffffff; width: 30%; font-size: 11px;" colspan="2" rowspan="6">Marks Breakdown<br><br><span style="font-weight:normal; font-size:10px;">Attendance: 10%<br>Assignments: 25%<br>Mid-Term Exam: 25%<br>Final Internal: 25%<br>Tutorials: 15%</span></td>
+                                                    <td style="width: 38.5%;"><b>Batch:</b> {st.session_state.g_batch}</td>
+                                                    <td style="width: 33.5%;"><b>Level:</b> Bachelor</td>
+                                                    <td style="width: 28%; padding: 0 !important; vertical-align: top;" rowspan="5">
+                                                        <table class="breakdown-box-table">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th colspan="2">Marks Breakdown</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr><td><span class="breakdown-label">Attendance</span>: 10%</td></tr>
+                                                                <tr><td><span class="breakdown-label">Assignments</span>: 25%</td></tr>
+                                                                <tr><td><span class="breakdown-label">Mid-Term Exam</span>: 25%</td></tr>
+                                                                <tr><td><span class="breakdown-label">Final Internal</span>: 25%</td></tr>
+                                                                <tr><td><span class="breakdown-label">Tutorials</span>: 15%</td></tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </td>
                                                 </tr>
                                                 <tr>
-                                                    <td style="border: none !important; padding: 2px 0;">Year/Part: {st.session_state.g_yp}</td>
-                                                    <td style="border: none !important; padding: 2px 0;">Programme: {st.session_state.g_prog}</td>
+                                                    <td><b>Year/Part:</b> {st.session_state.g_yp}</td>
+                                                    <td><b>Programme:</b> {st.session_state.g_prog}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td style="border: none !important; padding: 2px 0;">Subject Name: {s_name.upper()}</td>
-                                                    <td style="border: none !important; padding: 2px 0;">Theory Ledger Matrix</td>
+                                                    <td><b>Subject Name:</b> {s_name.upper()}</td>
+                                                    <td><b>Evaluation:</b> Theory Ledger Matrix</td>
                                                 </tr>
                                                 <tr>
-                                                    <td style="border: none !important; padding: 2px 0;">Subject Code No: {st.session_state.g_sub_code}</td>
-                                                    <td style="border: none !important; padding: 2px 0;">Full Marks: 40</td>
+                                                    <td><b>Subject Code No:</b> {st.session_state.g_sub_code}</td>
+                                                    <td><b>Full Marks:</b> 40</td>
                                                 </tr>
                                                 <tr>
-                                                    <td style="border: none !important; padding: 2px 0;">Department: {st.session_state.g_dept}</td>
-                                                    <td style="border: none !important; padding: 2px 0;">Pass Marks: 16</td>
-                                                </tr>
-                                                <tr>
-                                                    <td style="border: none !important; padding: 2px 0;">&nbsp;</td>
-                                                    <td style="border: none !important; padding: 2px 0;">&nbsp;</td>
+                                                    <td><b>Department:</b> {st.session_state.g_dept}</td>
+                                                    <td><b>Pass Marks:</b> 16</td>
                                                 </tr>
                                             </table>
                                         </th>
@@ -3884,11 +4095,11 @@ if role == "lecturer":
                                         <th style="width: 4%;">S.N.</th>
                                         <th style="text-align: left; padding-left: 8px; width: 26%;">Student Name</th>
                                         <th style="width: 14%;">CRN</th>
-                                        <th style="width: 7%;">Att. (10%)</th>
-                                        <th style="width: 7%;">Asmt. (25%)</th>
-                                        <th style="width: 7%;">Mid (25%)</th>
-                                        <th style="width: 7%;">Final (25%)</th>
-                                        <th style="width: 7%;">Tut. (15%)</th>
+                                        <th style="width: 7%;">Att.</th>
+                                        <th style="width: 7%;">Asse.</th>
+                                        <th style="width: 7%;">Mid-Term</th>
+                                        <th style="width: 7%;">Final-Term</th>
+                                        <th style="width: 7%;">Tut</th>
                                         <th style="width: 7%;">In Figures</th>
                                         <th style="width: 14%;">In Words</th>
                                     </tr>
@@ -3896,14 +4107,38 @@ if role == "lecturer":
                                 <tbody>
                         """
                         
+                        # ===================================================================
+                        # 🖨️ STRICT CUMULATIVE INCREMENTAL LEDGER GENERATOR LOOP
+                        # ===================================================================
                         for idx, row in edited_t.iterrows():
                             s_meta = row.to_dict()
                             c_tot, is_elig = calculate_internal_theory(s_meta, sel_sub_id, conn)
                             word_tot = score_to_words(c_tot) if is_elig else "RETAINED"
                             fig_out = f"{c_tot:.0f}" if is_elig else "NQ"
                             
+                            # 🧠 1. Fetch all submission marks earned by this student for this subject
+                            q_stud_marks = """
+                            SELECT NULLIF(marks, '') as marks FROM submissions 
+                            WHERE assignment_id IN (SELECT id FROM assignments WHERE subject_id = ?) AND student_id = ?
+                            """
+                            m_df = pd.read_sql_query(q_stud_marks, conn, params=(int(sel_sub_id), int(s_meta['student_id'])))
+                            live_cum_earned = 0.0
+                            if not m_df.empty:
+                                for _, m_row in m_df.iterrows():
+                                    if m_row['marks'] is not None and str(m_row['marks']).strip() != "":
+                                        try: 
+                                            live_cum_earned += float(m_row['marks'])
+                                        except ValueError: 
+                                            pass
+
+                            # 🧠 2. Process attendance scoring out of 4.0 marks max
                             r_att = (s_meta['t_att_present'] / s_meta['t_att_total']) * 4.0 if s_meta['t_att_total'] > 0 else 0.0
-                            r_hw = (s_meta['t_hw_raw'] / cfg_max_hw) * 10.0
+                            
+                            # 🧠 3. CRITICAL CALIBRATION: Calculate incremental marks out of a fixed 50 baseline
+                            # Math: (Live Earned Sum / 50.0 Max Raw) * 10.0 Max Assignment Ledger Weight
+                            r_hw = (live_cum_earned / 50.0) * 10.0
+                            
+                            # 🧠 4. Calculate exams and remaining continuous assessments
                             r_mid = (s_meta['t_mid_raw'] / cfg_max_mid) * 10.0
                             r_final = (s_meta['t_final_raw'] / cfg_max_final) * 10.0
                             r_ot = (s_meta['t_other_raw'] / cfg_max_other) * 6.0
@@ -4084,7 +4319,7 @@ if role == "lecturer":
                         <style>
                             @page {{ 
                                 size: landscape; 
-                                margin: 12mm 10mm 12mm 10mm; 
+                                margin: 10mm 10mm 10mm 10mm; 
                             }}
                             @media print {{
                                 div[data-testid="stSidebar"], button, header, .stAppDeployButton, .no-print {{ display: none !important; }}
@@ -4099,16 +4334,54 @@ if role == "lecturer":
                             }}
                             .print-table {{
                                 width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; color: #111111;
+                                margin: 0 auto;
                             }}
-                            /* EXCEL GRID CARRIER ENGINE: Forces borders on all headers and standard cells */
                             .print-table th, .print-table td {{
                                 border: 1px solid #000000 !important; padding: 6px 4px; text-align: center; font-size: 11px;
                             }}
                             .text-left {{ text-align: left !important; }}
                             .nq-text {{ color: #dc2626 !important; font-weight: bold; background-color: #fee2e2 !important; }}
+                            
+                            /* 🎨 REFINED SYSTEM SCHEME CLASSES */
+                            .meta-info-table {{
+                                width: 100%;
+                                border-collapse: collapse !important;
+                                margin-top: 5px;
+                            }}
+                            .meta-info-table td {{
+                                border: none !important;
+                                padding: 3px 0px !important;
+                                font-size: 12px !important;
+                                text-align: left !important;
+                            }}
+                            .breakdown-box-table {{
+                                width: 100%;
+                                border-collapse: collapse !important;
+                                background-color: #ffffff;
+                            }}
+                            .breakdown-box-table th {{
+                                background-color: #fafafa !important;
+                                color: #000000 !important;
+                                border: 1px solid #000000 !important;
+                                font-size: 11px !important;
+                                padding: 5px !important;
+                                font-weight: bold !important;
+                                text-transform: uppercase;
+                            }}
+                            .breakdown-box-table td {{
+                                border: 1px solid #000000 !important;
+                                font-size: 10px !important;
+                                padding: 3px 8px !important;
+                                text-align: left !important;
+                            }}
+                            .breakdown-label {{
+                                display: inline-block;
+                                width: 170px;
+                                font-weight: 500;
+                            }}
                         </style>
                         
-                        <div style="background-color: #ffffff; padding: 15px; color: #111111;">
+                        <div style="background-color: #ffffff; padding: 5px; color: #111111;">
                             <button class="download-btn no-print" onclick="downloadExcelPrac()">📥 Download Excel Spreadsheet</button>
                             <button class="download-btn no-print" style="background-color: #3b82f6; margin-right: 10px;" onclick="window.print()">🖨️ Print / Save PDF</button>
                             <div style="clear: both;"></div>
@@ -4116,56 +4389,67 @@ if role == "lecturer":
                             <table class="print-table" id="practical_ledger_table">
                                 <thead class="repeat-header">
                                     <tr>
-                                        <th colspan="10" style="background-color: #ffffff; border: none !important; padding-bottom: 12px;">
-                                            <div style="text-align: center; font-weight: bold; line-height: 1.4; margin-bottom: 15px;">
-                                                <div style="font-size: 16px; text-transform: uppercase;">{st.session_state.g_univ}</div>
-                                                <div style="font-size: 14px;">{st.session_state.g_inst_body}</div>
-                                                <div style="font-size: 15px;">{st.session_state.g_college}</div>
-                                                <div style="font-size: 13px; margin-top: 4px; padding-bottom: 5px; font-weight: bold;">
+                                        <th colspan="10" style="background-color: #ffffff; border: none !important; padding-bottom: 8px;">
+                                            <div style="text-align: center; font-weight: bold; line-height: 1.3; margin-bottom: 10px;">
+                                                <div style="font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px;">{st.session_state.g_univ}</div>
+                                                <div style="font-size: 13px;">{st.session_state.g_inst_body}</div>
+                                                <div style="font-size: 14px; font-weight: bold;">{st.session_state.g_college}</div>
+                                                <div style="font-size: 12px; margin-top: 4px; padding-bottom: 2px; font-weight: bold; color: #222;">
                                                     {st.session_state.g_exam_title}
                                                 </div>
                                             </div>
                                             
-                                            <table style="width: 100%; font-size: 12px; margin-bottom: 5px; font-weight: bold; border-collapse: collapse; text-align: left; line-height: 1.5;">
+                                            <table class="meta-info-table">
                                                 <tr>
-                                                    <td style="width: 40%; padding: 2px 0; border: none !important;">Batch: {st.session_state.g_batch}</td>
-                                                    <td style="width: 30%; padding: 2px 0; border: none !important;">Level: {st.session_state.g_prog}</td>
-                                                    <td style="border: 1px solid #000000 !important; text-align: center; background-color: #ffffff; width: 30%; font-size: 11px;" colspan="2" rowspan="6">Marks Breakdown<br><br><span style="font-weight:normal; font-size:10px;">Attd. & Lab Performance: 20%<br>Initial Reports: 20%<br>Final Reports: 20%<br>Viva-Voce / Quiz: 20%<br>Practical Test Exam: 20%</span></td>
+                                                    <td style="width: 38.5%;"><b>Batch:</b> {st.session_state.g_batch}</td>
+                                                    <td style="width: 33.5%;"><b>Level:</b> {st.session_state.g_prog}</td>
+                                                    <td style="width: 28%; padding: 0 !important; vertical-align: top;" rowspan="5">
+                                                        <table class="breakdown-box-table">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th colspan="2">Marks Breakdown</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr><td><span class="breakdown-label">Attendance/Lab Performance</span>: 20%</td></tr>
+                                                                <tr><td><span class="breakdown-label">Initial Report</span>: 20%</td></tr>
+                                                                <tr><td><span class="breakdown-label">Final Report</span>: 20%</td></tr>
+                                                                <tr><td><span class="breakdown-label">Viva/Quiz</span>: 20%</td></tr>
+                                                                <tr><td><span class="breakdown-label">Lab Test/Presentation</span>: 20%</td></tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </td>
                                                 </tr>
                                                 <tr>
-                                                    <td style="padding: 2px 0; border: none !important;">Year/Part: {st.session_state.g_yp}</td>
-                                                    <td style="padding: 2px 0; border: none !important;">Programme: {st.session_state.g_prog}</td>
+                                                    <td><b>Year/Part:</b> {st.session_state.g_yp}</td>
+                                                    <td><b>Programme:</b> {st.session_state.g_prog}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td style="padding: 2px 0; border: none !important;">Subject Name: {s_name_p.upper()}</td>
-                                                    <td style="padding: 2px 0; border: none !important;">Practical Ledger Board</td>
+                                                    <td><b>Subject Name:</b> {s_name_p.upper()}</td>
+                                                    <td><b>Evaluation:</b> Practical Ledger Board</td>
                                                 </tr>
                                                 <tr>
-                                                    <td style="padding: 2px 0; border: none !important;">Subject Code No: {st.session_state.g_sub_code}</td>
-                                                    <td style="padding: 2px 0; border: none !important;">Full Marks: {st.session_state.g_f_marks}</td>
+                                                    <td><b>Subject Code No:</b> {st.session_state.g_sub_code}</td>
+                                                    <td><b>Full Marks:</b> {st.session_state.g_f_marks}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td style="padding: 2px 0; border: none !important;">Department: {st.session_state.g_dept}</td>
-                                                    <td style="padding: 2px 0; border: none !important;">Pass Marks: {st.session_state.g_p_marks}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td style="border: none !important; padding: 2px 0;">&nbsp;</td>
-                                                    <td style="border: none !important; padding: 2px 0;">&nbsp;</td>
+                                                    <td><b>Department:</b> {st.session_state.g_dept}</td>
+                                                    <td><b>Pass Marks:</b> {st.session_state.g_p_marks}</td>
                                                 </tr>
                                             </table>
                                         </th>
                                     </tr>
                                     <tr style="background-color: #fafafa; font-weight: bold;">
-                                        <th style="border: 1px solid #111111; padding: 8px; width: 4%;">S.N.</th>
-                                        <th style="border: 1px solid #111111; text-align: left; padding-left: 8px; width: 25%;">Student Name</th>
-                                        <th style="border: 1px solid #111111; padding: 8px; width: 15%;">CRN</th>
-                                        <th style="border: 1px solid #111111; padding: 6px; font-size: 11px;">Attendance/Lab Performance</th>
-                                        <th style="border: 1px solid #111111; padding: 6px; font-size: 11px;">Initial Report</th>
-                                        <th style="border: 1px solid #111111; padding: 6px; font-size: 11px;">Final Report</th>
-                                        <th style="border: 1px solid #111111; padding: 6px; font-size: 11px;">Viva/Quizz</th>
-                                        <th style="border: 1px solid #111111; padding: 6px; font-size: 11px;">Lab Test/Presentation /Case Study</th>
-                                        <th style="border: 1px solid #111111; padding: 8px; width: 8%;">In Figures</th>
-                                        <th style="border: 1px solid #111111; padding: 8px; width: 15%;">In Words</th>
+                                        <th style="width: 4%;">S.N.</th>
+                                        <th style="text-align: left; padding-left: 8px; width: 25%;">Student Name</th>
+                                        <th style="width: 15%;">CRN</th>
+                                        <th style="padding: 6px; font-size: 11px;">Attendance/Lab Performance</th>
+                                        <th style="padding: 6px; font-size: 11px;">Initial Report</th>
+                                        <th style="padding: 6px; font-size: 11px;">Final Report</th>
+                                        <th style="padding: 6px; font-size: 11px;">Viva/Quiz</th>
+                                        <th style="padding: 6px; font-size: 11px;">Lab Test/Presentation</th>
+                                        <th style="width: 8%;">In Figures</th>
+                                        <th style="width: 15%;">In Words</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -5448,6 +5732,14 @@ elif role == "student":
                 
                 days, status, color = get_deadline_status(assignment['deadline'])
                 
+                # ⏱️ Evaluate soft window hours cleanly
+                deadline_date = datetime.strptime(str(assignment['deadline']), '%Y-%m-%d').date()
+                current_date = datetime.now(NST).date()
+                
+                today_dt = datetime.now(NST)
+                deadline_dt = datetime.combine(deadline_date, datetime.min.time()).replace(tzinfo=NST)
+                hours_late = (today_dt - deadline_dt).total_seconds() / 3600.0 if current_date > deadline_date else 0.0
+
                 assignment_info = {
                     'id': assignment['id'],
                     'title': assignment['title'],
@@ -5455,16 +5747,19 @@ elif role == "student":
                     'deadline': assignment['deadline'],
                     'days': days,
                     'status': status,
-                    'color': color
+                    'color': color,
+                    'hours_late': hours_late
                 }
                 
                 if not submission.empty:
                     completed.append(assignment_info)
-                elif status == "Overdue":
+                elif current_date > deadline_date and hours_late > 48.0:
+                    # Only mark as hard overdue if past 48 hours completely
                     overdue.append(assignment_info)
                 elif status == "Due Today":
                     due_today.append(assignment_info)
-                elif status == "Due Soon":
+                elif (current_date > deadline_date and hours_late <= 48.0) or status == "Due Soon":
+                    # Sit in the yellow grace window section if late but under 48 hours
                     due_soon.append(assignment_info)
                 else:
                     upcoming.append(assignment_info)
@@ -5473,43 +5768,47 @@ elif role == "student":
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
-                st.metric("🔴 Overdue", len(overdue))
+                st.metric("🔴 Expired (>48h)", len(overdue))
             with col2:
                 st.metric("🟠 Due Today", len(due_today))
             with col3:
-                st.metric("🟡 Due Soon", len(due_soon))
+                st.metric("🟡 Grace Window / Soon", len(due_soon))
             with col4:
                 st.metric("✅ Completed", len(completed))
             
             st.divider()
             
-            # Show overdue assignments (if any)
+            # Show completely expired assignments
             if overdue:
-                st.error("🔴 **OVERDUE ASSIGNMENTS - Cannot submit!!**")
+                st.error("🔴 **EXPIRED ASSIGNMENTS - Submission Closed!**")
                 for assign in overdue:
-                    st.warning("⚠️ **{}** - {} (Overdue by {} days)".format(
+                    st.warning("🔒 **{}** - {} (Locked: Past the maximum 48-hour leniency window)".format(
                         assign['subject'],
-                        assign['title'],
-                        abs(assign['days'])
+                        assign['title']
                     ))
             
             # Show due today (if any)
             if due_today:
-                st.warning("🟠 **DUE TODAY - Last Chance!**")
+                st.warning("🟠 **DUE TODAY - Final Chance for On-Time Credit!**")
                 for assign in due_today:
                     st.info("⏰ **{}** - {}".format(assign['subject'], assign['title']))
             
-            # Show due soon (if any)
+            # Show grace window or due soon assignments
             if due_soon:
-                st.info("🟡 **DUE SOON - Complete These First!**")
+                st.info("🟡 **ACTIVE TASKS (Grace Window or Due Soon)**")
                 for assign in due_soon:
-                    st.write("📌 **{}** - {} ({} days left)".format(
-                        assign['subject'],
-                        assign['title'],
-                        assign['days']
-                    ))
-            
-            st.divider()
+                    if assign['hours_late'] > 0:
+                        # Give a specific warning that they are in a penalty window but can still upload
+                        if assign['hours_late'] <= 24.0:
+                            st.error("⚠️ **LATE (Tier 1):** **{}** - {} (Overdue! Submit now to lock in a maximum **10% penalty deduction**)".format(assign['subject'], assign['title']))
+                        else:
+                            st.error("🚨 **CRITICAL LATE (Tier 2):** **{}** - {} (Overdue! Final 24-hour window before lock. Automatic **50% penalty deduction** applies)".format(assign['subject'], assign['title']))
+                    else:
+                        st.write("📌 **{}** - {} ({} days left)".format(
+                            assign['subject'],
+                            assign['title'],
+                            assign['days']
+                        ))
         
         # ========== ASSIGNMENT LIST WITH STATUS ==========
         st.subheader("📋 All Assignments")
@@ -5602,18 +5901,91 @@ elif role == "student":
                                     key="download_sub_{}".format(row['id'])
                                 )
 
-                    elif is_late:
-                        # Case B: Not submitted and deadline passed (LOCKDOWN)
-                        st.error("🔒 **Deadline Locked:** This assignment closed on {}.".format(row['deadline']))
-                        st.info("Late submissions are not accepted through the portal. Please contact Er. Nirajan Katuwal.")
-                    
+                    elif is_late and deadline_date is not None:
+                        today_dt = datetime.now(NST)
+                        deadline_dt = datetime.combine(deadline_date, datetime.min.time()).replace(tzinfo=NST)
+                        hours_late = (today_dt - deadline_dt).total_seconds() / 3600.0
+                        if hours_late <= 24.0:
+                            st.warning("⚠️ **LATE SUBMISSION TIER 1:** The official deadline has passed. You may still upload your work within this 24-hour grace window, but an automatic **10% late penalty deduction** will be applied to your final score.")
+                            uploaded = st.file_uploader("📤 Upload Your Answer PDF (10% Penalty Applied)", type=["pdf"], key="upload_l_10_{}".format(row['id']))
+                            if st.button("Submit Late Assignment (Tier 1)", key="btn_l_10_{}".format(row['id']), type="secondary"):
+                                if not uploaded:
+                                    st.warning("⚠️ Please select a valid PDF file before submitting.")
+                                else:
+                                    timestamp = datetime.now(NST).strftime("%Y%m%d_%H%M%S")
+                                    file_path = f"submission_files/{st.session_state.username}_{row['id']}_{timestamp}.pdf"
+                                    with open(file_path, "wb") as f:
+                                        f.write(uploaded.getbuffer())
+                                    
+                                    # Stamp database submission records with an unmistakable penalty marker tag
+                                    late_tag = f"{datetime.now(NST).strftime('%Y-%m-%d %H:%M:%S')} [LATE-10%]"
+                                    c.execute("""
+                                        INSERT INTO submissions(assignment_id, student_id, submission_time, submission_file, marks, ai_summary) 
+                                        VALUES(?,?,?,?,?,?)
+                                    """, (int(row["id"]), int(st.session_state.user_id), late_tag, file_path, "", ""))
+                                    conn.commit()
+                                    st.error("🔴 Assignment logged successfully as Late (Tier 1: -10%).")
+                                    st.balloons()
+                                    st.rerun()
+
+                        elif hours_late <= 48.0:
+                            # 🟠 Late Submission Tier 2: 24 to 48 Hours Overdue
+                            st.error("🚨 **CRITICAL LATE SUBMISSION (TIER 2):** This assignment is more than 24 hours overdue and is in the final grace window. You can submit your file, but an automatic **50% penalty deduction** will be stripped from your score.")
+                            
+                            uploaded = st.file_uploader("📤 Upload Your Answer PDF (50% Penalty Applied)", type=["pdf"], key="upload_l_50_{}".format(row['id']))
+                            if st.button("Submit Late Assignment (Tier 2)", key="btn_l_50_{}".format(row['id']), type="primary"):
+                                if not uploaded:
+                                    st.warning("⚠️ Please select a valid PDF file before submitting.")
+                                else:
+                                    timestamp = datetime.now(NST).strftime("%Y%m%d_%H%M%S")
+                                    file_path = f"submission_files/{st.session_state.username}_{row['id']}_{timestamp}.pdf"
+                                    with open(file_path, "wb") as f:
+                                        f.write(uploaded.getbuffer())
+                                    
+                                    # Stamp database submission records with an unmistakable penalty marker tag
+                                    late_tag = f"{datetime.now(NST).strftime('%Y-%m-%d %H:%M:%S')} [LATE-50%]"
+                                    c.execute("""
+                                        INSERT INTO submissions(assignment_id, student_id, submission_time, submission_file, marks, ai_summary) 
+                                        VALUES(?,?,?,?,?,?)
+                                    """, (int(row["id"]), int(st.session_state.user_id), late_tag, file_path, "", ""))
+                                    conn.commit()
+                                    st.error("🔴 Assignment logged successfully as Critical Late (Tier 2: -50%).")
+                                    st.balloons()
+                                    st.rerun()
+
+                        else:
+                            # 🔒 Hard Lockout Tier 3: Past 48 Hours
+                            st.error("🔒 **Submission Portal Locked:** This assignment has passed the maximum 48-hour late leniency threshold. The submission window is permanently closed.")
+                            st.info("Automated uploads are no longer accepted for this record. Please coordinate with Er. Nirajan Katuwal directly.")
+
                     else:
-                        # Case C: Not submitted and deadline is still open
+                        # ✅ Case C: Not submitted and deadline is still open (On Time Submission)
                         days_left, _, _ = get_deadline_status(row['deadline'])
                         if days_left == 0:
                             st.warning("⚠️ **Final Call:** This assignment is due today!")
                         elif days_left is not None and days_left <= 2:
                             st.info("🟡 Only {} days left to submit!".format(days_left))
+
+                        uploaded = st.file_uploader("📤 Upload Your Answer PDF", type=["pdf"], key="upload_on_time_{}".format(row['id']))
+                        if st.button("Submit Assignment", key="submit_on_time_{}".format(row['id']), type="primary"):
+                            if not uploaded:
+                                st.warning("⚠️ Please upload a PDF file before submitting.")
+                            else:
+                                timestamp = datetime.now(NST).strftime("%Y%m%d_%H%M%S")
+                                file_path = f"submission_files/{st.session_state.username}_{row['id']}_{timestamp}.pdf"
+                                with open(file_path, "wb") as f:
+                                    f.write(uploaded.getbuffer())
+
+                                on_time_tag = datetime.now(NST).strftime("%Y-%m-%d %H:%M:%S")
+                                c.execute("""
+                                    INSERT INTO submissions(assignment_id, student_id, submission_time, submission_file, marks, ai_summary) 
+                                    VALUES(?,?,?,?,?,?)
+                                """, (int(row["id"]), int(st.session_state.user_id), on_time_tag, file_path, "", ""))
+                                conn.commit()
+                                st.success("✅ Assignment submitted successfully on time!")
+                                st.balloons()
+                                st.rerun()                                                
+                   
 
                                                 # UPLOAD NEW SUBMISSION
                         uploaded = st.file_uploader(
@@ -5806,13 +6178,11 @@ elif role == "student":
                     st.info("⏳ The lecturer has not finalized internal marks scores for this subject yet.")
                 else:
                     try:
-                        # 2. Extract database values safely using Pandas row dictionary formats
+                        # 📦 1. EXTRACT DATA VALUES SAFELY FROM THE ACCOUNT LEDGER ROW
                         db_row = m.iloc[0]
                         
-                        # 🛡️ Safe Extraction Fallbacks to avoid key crashes
                         att_present_t = int(db_row['t_att_present']) if 't_att_present' in db_row and pd.notna(db_row['t_att_present']) else 0
                         att_total_t = int(db_row['t_att_total']) if 't_att_total' in db_row and pd.notna(db_row['t_att_total']) else 34
-                        hw_raw_t = float(db_row['t_hw_raw']) if 't_hw_raw' in db_row and pd.notna(db_row['t_hw_raw']) else 0.0
                         mid_raw_t = float(db_row['t_mid_raw']) if 't_mid_raw' in db_row and pd.notna(db_row['t_mid_raw']) else 0.0
                         final_raw_t = float(db_row['t_final_raw']) if 't_final_raw' in db_row and pd.notna(db_row['t_final_raw']) else 0.0
                         other_raw_t = float(db_row['t_other_raw']) if 't_other_raw' in db_row and pd.notna(db_row['t_other_raw']) else 0.0
@@ -5824,7 +6194,7 @@ elif role == "student":
                         test_raw_p = float(db_row['p_test_raw']) if 'p_test_raw' in db_row and pd.notna(db_row['p_test_raw']) else 0.0
                         viva_raw_p = float(db_row['p_viva_raw']) if 'p_viva_raw' in db_row and pd.notna(db_row['p_viva_raw']) else 0.0
 
-                        # Calculate totals from master math functions using the safe database row Series directly
+                        # Calculate totals from master math functions
                         t_total, t_eligible = calculate_internal_theory(db_row, sub['id'], conn)
                         p_total, p_eligible = calculate_internal_practical(db_row, sub['id'], conn)
                         
@@ -5836,59 +6206,116 @@ elif role == "student":
                         
                         # 🏛️ THEORY PORTFOLIO VISUAL BLOCKS
                         st.markdown("#### 📝 Theory Marks Breakdown")
+                        
+                        is_theory_eligible = (t_pct >= 70.0) and (t_total >= 16.0)
+                        t_status_text = "🟢 QUALIFIED" if is_theory_eligible else "🔴 NOT QUALIFIED (NQ)"
+                        
                         col_t1, col_t2, col_t3 = st.columns([1, 1, 2])
                         with col_t1:
-                            fig_out = f"{t_total:.0f}" if t_eligible else "NQ"
-                            st.metric("Final Score", f"{fig_out} / 40")
+                            fig_out = f"{t_total:.0f}" if is_theory_eligible else "NQ"
+                            st.metric("Final Theory Score", f"{fig_out} / 40")
                         with col_t2:
-                            st.metric("Attendance Rate", f"{t_pct:.1f}%", f"{att_present_t}/{att_total_t} Days")
+                            st.metric("Theory Attendance Rate", f"{t_pct:.1f}%", f"{att_present_t}/{att_total_t} Days")
                         with col_t3:
                             st.write("") 
-                            if t_eligible:
-                                st.success(f"Exam Board Status: {status_badge_t}")
+                            if is_theory_eligible:
+                                st.success(f"Theory Exam Board Status: {t_status_text}")
                             else:
-                                st.error(f"Exam Board Status: {status_badge_t}")
+                                st.error(f"Theory Exam Board Status: {t_status_text}")
 
-                        # Scale parameters to fractional weights cleanly
-                        r_att = (att_present_t / att_total_t) * 4.0 if att_total_t > 0 else 0.0
-                        r_hw = (hw_raw_t / cfg_max_hw) * 10.0
-                        r_mid = (mid_raw_t / cfg_max_mid) * 10.0
-                        r_final = (final_raw_t / cfg_max_final) * 10.0
-                        r_ot = (other_raw_t / cfg_max_other) * 6.0
+                        # 🧠 2. LIVE CUMULATIVE ASSIGNMENT SUMMATION ENGINE
+                        q_stud_marks_p = """
+                        SELECT NULLIF(marks, '') as marks FROM submissions 
+                        WHERE assignment_id IN (SELECT id FROM assignments WHERE subject_id = ?) AND student_id = ?
+                        """
+                        m_df_p = pd.read_sql_query(q_stud_marks_p, conn, params=(int(sub['id']), int(student_id)))
+                        live_cum_earned_p = 0.0
+                        
+                        if not m_df_p.empty:
+                            for _, m_row_p in m_df_p.iterrows():
+                                m_val = m_row_p['marks']
+                                # Accumulate marks cleanly while completely filtering out non-graded items
+                                if m_val is not None and str(m_val).strip() != "" and str(m_val).strip().lower() != "none":
+                                    try: 
+                                        live_cum_earned_p += float(m_val)
+                                    except ValueError: 
+                                        pass
+
+                        # 🧮 3. CRASH-PROOF SCALE CONVERSION CALCULATION MATRIX
+                        r_att = (int(att_present_t) / int(att_total_t)) * 4.0 if att_total_t > 0 else 0.0
+                        
+                        # Apply your strict cumulative math formula out of 50 raw assignment marks max
+                        r_hw = (float(live_cum_earned_p) / 50.0) * 10.0
+                        
+                        # Safely normalize exams against custom denominators to protect against division by zero errors
+                        r_mid = (float(mid_raw_t) / float(cfg_max_mid)) * 10.0 if (cfg_max_mid and float(cfg_max_mid) > 0) else 0.0
+                        r_final = (float(final_raw_t) / float(cfg_max_final)) * 10.0 if (cfg_max_final and float(cfg_max_final) > 0) else 0.0
+                        r_ot = (float(other_raw_t) / float(cfg_max_other)) * 6.0 if (cfg_max_other and float(cfg_max_other) > 0) else 0.0
+
+                        # 🛡️ 4. CRASH-PROOF METRIC RENDERING UTILITIES
+                        import math
+
+                        def clean_nan_to_zero(val):
+                            try:
+                                if val is None or math.isnan(float(val)):
+                                    return 0.0
+                                return float(val)
+                            except:
+                                return 0.0
+
+                        def compute_safe_progress(val, limit):
+                            try:
+                                cleaned_val = clean_nan_to_zero(val)
+                                if cleaned_val <= 0.0 or limit <= 0.0:
+                                    return 0.0
+                                return min(max(cleaned_val / float(limit), 0.0), 1.0)
+                            except:
+                                return 0.0
+
+                        disp_att = clean_nan_to_zero(r_att)
+                        disp_hw = clean_nan_to_zero(r_hw)
+                        disp_mid = clean_nan_to_zero(r_mid)
+                        disp_final = clean_nan_to_zero(r_final)
+                        disp_ot = clean_nan_to_zero(r_ot)
 
                         col_p1, col_p2, col_p3, col_p4, col_p5 = st.columns(5)
                         with col_p1:
-                            st.markdown(f'<p class="caption-white">Attendance: <b>{r_att:.1f}/4.0</b></p>', unsafe_allow_html=True)
-                            st.progress(min(max(r_att / 4.0, 0.0), 1.0))
+                            st.markdown(f'<p class="caption-white">Attendance: <b>{disp_att:.1f}/4.0</b></p>', unsafe_allow_html=True)
+                            st.progress(compute_safe_progress(r_att, 4.0))
                         with col_p2:
-                            st.markdown(f'<p class="caption-white">Assignments: <b>{r_hw:.1f}/10.0</b></p>', unsafe_allow_html=True)
-                            st.progress(min(max(r_hw / 10.0, 0.0), 1.0))
+                            st.markdown(f'<p class="caption-white">Assignments: <b>{disp_hw:.1f}/10.0</b></p>', unsafe_allow_html=True)
+                            st.progress(compute_safe_progress(r_hw, 10.0))
                         with col_p3:
-                            st.markdown(f'<p class="caption-white">Mid-Term: <b>{r_mid:.1f}/10.0</b></p>', unsafe_allow_html=True)
-                            st.progress(min(max(r_mid / 10.0, 0.0), 1.0))
+                            st.markdown(f'<p class="caption-white">Mid-Term: <b>{disp_mid:.1f}/10.0</b></p>', unsafe_allow_html=True)
+                            st.progress(compute_safe_progress(r_mid, 10.0))
                         with col_p4:
-                            st.markdown(f'<p class="caption-white">Final Term: <b>{r_final:.1f}/10.0</b></p>', unsafe_allow_html=True)
-                            st.progress(min(max(r_final / 10.0, 0.0), 1.0))
+                            st.markdown(f'<p class="caption-white">Final Term: <b>{disp_final:.1f}/10.0</b></p>', unsafe_allow_html=True)
+                            st.progress(compute_safe_progress(r_final, 10.0))
                         with col_p5:
-                            st.markdown(f'<p class="caption-white">Tutorial: <b>{r_ot:.1f}/6.0</b></p>', unsafe_allow_html=True)
-                            st.progress(min(max(r_ot / 6.0, 0.0), 1.0))
+                            st.markdown(f'<p class="caption-white">Tutorial: <b>{disp_ot:.1f}/6.0</b></p>', unsafe_allow_html=True)
+                            st.progress(compute_safe_progress(r_ot, 6.0))
 
                         st.write("") 
                         
                         # 🔬 PRACTICAL PORTFOLIO VISUAL BLOCKS
                         st.markdown("#### 🧪 Practical Labs Breakdown")
+                        
+                        # 🔄 Evaluate Practical Component Gates Independently
+                        is_prac_eligible = (p_pct >= 70.0) and (p_total >= 10.0)
+                        p_status_text = "🟢 QUALIFIED" if is_prac_eligible else "🔴 NOT QUALIFIED (NQ)"
+                        
                         col_p_a, col_p_b, col_p_c = st.columns([1, 1, 2])
                         with col_p_a:
-                            fig_out_p = f"{p_total:.0f}" if p_eligible else "NQ"
-                            st.metric("Practical Score", f"{fig_out_p} / 25")
+                            fig_out_p = f"{p_total:.0f}" if is_prac_eligible else "NQ"
+                            st.metric("Practical Lab Score", f"{fig_out_p} / 25")
                         with col_p_b:
-                            st.metric("Lab Attendance", f"{p_pct:.1f}%", f"{att_present_p}/{att_total_p} Labs")
+                            st.metric("Lab Attendance Rate", f"{p_pct:.1f}%", f"{att_present_p}/{att_total_p} Labs")
                         with col_p_c:
                             st.write("")
-                            if p_eligible:
-                                st.success(f"Lab Standing Status: {status_badge_p}")
+                            if is_prac_eligible:
+                                st.success(f"Lab Standing Status: {p_status_text}")
                             else:
-                                st.error(f"Lab Standing Status: {status_badge_p}")
+                                st.error(f"Lab Standing Status: {p_status_text}")
 
                         r_p_att = (att_present_p / att_total_p) * 5.0 if att_total_p > 0 else 0.0
                         r_p_perf = (perf_raw_p / cfg_max_perf) * 5.0
@@ -5912,13 +6339,18 @@ elif role == "student":
                     except Exception as loop_error:
                         st.error(f"Error parsing metrics for {sub['name']}: {str(loop_error)}")
 
-        # 3. Individual Assignment Breakdown History Table (Clean Bottom Section)
+        # ===================================================================
+        # 📑 BUG-FREE CHRONOLOGICAL ASSIGNMENT UPLOAD HISTORY LOG
+        # ===================================================================
         st.write("")
         st.divider()
         st.subheader("📑 Chronological Assignment Upload History")
+        
+        # FIXED SQL: COALESCE forces empty database text strings into absolute clean NULLs
         query_assignments = """
         SELECT s.name as Subject, a.title as Assignment, a.deadline as Deadline, 
-               sub.marks as Marks, sub.submission_time as Submitted_On
+               NULLIF(sub.marks, '') as Marks, 
+               NULLIF(sub.submission_time, '') as Submitted_On
         FROM assignments a
         INNER JOIN subjects s ON a.subject_id = s.id
         LEFT JOIN submissions sub ON a.id = sub.assignment_id AND sub.student_id = ?
@@ -5936,24 +6368,48 @@ elif role == "student":
                 raw_marks = row['Marks']
                 has_marks = raw_marks is not None and str(raw_marks).strip() != ""
                 
-                if row['Submitted_On'] is not None:
-                    status = "✅ Graded" if has_marks else "⏳ Pending"
-                    try:
-                        score = f"{float(raw_marks):.1f}/10" if has_marks else "N/A"
-                    except:
-                        score = "N/A"
-                elif current_date > deadline_date:
-                    status = "❌ MISSED"
-                    score = "0.0/10"
+                # 🛡️ BULLETPROOF DETECTION: If they are locked out by the deadline, Submitted_On will be completely missing (None/NaN)
+                is_submitted = pd.notna(row['Submitted_On']) and str(row['Submitted_On']).strip() != "None" and str(row['Submitted_On']).strip() != ""
+                
+                if is_submitted:
+                    # 📤 Case 1: Student HAS turned in the assignment
+                    sub_time_str = str(row['Submitted_On'])
+                    
+                    if "[LATE-10%]" in sub_time_str:
+                        status = "⚠️ Submitted Late (-10%)"
+                        score = f"{float(raw_marks):.1f}/10" if has_marks else "⏳ Pending (-10% Penalty)"
+                    elif "[LATE-50%]" in sub_time_str:
+                        status = "🚨 Submitted Late (-50%)"
+                        score = f"{float(raw_marks):.1f}/10" if has_marks else "⏳ Pending (-50% Penalty)"
+                    else:
+                        status = "📤 Submitted"
+                        score = f"{float(raw_marks):.1f}/10" if has_marks else "⏳ Pending"
                 else:
-                    status = "📖 Open"
-                    score = "Pending"
+                    # ❌ Case 2: Student HAS NOT submitted anything
+                    if current_date > deadline_date:
+                        # ⏱️ Check how many hours have passed since the midnight deadline to see if it passed 48h
+                        today_dt = datetime.now(NST)
+                        deadline_dt = datetime.combine(deadline_date, datetime.min.time()).replace(tzinfo=NST)
+                        hours_late = (today_dt - deadline_dt).total_seconds() / 3600.0
+                        
+                        if hours_late > 48.0:
+                            status = "❌ Unsubmitted (Expired)"
+                        else:
+                            status = "❌ Unsubmitted"
+                        score = "N/A"
+                    else:
+                        status = "📖 Open"
+                        score = "⏳ Awaiting Upload"
 
                 display_data.append({
-                    "Subject": row['Subject'], "Assignment": row['Assignment'],
-                    "Deadline": row['Deadline'], "Status": status, "Marks": score
+                    "Subject": row['Subject'], 
+                    "Assignment": row['Assignment'],
+                    "Deadline": row['Deadline'], 
+                    "Status": status, 
+                    "Marks": score
                 })
             
+            # Render a fresh clean table layout matching the state updates perfectly
             st.dataframe(pd.DataFrame(display_data), use_container_width=True, hide_index=True)
     # ================= PROFILE & SETTINGS =================
     with tabs[3]:
