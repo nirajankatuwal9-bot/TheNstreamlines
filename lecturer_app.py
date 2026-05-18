@@ -400,10 +400,10 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 89702cd7caedd684876dcce447fb8996d8db3ff6
+
+
+
 # ================= TIMEZONE CONFIG =================
 NST = timezone(timedelta(hours=5, minutes=45))
 # ================= CONFIG =================
