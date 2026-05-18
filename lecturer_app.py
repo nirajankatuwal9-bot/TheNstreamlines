@@ -21,157 +21,385 @@ from streamlit_autorefresh import st_autorefresh
 # ========== BEAUTIFUL REFINED CYBERPUNK UI ==========
 st.markdown("""
 <style>
-    /* 1. Beautiful Sci-Fi Fonts: 'Oxanium' for sleek headers, 'Space Grotesk' for clean data */
-    @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght=500;700&family=Space+Grotesk:wght=400;500;600&display=swap');
+    /* 1. High-Readability Minimalist Font */
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght=400;500;600;700&display=swap');
 
-    /* 2. Deep Void Background with Subtle Ambient Glows */
+    /* 2. Classic Neutral Dark Canvas (Eliminates All Glare & Accent Light Pollution) */
     .stApp {
-        background-color: #060612 !important;
-        background-image: 
-            radial-gradient(circle at 10% 20%, rgba(213, 0, 249, 0.05), transparent 40%),
-            radial-gradient(circle at 90% 80%, rgba(0, 229, 255, 0.05), transparent 40%) !important;
+        background-color: #0D0E12 !important;
+        background-image: none !important; /* Zero distracting glowing gradients */
     }
 
-    /* 3. Base Text & Explicit Widget Label Overrides for High Visibility */
+    /* 3. Crisp Secondary Text and Label Balancing Layers */
     html, body, [class*="css"], 
     [data-testid="stWidgetLabel"], 
     [data-testid="stMarkdownContainer"] p,
     [data-testid="stRadio"] label span,
-    span p, label {
+    span p, label,
+    div[data-testid="stCaptionContainer"],
+    [data-testid="stSidebar"] .element-container small {
         font-family: 'Space Grotesk', sans-serif !important;
-        font-size: 1.05em;
-        color: #C1D5EE !important; /* Soft ice-blue for perfect readability */
+        font-size: 1.01em;
+        color: #E5E7EB !important; /* Premium crisp off-white for text clarity */
     }
 
-    /* 4. Beautiful, Resized Glowing Headers */
+    /* Fix the faded sidebar role text visibility */
+    div[data-testid="stCaptionContainer"] {
+        font-size: 0.9em !important;
+        color: #9CA3AF !important; /* Solid iron dust grey for clean secondary text rendering */
+        font-weight: 500 !important;
+    }
+
+    /* 4. Enterprise-Grade Accent Headers (Zero Light Bleeding) */
     h1, h2, h3, h4 {
-        font-family: 'Oxanium', sans-serif !important;
-        color: #00E5FF !important; /* Neon Cyan */
-        /* Multi-layered soft glow for a "beautiful" neon effect */
-        text-shadow: 0 0 8px rgba(0, 229, 255, 0.5), 0 0 15px rgba(0, 229, 255, 0.3); 
-        letter-spacing: 1.2px;
-        font-weight: 700;
+        font-family: 'Space Grotesk', sans-serif !important;
+        color: #10B981 !important; /* Institutional Emerald Mint */
+        font-weight: 700 !important;
+        letter-spacing: 0.3px;
+        text-shadow: none !important; /* Stripped out all harsh text-glow glare */
     }
     
-    /* Explicitly scaling down the header sizes so they look elegant, not clunky */
-    h1 { font-size: 2.2rem !important; margin-bottom: 1rem !important; }
-    h2 { font-size: 1.7rem !important; margin-bottom: 0.8rem !important; }
-    h3 { font-size: 1.3rem !important; margin-bottom: 0.5rem !important; }
+    h1 { font-size: 1.8rem !important; margin-bottom: 0.8rem !important; }
+    h2 { font-size: 1.35rem !important; margin-bottom: 0.6rem !important; }
+    h3 { font-size: 1.1rem !important; margin-bottom: 0.4rem !important; }
 
-    /* 5. Sleek Dark Glass Inputs with Cyan Focus */
-    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div {
-        background-color: rgba(10, 15, 30, 0.8) !important;
-        color: #00E5FF !important;
-        border: 1px solid rgba(213, 0, 249, 0.4) !important; /* Soft Purple Border */
+    /* 5. Solid Obsidian Ash Inputs — MAXIMUM VISIBILITY FOR TYPING */
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div, .stNumberInput>div>div>input {
+        background-color: #181A20 !important; /* Matte dark steel slate */
+        color: #F9FAFB !important; /* Pure high-contrast white text */
+        border: 1px solid rgba(156, 163, 175, 0.25) !important;
         border-radius: 6px !important;
         font-family: 'Space Grotesk', sans-serif;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
+    }
+
+    /* Active Input Focus Configurations */
+    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus, .stNumberInput>div>div>input:focus,
+    .stTextInput>div>div>input:active, .stTextArea>div>div>textarea:active, .stNumberInput>div>div>input:active {
+        background-color: #1F222A !important;
+        color: #10B981 !important;
+        border-color: #10B981 !important;
+        box-shadow: 0 0 6px rgba(16, 185, 129, 0.2) !important;
+    }
+
+    /* Input text placeholder color configuration */
+    input::placeholder, textarea::placeholder {
+        color: #4B5563 !important;
+        opacity: 1 !important;
+    }
+
+    /* Dropdown menu item selections */
+    div[data-baseweb="select"] * { color: #10B981 !important; }
+    div[role="listbox"] ul li { background-color: #181A20 !important; color: #10B981 !important; }
+    div[role="listbox"] ul li:hover { background-color: rgba(16, 185, 129, 0.08) !important; }
+
+    /* 6. 🚀 ANTI-FADE HOVER STATE BUTTON ENGINE (STOPS BLINDING WHITE STATE) */
+    .stButton>button, .stForm [data-testid="stFormSubmitButton"] button, .stDownloadButton>button {
+        background-color: #181A20 !important;
+        border: 1px solid rgba(16, 185, 129, 0.4) !important;
+        color: #F9FAFB !important; /* Crisp, readable high-contrast white */
+        font-family: 'Space Grotesk', sans-serif !important;
+        font-weight: 600 !important;
+        border-radius: 6px !important;
+        letter-spacing: 0.3px;
+        padding: 8px 20px !important;
+        transition: all 0.2s ease-in-out !important;
+    }
+
+    /* Solid Hover Inversion: Floods background to solid mint green, text flips to dark charcoal void */
+    .stButton>button:hover, .stForm [data-testid="stFormSubmitButton"] button:hover, .stDownloadButton>button:hover,
+    .stButton>button:focus, .stForm [data-testid="stFormSubmitButton"] button:focus, .stDownloadButton>button:focus,
+    .stButton>button:active, .stForm [data-testid="stFormSubmitButton"] button:active, .stDownloadButton>button:active {
+        background-color: #10B981 !important; /* Solid mint green flood */
+        color: #0D0E12 !important; /* High-contrast dark charcoal text */
+        border-color: #10B981 !important;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
+        transform: none !important;
+    }
+
+    /* 7. 🔒 SOLID STEEL EXPANDER HEADER ENGINE (FULL FLASH CONTROL) */
+    .streamlit-expanderHeader, div[data-testid="stExpander"] button {
+        background-color: #181A20 !important;
+        border: 1px solid rgba(156, 163, 175, 0.15) !important;
+        border-radius: 6px !important;
+        color: #10B981 !important;
+        transition: all 0.2s ease-in-out !important;
     }
     
-    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
-        border-color: #00E5FF !important;
-        box-shadow: 0 0 12px rgba(0, 229, 255, 0.3) !important;
+    /* Ensure open or active expanders stay anchored to safe dark surfaces */
+    .streamlit-expanderHeader:hover, div[data-testid="stExpander"] button:hover,
+    .streamlit-expanderHeader:focus, div[data-testid="stExpander"] button:focus,
+    .streamlit-expanderHeader[aria-expanded="true"], div[data-testid="stExpander"] button[aria-expanded="true"] {
+        background-color: #22252E !important;
+        border-color: #10B981 !important;
+        color: #10B981 !important;
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.15) !important;
+    }
+    
+    .streamlit-expanderHeader p, div[data-testid="stExpander"] button p, div[data-testid="stExpander"] span {
+        color: #10B981 !important; /* Locks text directly to crisp green */
+        font-weight: 600 !important;
+    }
+    
+    div[data-testid="stExpander"] div[role="tabpanel"] {
+        background-color: rgba(24, 26, 32, 0.4) !important;
+        padding: 18px !important;
+        border: 1px solid rgba(156, 163, 175, 0.1) !important;
+        border-top: none !important;
+        border-radius: 0 0 6px 6px !important;
     }
 
-    /* Ensure dropdown popover lists inherit the proper readable cyan values */
-    div[data-baseweb="select"] * {
-        color: #00E5FF !important;
-    }
-
-    /* 6. Refined Multi-Color Neon Buttons */
-    .stButton>button {
-        background: rgba(6, 6, 18, 0.8) !important;
-        border: 1px solid transparent !important;
-        border-image: linear-gradient(90deg, #00E5FF, #D500F9) 1 !important;
-        color: #FFFFFF !important;
-        font-family: 'Oxanium', sans-serif !important;
-        font-size: 1.1rem !important;
-        letter-spacing: 1px;
-        transition: all 0.3s ease-in-out;
-    }
-
-    /* Stunning bright hover effect */
-    .stButton>button:hover {
-        background: linear-gradient(90deg, rgba(0, 229, 255, 0.2), rgba(213, 0, 249, 0.2)) !important;
-        color: #00E5FF !important;
-        box-shadow: 0 0 15px rgba(0, 229, 255, 0.4), 0 0 25px rgba(213, 0, 249, 0.3) !important;
-        transform: translateY(-2px);
-    }
-
-    /* Make the Clock/Time stand out and not look faded */
-    .live-clock {
-        color: #00E5FF !important;
-        font-family: 'Oxanium', sans-serif;
-        font-weight: 700;
-        font-size: 1.2rem;
-        text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
-        background: rgba(0, 229, 255, 0.1);
-        padding: 5px 15px;
-        border-radius: 20px;
-        border: 1px solid rgba(0, 229, 255, 0.3);
-    }
-
-    /* 7. Glowing Sidebar Divider */
+    /* Sidebar Matte Surface */
     [data-testid="stSidebar"] {
-        background-color: #05050C !important;
-        border-right: 1px solid rgba(213, 0, 249, 0.2);
-        box-shadow: 5px 0 20px rgba(213, 0, 249, 0.05);
+        background-color: #07080B !important;
+        border-right: 1px solid rgba(156, 163, 175, 0.1);
     }
 
-    /* 8. Refined Global Top Navigation Tabs (No Red Line + Smooth Hover Cyan Glow) */
+    /* Main Navigation Top Tabs */
     button[data-baseweb="tab"] {
-        color: #A1B5CC !important; /* Clearly readable gray-blue text for inactive tabs */
+        color: #6B7280 !important;
         font-family: 'Space Grotesk', sans-serif !important;
-        background: transparent !important;
-        border: none !important;
-        transition: all 0.25s ease-in-out !important;
     }
-
-    button[data-baseweb="tab"] div {
-        color: inherit !important;
-    }
-
-    /* Hover Glow State */
     button[data-baseweb="tab"]:hover {
-        color: #00E5FF !important;
-        text-shadow: 0 0 10px rgba(0, 229, 255, 0.6) !important;
-        cursor: pointer;
+        color: #10B981 !important;
     }
-
-    /* Selected Tab State - Neon Cyan Underline replacing default red border */
     button[aria-selected="true"] {
-        color: #00E5FF !important;
-        border-bottom: 2px solid #00E5FF !important;
-        text-shadow: 0 0 8px rgba(0, 229, 255, 0.4) !important;
+        color: #10B981 !important;
+        border-bottom: 2px solid #10B981 !important;
+    }
+    [data-testid="stTabs"] div[role="tablist"] div { background-color: transparent !important; }
+
+    /* Custom Form Containers & Information Box adjustments */
+    div[data-testid="stForm"] {
+        background-color: #181A20 !important;
+        border: 1px solid rgba(156, 163, 175, 0.15) !important;
+    }
+    div[data-testid="stNotification"] {
+        background-color: #181A20 !important;
+        color: #F9FAFB !important;
+        border: 1px solid rgba(16, 185, 129, 0.2) !important;
     }
 
-    /* Suppress original red line indicators */
-    [data-testid="stTabs"] div[role="tablist"] div {
-        background-color: transparent !important;
-    }
-
-    /* 9. Sidebar Clock Container Panel */
+    /* Fixed Sidebar Clock Panel alignment */
     .sidebar-clock {
-        background: rgba(0, 229, 255, 0.05);
-        border: 1px solid rgba(0, 229, 255, 0.3);
-        border-radius: 10px;
-        padding: 12px;
-        color: #00E5FF !important;
-        font-family: 'Oxanium', sans-serif;
-        font-weight: 700;
-        font-size: 1.1rem;
-        text-align: center;
-        text-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
-        margin-bottom: 15px;
+        background: rgba(16, 185, 129, 0.02) !important;
+        border: 1px solid rgba(16, 185, 129, 0.15) !important;
+        border-radius: 6px !important;
+        color: #10B981 !important;
+        font-family: 'Space Grotesk', sans-serif !important;
+        font-weight: 600 !important;
+        text-shadow: none !important;
+    }
+
+    /* 8. Premium Roster Styling for Eclipse Brand Card Containers */
+    .brand-card-dark {
+        text-align: center; 
+        padding: 20px; 
+        background-color: #181A20; 
+        border: 1px solid rgba(156, 163, 175, 0.15); 
+        border-radius: 10px; 
+        border-top: 4px solid #10B981;
+        margin-top: 15px;
+    }
+    .brand-inner-box {
+        background-color: #0D0E12; 
+        padding: 10px; 
+        border-radius: 6px;
+        border: 1px solid rgba(156, 163, 175, 0.05);
+    }
+</style>
+""", unsafe_allow_html=True)# ========== BEAUTIFUL REFINED CYBERPUNK UI ==========
+st.markdown("""
+<style>
+    /* 1. High-Readability Minimalist Font */
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght=400;500;600;700&display=swap');
+
+    /* 2. Classic Neutral Dark Canvas (Eliminates All Glare & Accent Light Pollution) */
+    .stApp {
+        background-color: #0D0E12 !important;
+        background-image: none !important; /* Zero distracting glowing gradients */
+    }
+
+    /* 3. Crisp Secondary Text and Label Balancing Layers */
+    html, body, [class*="css"], 
+    [data-testid="stWidgetLabel"], 
+    [data-testid="stMarkdownContainer"] p,
+    [data-testid="stRadio"] label span,
+    span p, label,
+    div[data-testid="stCaptionContainer"],
+    [data-testid="stSidebar"] .element-container small {
+        font-family: 'Space Grotesk', sans-serif !important;
+        font-size: 1.01em;
+        color: #E5E7EB !important; /* Premium crisp off-white for text clarity */
+    }
+
+    /* Fix the faded sidebar role text visibility */
+    div[data-testid="stCaptionContainer"] {
+        font-size: 0.9em !important;
+        color: #9CA3AF !important; /* Solid iron dust grey for clean secondary text rendering */
+        font-weight: 500 !important;
+    }
+
+    /* 4. Enterprise-Grade Accent Headers (Zero Light Bleeding) */
+    h1, h2, h3, h4 {
+        font-family: 'Space Grotesk', sans-serif !important;
+        color: #10B981 !important; /* Institutional Emerald Mint */
+        font-weight: 700 !important;
+        letter-spacing: 0.3px;
+        text-shadow: none !important; /* Stripped out all harsh text-glow glare */
+    }
+    
+    h1 { font-size: 1.8rem !important; margin-bottom: 0.8rem !important; }
+    h2 { font-size: 1.35rem !important; margin-bottom: 0.6rem !important; }
+    h3 { font-size: 1.1rem !important; margin-bottom: 0.4rem !important; }
+
+    /* 5. Solid Obsidian Ash Inputs — MAXIMUM VISIBILITY FOR TYPING */
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div, .stNumberInput>div>div>input {
+        background-color: #181A20 !important; /* Matte dark steel slate */
+        color: #F9FAFB !important; /* Pure high-contrast white text */
+        border: 1px solid rgba(156, 163, 175, 0.25) !important;
+        border-radius: 6px !important;
+        font-family: 'Space Grotesk', sans-serif;
+        transition: all 0.2s ease;
+    }
+
+    /* Active Input Focus Configurations */
+    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus, .stNumberInput>div>div>input:focus,
+    .stTextInput>div>div>input:active, .stTextArea>div>div>textarea:active, .stNumberInput>div>div>input:active {
+        background-color: #1F222A !important;
+        color: #10B981 !important;
+        border-color: #10B981 !important;
+        box-shadow: 0 0 6px rgba(16, 185, 129, 0.2) !important;
+    }
+
+    /* Input text placeholder color configuration */
+    input::placeholder, textarea::placeholder {
+        color: #4B5563 !important;
+        opacity: 1 !important;
+    }
+
+    /* Dropdown menu item selections */
+    div[data-baseweb="select"] * { color: #10B981 !important; }
+    div[role="listbox"] ul li { background-color: #181A20 !important; color: #10B981 !important; }
+    div[role="listbox"] ul li:hover { background-color: rgba(16, 185, 129, 0.08) !important; }
+
+    /* 6. 🚀 ANTI-FADE HOVER STATE BUTTON ENGINE (STOPS BLINDING WHITE STATE) */
+    .stButton>button, .stForm [data-testid="stFormSubmitButton"] button, .stDownloadButton>button {
+        background-color: #181A20 !important;
+        border: 1px solid rgba(16, 185, 129, 0.4) !important;
+        color: #F9FAFB !important; /* Crisp, readable high-contrast white */
+        font-family: 'Space Grotesk', sans-serif !important;
+        font-weight: 600 !important;
+        border-radius: 6px !important;
+        letter-spacing: 0.3px;
+        padding: 8px 20px !important;
+        transition: all 0.2s ease-in-out !important;
+    }
+
+    /* Solid Hover Inversion: Floods background to solid mint green, text flips to dark charcoal void */
+    .stButton>button:hover, .stForm [data-testid="stFormSubmitButton"] button:hover, .stDownloadButton>button:hover,
+    .stButton>button:focus, .stForm [data-testid="stFormSubmitButton"] button:focus, .stDownloadButton>button:focus,
+    .stButton>button:active, .stForm [data-testid="stFormSubmitButton"] button:active, .stDownloadButton>button:active {
+        background-color: #10B981 !important; /* Solid mint green flood */
+        color: #0D0E12 !important; /* High-contrast dark charcoal text */
+        border-color: #10B981 !important;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
+        transform: none !important;
+    }
+
+    /* 7. 🔒 SOLID STEEL EXPANDER HEADER ENGINE (FULL FLASH CONTROL) */
+    .streamlit-expanderHeader, div[data-testid="stExpander"] button {
+        background-color: #181A20 !important;
+        border: 1px solid rgba(156, 163, 175, 0.15) !important;
+        border-radius: 6px !important;
+        color: #10B981 !important;
+        transition: all 0.2s ease-in-out !important;
+    }
+    
+    /* Ensure open or active expanders stay anchored to safe dark surfaces */
+    .streamlit-expanderHeader:hover, div[data-testid="stExpander"] button:hover,
+    .streamlit-expanderHeader:focus, div[data-testid="stExpander"] button:focus,
+    .streamlit-expanderHeader[aria-expanded="true"], div[data-testid="stExpander"] button[aria-expanded="true"] {
+        background-color: #22252E !important;
+        border-color: #10B981 !important;
+        color: #10B981 !important;
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.15) !important;
+    }
+    
+    .streamlit-expanderHeader p, div[data-testid="stExpander"] button p, div[data-testid="stExpander"] span {
+        color: #10B981 !important; /* Locks text directly to crisp green */
+        font-weight: 600 !important;
+    }
+    
+    div[data-testid="stExpander"] div[role="tabpanel"] {
+        background-color: rgba(24, 26, 32, 0.4) !important;
+        padding: 18px !important;
+        border: 1px solid rgba(156, 163, 175, 0.1) !important;
+        border-top: none !important;
+        border-radius: 0 0 6px 6px !important;
+    }
+
+    /* Sidebar Matte Surface */
+    [data-testid="stSidebar"] {
+        background-color: #07080B !important;
+        border-right: 1px solid rgba(156, 163, 175, 0.1);
+    }
+
+    /* Main Navigation Top Tabs */
+    button[data-baseweb="tab"] {
+        color: #6B7280 !important;
+        font-family: 'Space Grotesk', sans-serif !important;
+    }
+    button[data-baseweb="tab"]:hover {
+        color: #10B981 !important;
+    }
+    button[aria-selected="true"] {
+        color: #10B981 !important;
+        border-bottom: 2px solid #10B981 !important;
+    }
+    [data-testid="stTabs"] div[role="tablist"] div { background-color: transparent !important; }
+
+    /* Custom Form Containers & Information Box adjustments */
+    div[data-testid="stForm"] {
+        background-color: #181A20 !important;
+        border: 1px solid rgba(156, 163, 175, 0.15) !important;
+    }
+    div[data-testid="stNotification"] {
+        background-color: #181A20 !important;
+        color: #F9FAFB !important;
+        border: 1px solid rgba(16, 185, 129, 0.2) !important;
+    }
+
+    /* Fixed Sidebar Clock Panel alignment */
+    .sidebar-clock {
+        background: rgba(16, 185, 129, 0.02) !important;
+        border: 1px solid rgba(16, 185, 129, 0.15) !important;
+        border-radius: 6px !important;
+        color: #10B981 !important;
+        font-family: 'Space Grotesk', sans-serif !important;
+        font-weight: 600 !important;
+        text-shadow: none !important;
+    }
+
+    /* 8. Premium Roster Styling for Eclipse Brand Card Containers */
+    .brand-card-dark {
+        text-align: center; 
+        padding: 20px; 
+        background-color: #181A20; 
+        border: 1px solid rgba(156, 163, 175, 0.15); 
+        border-radius: 10px; 
+        border-top: 4px solid #10B981;
+        margin-top: 15px;
+    }
+    .brand-inner-box {
+        background-color: #0D0E12; 
+        padding: 10px; 
+        border-radius: 6px;
+        border: 1px solid rgba(156, 163, 175, 0.05);
     }
 </style>
 """, unsafe_allow_html=True)
 
-
-
-
-# ====================================================
-# =====================================================
 # ================= TIMEZONE CONFIG =================
 NST = timezone(timedelta(hours=5, minutes=45))
 # ================= CONFIG =================
@@ -304,6 +532,18 @@ os.makedirs("data", exist_ok=True)
 os.makedirs("assignment_files", exist_ok=True)
 os.makedirs("submission_files", exist_ok=True)
 os.makedirs("study_materials", exist_ok=True)
+
+# ================= GLOBAL SESSION STATE FALLBACKS =================
+if "g_univ" not in st.session_state: st.session_state["g_univ"] = "Tribhuvan University"
+if "g_inst_body" not in st.session_state: st.session_state["g_inst_body"] = "Institute of Engineering"
+if "g_college" not in st.session_state: st.session_state["g_college"] = "Himalaya College of Engineering"
+if "g_dept" not in st.session_state: st.session_state["g_dept"] = "Civil"
+if "g_prog" not in st.session_state: st.session_state["g_prog"] = "BE Civil"
+if "g_batch" not in st.session_state: st.session_state["g_batch"] = "2080"
+if "g_yp" not in st.session_state: st.session_state["g_yp"] = "III/I"
+if "g_exam_title" not in st.session_state: st.session_state["g_exam_title"] = "Internal Assessment Examination 2082 Chaitra"
+if "g_teacher" not in st.session_state: st.session_state["g_teacher"] = "Er. Nirajan Katuwal"
+if "g_hod" not in st.session_state: st.session_state["g_hod"] = "MD Abrar Alam"
 # ================= ANNOUNCEMENTS =================
 
 def create_announcement(title, message, semester_id, priority, user_id, expires_at=None):
@@ -425,6 +665,27 @@ CREATE TABLE IF NOT EXISTS users(
     semester_id INTEGER
 )
 """)
+def score_to_words(score_num):
+    """
+    Utility function to automatically convert numeric marks integers 
+    into standard academic textbook word formatting for university ledgers.
+    """
+    try:
+        val = int(round(float(score_num)))
+    except (ValueError, TypeError):
+        return "Zero"
+        
+    words_map = {
+        0: "Zero", 1: "One", 2: "Two", 3: "Three", 4: "Four", 5: "Five",
+        6: "Six", 7: "Seven", 8: "Eight", 9: "Nine", 10: "Ten",
+        11: "Eleven", 12: "Twelve", 13: "Thirteen", 14: "Fourteen", 15: "Fifteen",
+        16: "Sixteen", 17: "Seventeen", 18: "Eighteen", 19: "Nineteen", 20: "Twenty",
+        21: "Twenty One", 22: "Twenty Two", 23: "Twenty Three", 24: "Twenty Four", 25: "Twenty Five",
+        26: "Twenty Six", 27: "Twenty Seven", 28: "Twenty Eight", 29: "Twenty Nine", 30: "Thirty",
+        31: "Thirty One", 32: "Thirty Two", 33: "Thirty Three", 34: "Thirty Four", 35: "Thirty Five",
+        36: "Thirty Six", 37: "Thirty Seven", 38: "Thirty Eight", 39: "Thirty Nine", 40: "Forty"
+    }
+    return words_map.get(val, str(val))
 # ================= DATABASE SAFE MIGRATION TUNNEL =================
 # 1. Ensure email column exists
 try:
@@ -463,6 +724,35 @@ CREATE TABLE IF NOT EXISTS subjects(
     semester_id INTEGER
 )
 """)
+# ===================================================================
+# ➕ MIGRATION TUNNEL: ADD DYNAMIC RAW CEILINGS TO SUBJECT SCHEMES
+# ===================================================================
+try:
+    c.execute("ALTER TABLE subject_schemes ADD COLUMN t_max_raw_hw REAL DEFAULT 50.0")
+    c.execute("ALTER TABLE subject_schemes ADD COLUMN t_max_raw_mid REAL DEFAULT 40.0")
+    c.execute("ALTER TABLE subject_schemes ADD COLUMN t_max_raw_final REAL DEFAULT 40.0")
+    c.execute("ALTER TABLE subject_schemes ADD COLUMN t_max_raw_other REAL DEFAULT 100.0")
+    conn.commit()
+except Exception:
+    pass
+# ===================================================================
+# ===================================================================
+# ➕ MIGRATION TUNNEL: ADD DYNAMIC RAW CEILINGS TO PRACTICAL SCHEMES
+# ===================================================================
+try:
+    c.execute("ALTER TABLE subject_schemes ADD COLUMN p_max_raw_perf REAL DEFAULT 100.0")
+    c.execute("ALTER TABLE subject_schemes ADD COLUMN p_max_raw_report REAL DEFAULT 100.0")
+    c.execute("ALTER TABLE subject_schemes ADD COLUMN p_max_raw_test REAL DEFAULT 100.0")
+    c.execute("ALTER TABLE subject_schemes ADD COLUMN p_max_raw_viva REAL DEFAULT 100.0")
+    conn.commit()
+except Exception:
+    pass
+# ===================================================================
+try:
+    c.execute("ALTER TABLE subjects ADD COLUMN code TEXT DEFAULT 'CIV-ENGINEERING'")
+    conn.commit()
+except:
+    pass
 
 # ASSIGNMENTS
 c.execute("""
@@ -582,6 +872,44 @@ try:
     conn.commit()
 except Exception:
     pass
+
+# ===================================================================
+# ➕ NEW: SAAS PROTOTYPE DB REGISTRY (ADDED HERE)
+# ===================================================================
+c.execute("""
+CREATE TABLE IF NOT EXISTS system_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT
+)
+""")
+
+c.execute("""
+INSERT OR IGNORE INTO system_settings (key, value) 
+VALUES ('organization_name', 'Himalaya College of Engineering')
+""")
+
+c.execute("""
+CREATE TABLE IF NOT EXISTS saas_assessments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    subject_id INTEGER,
+    assessment_name TEXT,  
+    max_marks REAL,        
+    weightage REAL,        
+    UNIQUE(subject_id, assessment_name)
+)
+""")
+
+c.execute("""
+CREATE TABLE IF NOT EXISTS saas_student_marks (
+    student_id INTEGER,
+    assessment_id INTEGER,
+    marks_obtained REAL,
+    weighted_score REAL,
+    PRIMARY KEY (student_id, assessment_id)
+)
+""")
+conn.commit()
+# ===================================================================
 #========ANNOUNCEMENTS======================
 c.execute("""
 CREATE TABLE IF NOT EXISTS s(
@@ -606,7 +934,42 @@ conn.commit()
 
 conn.commit()
 conn.commit()
+# 1. Create System Settings Table for SaaS Branding
+c.execute("""
+CREATE TABLE IF NOT EXISTS system_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT
+)
+""")
 
+# Insert a default college name if the table is completely empty
+c.execute("""
+INSERT OR IGNORE INTO system_settings (key, value) 
+VALUES ('organization_name', 'My Engineering College')
+""")
+
+# 2. Create the Upgraded Assessments & Marks Management Tables
+c.execute("""
+CREATE TABLE IF NOT EXISTS saas_assessments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    subject_id INTEGER,
+    assessment_name TEXT,  -- 'Mid-Term Exam' or 'Final Exam'
+    max_marks REAL,        -- Dynamic: e.g., 50, 80, 100
+    weightage REAL,        -- Dynamic: e.g., 30, 70
+    UNIQUE(subject_id, assessment_name)
+)
+""")
+
+c.execute("""
+CREATE TABLE IF NOT EXISTS saas_student_marks (
+    student_id INTEGER,
+    assessment_id INTEGER,
+    marks_obtained REAL,
+    weighted_score REAL,
+    PRIMARY KEY (student_id, assessment_id)
+)
+""")
+conn.commit()
 # ================= PASSWORD HELPERS =================
 
 def hash_password(p):
@@ -697,9 +1060,9 @@ def require_login():
         st.warning("⏰ Your session has expired due to inactivity. Please login again.")
         st.session_state.clear()
         st.rerun()
-# ================= LOGIN =================
+# ================= LOGIN FLOW GATE =================
 
-if not st.session_state.logged_in:
+if not st.session_state.get("logged_in", False):
 
     st.markdown("""
         <div style='text-align: center; padding-bottom: 20px;'>
@@ -711,33 +1074,36 @@ if not st.session_state.logged_in:
         """, unsafe_allow_html=True)
     #-------------------------------------------
     with st.container(border=True):
-        user = st.text_input("Username")
-        pw = st.text_input("Password", type="password")
+        user_input = st.text_input("Username").strip()
+        pw_input = st.text_input("Password", type="password").strip()
 
-        if st.button("Enter the Flow"):
-
-            res = pd.read_sql_query(
-                "SELECT * FROM users WHERE username=?",
-                conn,
-                params=(user,)
-            )
-
-            if not res.empty and check_password(pw, res.iloc[0]["password"]):
-                st.session_state.logged_in = True
-                st.session_state.user_id = res.iloc[0]["id"]
-                st.session_state.role = res.iloc[0]["role"]
-                st.session_state.username = res.iloc[0]["username"]
-                st.session_state.semester_id = res.iloc[0]["semester_id"]
-                st.session_state.full_name = res.iloc[0]["full_name"]
-                st.session_state.show_splash = True
-                st.rerun()
+        if st.button("Enter the Flow", use_container_width=True, type="primary"):
+            if not user_input or not pw_input:
+                st.warning("Please enter both your Username and Password.")
             else:
-                st.error("Invalid credentials")
+                res = pd.read_sql_query(
+                    "SELECT * FROM users WHERE username=?",
+                    conn,
+                    params=(user_input,)
+                )
 
-        st.stop()
-# =====================================================================
-# IF LOGGED IN, THE DASHBOARD STARTS HERE
-# =====================================================================
+                if not res.empty and check_password(pw_input, res.iloc[0]["password"]):
+                    st.session_state.logged_in = True
+                    st.session_state.user_id = res.iloc[0]["id"]
+                    st.session_state.role = res.iloc[0]["role"]
+                    st.session_state.username = res.iloc[0]["username"]
+                    st.session_state.semester_id = res.iloc[0]["semester_id"]
+                    st.session_state.full_name = res.iloc[0]["full_name"]
+                    st.session_state.show_splash = True
+                    st.rerun()
+                else:
+                    st.error("❌ Invalid Username or Password. Please check for typos and try again.")
+    
+    # 🛑 Hard stop here for unauthenticated visitors so down-stream code like Line 757 never executes!
+    st.stop()
+
+# ================= AUTHENTICATED DASHBOARD CODE SECURE ZONE =================
+# Line 757 will safely execute down here because the script only reaches this point after a successful login!
 
 # ========== 1. TIME & GREETING SETUP ==========
 now_nst = datetime.now(NST)
@@ -835,21 +1201,22 @@ with st.sidebar:
                 conn.commit(); st.rerun()
 
     # 3. Global Developer Branding (Pushed to the bottom)
-    st.markdown("<br><br><br><br>", unsafe_allow_html=True)
+    # 3. Global Developer Branding (Pushed to the bottom - Formatted for Nordic Twilight)
+    st.markdown("<br><br>", unsafe_allow_html=True)
     
     st.markdown("""
-        <div style='text-align: center; padding: 15px; background-color: #ffffff; border: 1px solid #e1e4e8; border-radius: 10px; border-top: 4px solid #004b87;'>
-            <h4 style='color: #004b87; margin-bottom: 5px; font-size: 1.1em;'>🌊 The N-Streamlines</h4>
-            <p style='font-size: 0.85em; color: #555; margin-bottom: 10px; line-height: 1.4;'>
+        <div class="brand-card-dark">
+            <h4 style='color: #03B5AA; margin-top: 0; margin-bottom: 5px; font-size: 1.1em;'>🌊 The N-Streamlines</h4>
+            <p style='font-size: 0.88em; color: #A2A7B5; margin-bottom: 12px; line-height: 1.4;'>
                 Advanced Hydro-Informatics &<br>Learning Management
             </p>
-            <div style='background-color: #f4f7f9; padding: 8px; border-radius: 5px;'>
-                <p style='font-size: 0.8em; color: #333; margin-bottom: 0;'>
+            <div class="brand-inner-box">
+                <p style='font-size: 0.85em; color: #E2E4E9; margin-bottom: 0;'>
                     Developed & Architected by<br>
-                    <strong>Er. Nirajan Katuwal</strong>
+                    <strong style='color: #03B5AA;'>Er. Nirajan Katuwal</strong>
                 </p>
             </div>
-            <p style='font-size: 0.7em; color: #999; margin-top: 10px; margin-bottom: 0;'>
+            <p style='font-size: 0.75em; color: #636875; margin-top: 12px; margin-bottom: 0;'>
                 © 2026 | Version 1.0.0 Pro
             </p>
         </div>
@@ -1578,38 +1945,108 @@ def calculate_internal_theory(row, subject_id, db_conn):
     return round(final_total, 2), is_eligible_grace
 
 
-def calculate_internal_practical(row, subject_id, db_conn):
+def calculate_internal_theory(row, subject_id, db_conn):
     """
-    Dynamically fetches subject configurations from the database and
-    calculates weighted practical marks out of lab components.
+    Dynamically reads both syllabus weightages and the lecturer's custom 
+    raw testing ceilings to perfectly normalize any continuous assessment data 
+    down to the official 40-mark theory internal ledger envelope.
     """
-    # 1. Fetch weight scheme from database
+    # 1. Fetch weight scheme and raw ceilings from database
     scheme_df = pd.read_sql_query(
         "SELECT * FROM subject_schemes WHERE subject_id = ?", 
         db_conn, 
         params=(int(subject_id),)
     )
     
+    # Absolute fallbacks if configuration record is missing
+    if scheme_df.empty:
+        scheme = {
+            'theory_full_marks': 40.0,
+            't_weight_att': 0.10, 't_weight_hw': 0.25, 't_weight_mid': 0.25, 't_weight_final': 0.25, 't_weight_other': 0.15,
+            't_max_raw_hw': 50.0, 't_max_raw_mid': 40.0, 't_max_raw_final': 40.0, 't_max_raw_other': 100.0
+        }
+    else:
+        scheme = scheme_df.iloc[0].to_dict()
+
+    # 2. Attendance Component Math (10% standard weight)
+    att_ratio = row['t_att_present'] / row['t_att_total'] if row['t_att_total'] > 0 else 0
+    att_score = att_ratio * (scheme['theory_full_marks'] * scheme['t_weight_att'])
+    
+    # 3. 🧠 UNIVERSAL NORMALIZATION MATHEMATICS
+    # Scale Homework/Assignments using its dynamic testing ceiling denominator
+    raw_max_hw = scheme.get('t_max_raw_hw', 50.0)
+    hw_score = (row['t_hw_raw'] / raw_max_hw) * (scheme['theory_full_marks'] * scheme['t_weight_hw'])
+    
+    # Scale Mid-Term Exam using its dynamic testing ceiling denominator
+    raw_max_mid = scheme.get('t_max_raw_mid', 40.0)
+    mid_score = (row['t_mid_raw'] / raw_max_mid) * (scheme['theory_full_marks'] * scheme['t_weight_mid'])
+    
+    # Scale Final Term Exam using its dynamic testing ceiling denominator
+    raw_max_final = scheme.get('t_max_raw_final', 40.0)
+    final_score = (row['t_final_raw'] / raw_max_final) * (scheme['theory_full_marks'] * scheme['t_weight_final'])
+    
+    # Scale Continuous Tutorial/Other assessments using its dynamic testing ceiling denominator
+    raw_max_other = scheme.get('t_max_raw_other', 100.0)
+    other_score = (row['t_other_raw'] / raw_max_other) * (scheme['theory_full_marks'] * scheme['t_weight_other'])
+    
+    # Aggregate compiled internal credits tally
+    raw_total = att_score + hw_score + mid_score + final_score + other_score
+    
+    # 4. Enforce 70% Attendance Gate Check
+    final_total = raw_total
+    is_eligible_grace = att_ratio >= 0.70
+    
+    if is_eligible_grace and row['t_grace'] > 0:
+        final_total += min(row['t_grace'], 5) 
+        
+    return round(final_total, 2), is_eligible_grace
+def calculate_internal_practical(row, subject_id, db_conn):
+    """
+    Dynamically reads both syllabus weightages and the lecturer's custom 
+    raw testing ceilings to perfectly normalize any continuous laboratory data 
+    down to the official 25-mark practical internal ledger envelope.
+    """
+    # 1. Fetch weight scheme and raw ceilings from database
+    scheme_df = pd.read_sql_query(
+        "SELECT * FROM subject_schemes WHERE subject_id = ?", 
+        db_conn, 
+        params=(int(subject_id),)
+    )
+    
+    # Absolute fallbacks if configuration record is missing
     if scheme_df.empty:
         scheme = {
             'prac_full_marks': 25.0,
-            'p_weight_att': 0.20, 'p_weight_perf': 0.20, 'p_weight_report': 0.20,
-            'p_weight_test': 0.20, 'p_weight_viva': 0.20
+            'p_weight_att': 0.20, 'p_weight_perf': 0.20, 'p_weight_report': 0.20, 'p_weight_test': 0.20, 'p_weight_viva': 0.20,
+            'p_max_raw_perf': 100.0, 'p_max_raw_report': 100.0, 'p_max_raw_test': 100.0, 'p_max_raw_viva': 100.0
         }
     else:
         scheme = scheme_df.iloc[0].to_dict()
 
     full_p = scheme['prac_full_marks']
     
-    # 2. Component Math scaled to custom weight assignments
+    # 2. Lab Attendance Component Math (20% standard weight)
     att_ratio = row['p_att_present'] / row['p_att_total'] if row['p_att_total'] > 0 else 0
     att_score = att_ratio * (full_p * scheme['p_weight_att'])
     
-    perf_score = (row['p_perf_raw'] / 100) * (full_p * scheme['p_weight_perf'])
-    report_score = (row['p_report_raw'] / 100) * (full_p * scheme['p_weight_report'])
-    test_score = (row['p_test_raw'] / 100) * (full_p * scheme['p_weight_test'])
-    viva_score = (row['p_viva_raw'] / 100) * (full_p * scheme['p_weight_viva'])
+    # 3. 🧠 UNIVERSAL LABORATORY NORMALIZATION MATHEMATICS
+    # Scale Lab Performance using its dynamic denominator
+    raw_max_perf = scheme.get('p_max_raw_perf', 100.0)
+    perf_score = (row['p_perf_raw'] / raw_max_perf) * (full_p * scheme['p_weight_perf'])
     
+    # Scale Lab Reports using its dynamic denominator
+    raw_max_report = scheme.get('p_max_raw_report', 100.0)
+    report_score = (row['p_report_raw'] / raw_max_report) * (full_p * scheme['p_weight_report'])
+    
+    # Scale Practical Exam Test using its dynamic denominator
+    raw_max_test = scheme.get('p_max_raw_test', 100.0)
+    test_score = (row['p_test_raw'] / raw_max_test) * (full_p * scheme['p_weight_test'])
+    
+    # Scale Viva Voce using its dynamic denominator
+    raw_max_viva = scheme.get('p_max_raw_viva', 100.0)
+    viva_score = (row['p_viva_raw'] / raw_max_viva) * (full_p * scheme['p_weight_viva'])
+    
+    # Aggregate compiled internal practical credits tally
     raw_total = att_score + perf_score + report_score + test_score + viva_score
     is_eligible = att_ratio >= 0.70
     
@@ -1620,7 +2057,56 @@ def calculate_internal_practical(row, subject_id, db_conn):
 # ==========================================================
 
 if role == "lecturer":
+    # Ensure this is right under the line: if role == "lecturer":
+    
+    # ===================================================================
+    # 🏫 GLOBAL INSTITUTIONAL PROFILE CONFIGURATION CARD (INPUT ONCE)
+    # ===================================================================
+    with st.expander("🏫 Global Institutional & Print Settings Registry", expanded=False):
+        st.markdown("##### ⚙️ Configure Document Header Credentials (Input Once, Fills All Exports)")
+        
+        # --- Row 1: Core Institutional Details (UPDATED TO SEPARATE BATCH & YEAR/PART) ---
+        c_inst1, c_inst2, c_inst3 = st.columns(3)
+        with c_inst1:
+            st.text_input("University Title", value=st.session_state["g_univ"], key="g_univ")
+            st.text_input("College / Institute Name", value=st.session_state["g_college"], key="g_college")
+        with c_inst2:
+            st.text_input("Institute Body", value=st.session_state["g_inst_body"], key="g_inst_body")
+            st.text_input("Department Handle", value=st.session_state["g_dept"], key="g_dept")
+        with c_inst3:
+            st.text_input("Programme / Level Title", value=st.session_state["g_prog"], key="g_prog")
+            
+            # Splitting Batch and Year/Part safely into their own side-by-side inputs
+            sub_col1, sub_col2 = st.columns(2)
+            with sub_col1:
+                st.text_input("Enrollment Batch", value=st.session_state["g_batch"], key="g_batch")
+            with sub_col2:
+                st.text_input("Current Year/Part", value=st.session_state["g_yp"], key="g_yp")
+            
+        st.divider()
+        
+        # --- Row 2: Examination Sheet Credentials ---
+        c_exam1, c_exam2, c_exam3 = st.columns(3)
+        with c_exam1:
+            st.text_input("Examination Header Title", value=st.session_state["g_exam_title"], key="g_exam_title")
+            st.text_input("Subject Name Override", value="Engineering Hydrology", key="g_sub_name")
+        with c_exam2:
+            st.text_input("Subject Code No.", value="ENCE 306", key="g_sub_code")
+            st.selectbox("Evaluation Nature Mode", ["Theory", "Practical"], key="g_exam_nature")
+        with c_exam3:
+            st.number_input("Header Full Marks Ceiling", value=25, key="g_f_marks")
+            st.number_input("Header Pass Marks Ceiling", value=10, key="g_p_marks")
 
+        st.divider()
+
+        # --- Row 3: Signing Authorities & Teacher Tracks ---
+        c_auth1, c_auth2 = st.columns(2)
+        with c_auth1:
+            st.text_input("Name of Examiner / Subject Teacher", value=st.session_state["g_teacher"], key="g_teacher")
+        with c_auth2:
+            st.text_input("Name of Head of Department (HoD)", value=st.session_state["g_hod"], key="g_hod")
+
+    st.write("") # Clean spacing barrier before tab widgets load
     tabs = st.tabs([
         "Dashboard",  
         "Semesters",
@@ -2110,9 +2596,11 @@ if role == "lecturer":
                     st.dataframe(all_subjects_debug, use_container_width=True, hide_index=True)
                 else:
                     st.info("No subjects created yet.")
-            # ================= DYNAMIC SCHEME CONFIGURATOR =================
+            # ===================================================================
+            # ⚙️ ENTERPRISE-GRADE SCHEME CONFIGURATOR PANEL
+            # ===================================================================
             st.write("")
-            with st.expander("⚙️ Advanced: Configure Subject Marking Schemes (Weightage Rules)"):
+            with st.expander("⚙️ Advanced: Configure Subject Marking Schemes (Dynamic Raw Ceilings)"):
                 all_subs = pd.read_sql_query("""
                     SELECT s.id, s.name, sem.name as semester 
                     FROM subjects s 
@@ -2127,36 +2615,90 @@ if role == "lecturer":
                     selected_target = st.selectbox("Choose Subject to Edit Rules", list(sub_map.keys()), key="scheme_sub_picker")
                     target_sub_id = sub_map[selected_target]
                     
-                    # Load existing data from database if it exists, otherwise fall back to your classic standard values
+                    # Read existing settings out of database storage file
                     exist_rule = pd.read_sql_query("SELECT * FROM subject_schemes WHERE subject_id=?", conn, params=(int(target_sub_id),))
                     
                     sc_theory = exist_rule.iloc[0]['theory_full_marks'] if not exist_rule.empty else 40.0
                     sc_prac = exist_rule.iloc[0]['prac_full_marks'] if not exist_rule.empty else 25.0
                     
+                    # Read existing raw ceiling setups if present, fallback to defaults if blank
+                    ex_max_hw = exist_rule.iloc[0]['t_max_raw_hw'] if (not exist_rule.empty and 't_max_raw_hw' in exist_rule.columns) else 50.0
+                    ex_max_mid = exist_rule.iloc[0]['t_max_raw_mid'] if (not exist_rule.empty and 't_max_raw_mid' in exist_rule.columns) else 40.0
+                    ex_max_final = exist_rule.iloc[0]['t_max_raw_final'] if (not exist_rule.empty and 't_max_raw_final' in exist_rule.columns) else 40.0
+                    ex_max_other = exist_rule.iloc[0]['t_max_raw_other'] if (not exist_rule.empty and 't_max_raw_other' in exist_rule.columns) else 100.0
+
                     cc1, cc2 = st.columns(2)
                     with cc1:
-                        st.markdown("### 📝 Theory Weights")
-                        f_theory = st.number_input("Theory Full Marks Allocation", min_value=0.0, max_value=100.0, value=float(sc_theory), key="sch_f_theory")
-                        w_att = st.slider("Attendance Weight Ratio", 0.0, 1.0, 0.10, key="sch_w_att")
-                        w_hw = st.slider("Homework/Assignment Weight Ratio", 0.0, 1.0, 0.25, key="sch_w_hw")
-                        w_mid = st.slider("Mid-Term Assessment Weight Ratio", 0.0, 1.0, 0.25, key="sch_w_mid")
-                        w_final = st.slider("Final Internal Exam Weight Ratio", 0.0, 1.0, 0.25, key="sch_w_final")
-                        w_other = st.slider("Discipline/Other Continuous Weights", 0.0, 1.0, 0.15, key="sch_w_other")
+                        st.markdown("### 📝 Theory Weights & Ceilings")
+                        f_theory = st.number_input("Theory Overall Syllabus Ceiling Full Marks", min_value=0.0, max_value=100.0, value=float(sc_theory), key="sch_f_theory")
+                        
+                        st.markdown("---")
+                        w_att = st.slider("Attendance Weight Fraction", 0.0, 1.0, 0.10, key="sch_w_att")
+                        
+                        st.markdown("##### ✏️ Assignments Configuration")
+                        w_hw = st.slider("Homework / Assignment Weight Fraction", 0.0, 1.0, 0.25, key="sch_w_hw")
+                        m_raw_hw = st.number_input("Your Total Raw Assignment Testing Limit (Denom):", min_value=1.0, value=float(ex_max_hw), key="sch_m_raw_hw")
+                        
+                        st.markdown("##### ⏱️ Mid-Term Exam Configuration")
+                        w_mid = st.slider("Mid-Term Assessment Weight Fraction", 0.0, 1.0, 0.25, key="sch_w_mid")
+                        m_raw_mid = st.number_input("Your Total Raw Mid-Term Test Max Limit (Denom):", min_value=1.0, value=float(ex_max_mid), key="sch_m_raw_mid")
+                        
+                        st.markdown("##### 🎯 Final Term Exam Configuration")
+                        w_final = st.slider("Final Internal Exam Weight Fraction", 0.0, 1.0, 0.25, key="sch_w_final")
+                        m_raw_final = st.number_input("Your Total Raw Final Term Test Max Limit (Denom):", min_value=1.0, value=float(ex_max_final), key="sch_m_raw_final")
+                        
+                        st.markdown("##### 👥 Continuous Tutorial Evaluation")
+                        w_other = st.slider("Discipline/Other Continuous Weight Fraction", 0.0, 1.0, 0.15, key="sch_w_other")
+                        m_raw_other = st.number_input("Your Continuous Assessment Max Scale Limit (Denom):", min_value=1.0, value=float(ex_max_other), key="sch_m_raw_other")
+                        
                     with cc2:
-                        st.markdown("### 🧪 Practical Weights")
-                        f_prac = st.number_input("Practical Full Marks Allocation", min_value=0.0, max_value=100.0, value=float(sc_prac), key="sch_f_prac")
+                        st.markdown("### 🧪 Practical Blueprint Settings")
+                        f_prac = st.number_input("Practical Overall Syllabus Ceiling Full Marks", min_value=0.0, max_value=100.0, value=float(sc_prac), key="sch_f_prac")
+                        
+                        # Read existing raw practical ceiling setups if present, fallback to defaults if blank
+                        ex_max_perf = exist_rule.iloc[0]['p_max_raw_perf'] if (not exist_rule.empty and 'p_max_raw_perf' in exist_rule.columns) else 100.0
+                        ex_max_report = exist_rule.iloc[0]['p_max_raw_report'] if (not exist_rule.empty and 'p_max_raw_report' in exist_rule.columns) else 100.0
+                        ex_max_test = exist_rule.iloc[0]['p_max_raw_test'] if (not exist_rule.empty and 'p_max_raw_test' in exist_rule.columns) else 100.0
+                        ex_max_viva = exist_rule.iloc[0]['p_max_raw_viva'] if (not exist_rule.empty and 'p_max_raw_viva' in exist_rule.columns) else 100.0
+
+                        st.markdown("---")
+                        p_att = st.slider("Lab Attendance Weight Fraction", 0.0, 1.0, 0.20, key="sch_p_att")
+                        
+                        st.markdown("##### 🔬 Lab Performance Configuration")
+                        p_perf = st.slider("Lab Performance Weight Fraction", 0.0, 1.0, 0.20, key="sch_p_perf")
+                        m_raw_perf = st.number_input("Your Max Raw Lab Performance Score Ceiling:", min_value=1.0, value=float(ex_max_perf), key="sch_m_raw_perf")
+                        
+                        st.markdown("##### 📁 Lab Reports Configuration")
+                        p_report = st.slider("Lab Reports/Records Weight Fraction", 0.0, 1.0, 0.20, key="sch_p_report")
+                        m_raw_report = st.number_input("Your Max Raw Lab Reports Cumulative Tally Ceiling:", min_value=1.0, value=float(ex_max_report), key="sch_m_raw_report")
+                        
+                        st.markdown("##### 📝 Practical Test Configuration")
+                        p_test = st.slider("Practical Exam Test Weight Fraction", 0.0, 1.0, 0.20, key="sch_p_test")
+                        m_raw_test = st.number_input("Your Max Raw Practical Exam Test Paper Ceiling:", min_value=1.0, value=float(ex_max_test), key="sch_m_raw_test")
+                        
+                        st.markdown("##### 🗣️ Viva Voce Configuration")
+                        p_viva = st.slider("Viva Voce Assessment Weight Fraction", 0.0, 1.0, 0.20, key="sch_p_viva")
+                        m_raw_viva = st.number_input("Your Max Raw Viva Voce Interview Panel Ceiling:", min_value=1.0, value=float(ex_max_viva), key="sch_m_raw_viva")
                     
-                    # Validate that the coefficients sum to 1.0 total
+                    # Safety Tally Check
                     total_ratio = w_att + w_hw + w_mid + w_final + w_other
                     if abs(total_ratio - 1.0) > 0.01:
-                        st.warning(f"⚠️ Note: Theory distribution coefficients sum to {total_ratio:.2f}. For perfect scaling, ensure they sum precisely to 1.00.")
+                        st.warning(f"⚠️ Warning: Distribution fractions sum to {total_ratio:.2f}. For perfect normalization scaling, make sure they balance to exactly 1.00.")
                     
-                    if st.button("💾 Lock Weighting Schema Rules for Selected Subject", use_container_width=True, type="primary", key="save_scheme_btn"):
+                    # Practical Tally Check
+                    total_p_ratio = p_att + p_perf + p_report + p_test + p_viva
+                    if abs(total_p_ratio - 1.0) > 0.01:
+                        st.warning(f"⚠️ Warning: Practical distribution fractions sum to {total_p_ratio:.2f}. Ensure they balance to exactly 1.00.")
+
+                    if st.button("💾 Lock Dynamic Assessment Schema Parameters", use_container_width=True, type="primary", key="save_scheme_btn"):
                         c.execute("""
                             INSERT INTO subject_schemes (
                                 subject_id, theory_full_marks, prac_full_marks, t_weight_att, 
-                                t_weight_hw, t_weight_other, t_weight_mid, t_weight_final
-                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                                t_weight_hw, t_weight_other, t_weight_mid, t_weight_final,
+                                t_max_raw_hw, t_max_raw_mid, t_max_raw_final, t_max_raw_other,
+                                p_weight_att, p_weight_perf, p_weight_report, p_weight_test, p_weight_viva,
+                                p_max_raw_perf, p_max_raw_report, p_max_raw_test, p_max_raw_viva
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                             ON CONFLICT(subject_id) DO UPDATE SET
                                 theory_full_marks=excluded.theory_full_marks,
                                 prac_full_marks=excluded.prac_full_marks,
@@ -2164,10 +2706,26 @@ if role == "lecturer":
                                 t_weight_hw=excluded.t_weight_hw,
                                 t_weight_other=excluded.t_weight_other,
                                 t_weight_mid=excluded.t_weight_mid,
-                               _final=excluded.t_weight_final
-                        """, (int(target_sub_id), f_theory, f_prac, w_att, w_hw, w_other, w_mid, w_final))
+                                t_weight_final=excluded.t_weight_final,
+                                t_max_raw_hw=excluded.t_max_raw_hw,
+                                t_max_raw_mid=excluded.t_max_raw_mid,
+                                t_max_raw_final=excluded.t_max_raw_final,
+                                t_max_raw_other=excluded.t_max_raw_other,
+                                p_weight_att=excluded.p_weight_att,
+                                p_weight_perf=excluded.p_weight_perf,
+                                p_weight_report=excluded.p_weight_report,
+                                p_weight_test=excluded.p_weight_test,
+                                p_weight_viva=excluded.p_weight_viva,
+                                p_max_raw_perf=excluded.p_max_raw_perf,
+                                p_max_raw_report=excluded.p_max_raw_report,
+                                p_max_raw_test=excluded.p_max_raw_test,
+                                p_max_raw_viva=excluded.p_max_raw_viva
+                        """, (
+                            int(target_sub_id), f_theory, f_prac, w_att, w_hw, w_other, w_mid, w_final, m_raw_hw, m_raw_mid, m_raw_final, m_raw_other,
+                            p_att, p_perf, p_report, p_test, p_viva, m_raw_perf, m_raw_report, m_raw_test, m_raw_viva
+                        ))
                         conn.commit()
-                        st.success(f"✅ Assessment mapping and report generation rules updated across all application engines for {selected_target}!")
+                        st.success(f"✅ Rules locked! Normalization matrix denominators synced successfully for {selected_target}!")
                         st.rerun()
 
         # ASSIGNMENTS
@@ -2683,10 +3241,16 @@ if role == "lecturer":
     with tabs[5]:
         st.title("📊 Performance & Grading Hub")
         
-        # 1. THE SWITCHBOARD: Toggle between your original charts and the new ledger
+        # 1. THE SWITCHBOARD: Upgraded to support your SaaS prototype option
         view_mode = st.radio(
             "Select View Mode", 
-            ["📈 Analytics Dashboard", "📅 Daily Roll Call", "📝 Internal Theory Ledger (40 Marks)", "🧪 Practical Ledger (25 Marks)"], 
+            [
+                "📈 Analytics Dashboard", 
+                "📅 Daily Roll Call", 
+                "📝 Internal Theory Ledger (40 Marks)", 
+                "🧪 Practical Ledger (25 Marks)",
+                
+            ], 
             horizontal=True
         )
         st.divider()
@@ -2857,68 +3421,190 @@ if role == "lecturer":
                             key="daily_attendance_grid"
                         )
 
-                        # ================= UPGRADED: HISTORICAL DATE-BY-DATE ATTENDANCE ENGINE =================
+                        # ===================================================================
+                        # 🖨️ OFFICIAL CONTINUOUS ATTENDANCE LOG COMPILER ENGINE
+                        # ===================================================================
                         st.divider()
-                        
-                        # 1. Initialize the historical daily log table relational framework automatically if missing
-                        c.execute("""
-                            CREATE TABLE IF NOT EXISTS attendance_logs (
-                                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                student_id INTEGER,
-                                subject_id INTEGER,
-                                log_date TEXT,
-                                session_type TEXT,
-                                status TEXT,
-                                UNIQUE(student_id, subject_id, log_date, session_type)
-                            )
-                        """)
-                        conn.commit()
+                        st.markdown("### 🖨️ Official Institutional Attendance Document Generator")
+                        st.info("💡 Click the compilation button below to generate a standardized print-ready attendance log roster formatted with incremental sequence counts and recurring page titles.")
 
-                        st.markdown(f"### 📥 Export Master Cumulative Register")
-                        session_label = "Theory" if att_type == "📝 Theory Class" else "Practical"
-                        
-                        # Fetch all historical calendar logs strictly filtered by BOTH subject AND active Section selection
-                        log_data = pd.read_sql_query("""
-                            SELECT u.username as [Roll No.], u.full_name as [Student Name], l.log_date, l.status
-                            FROM attendance_logs l
-                            JOIN users u ON l.student_id = u.id
-                            WHERE l.subject_id = ? AND l.session_type = ? AND u.section = ?
-                            ORDER BY l.log_date ASC, u.username ASC
-                        """, conn, params=(sub_id, session_label, sel_section)) # ➕ Passed the active section state variable here!
-                        
-                        if not log_data.empty:
-                            # Use pandas pivot tool to rotate the log_date rows into horizontal Excel columns
-                            master_pivot = log_data.pivot(index=["Roll No.", "Student Name"], columns="log_date", values="status").reset_index()
+                        if st.button("📄 Compile Standardized Attendance Sheet Ledger", use_container_width=True, type="primary", key="print_attendance_ledger_btn"):
+                            session_label = "Theory" if att_type == "📝 Theory Class" else "Practical"
                             
-                            present_col = f"{session_label} Present"
-                            total_col = f"{session_label} Total"
-                            
-                            # Append overall metrics to the right end of the timeline dataframe
-                            master_pivot[present_col] = log_data[log_data['status'] == 'Present'].groupby('Roll No.').size().reindex(master_pivot['Roll No.'], fill_value=0).values
-                            master_pivot[total_col] = log_data.groupby('Roll No.').size().reindex(master_pivot['Roll No.'], fill_value=0).values
-                            master_pivot['Percentage (%)'] = master_pivot.apply(lambda r: round((r[present_col]/r[total_col]*100), 2) if r[total_col] > 0 else 0.0, axis=1)
-                            
-                            # Build Excel top metadata identifier info row
-                            current_date_str = datetime.now(NST).strftime("%B %d, %Y")
-                            header_info = f"Master Cumulative Register,,Generated On:,{current_date_str},Subject:,{sel_sub_name},Type:,{session_label} Log\n"
-                            spacer_row = "," * (len(master_pivot.columns) - 1) + "\n"
-                            
-                            csv_output = master_pivot.to_csv(index=False)
-                            final_download_bytes = (header_info + spacer_row + csv_output).encode('utf-8')
-                            
-                            st.download_button(
-                                label=f"📥 Download Complete {session_label} Date-by-Date Register",
-                                data=final_download_bytes,
-                                file_name=f"Master_{session_label}_Register_{sel_sub_name.replace(' ', '_')}.csv",
-                                mime="text/csv",
-                                use_container_width=True
-                            )
-                        else:
-                            st.info("No historical date logs found yet for this subject. Submit a daily roll call first to begin building the timeline register.")
+                            # Fetch historical calendar date tracking logs chronologically
+                            log_data = pd.read_sql_query("""
+                                SELECT u.username as [Roll No.], u.full_name as [Student Name], l.log_date, l.status
+                                FROM attendance_logs l
+                                JOIN users u ON l.student_id = u.id
+                                WHERE l.subject_id = ? AND l.session_type = ? AND u.section = ?
+                                ORDER BY l.log_date ASC, u.username ASC
+                            """, conn, params=(sub_id, session_label, sel_section))
+
+                            if log_data.empty:
+                                st.warning("⚠️ No historical attendance tracking records discovered for this subject selection. Please log a daily roll call session first.")
+                            else:
+                                # Extract distinct sorted dates to construct dynamic column matrix grids
+                                unique_dates = sorted(log_data['log_date'].unique())
+                                students_list = pd.read_sql_query("""
+                                    SELECT username as [Roll No.], full_name as [Student Name]
+                                    FROM users WHERE role='student' AND semester_id=? AND section=?
+                                    ORDER BY username ASC
+                                """, conn, params=(sel_sem_id, sel_section))
+
+                                # Generate the core printer HTML element wrapper injection profile
+                                current_date_str = datetime.now(NST).strftime("%Y-%m-%d")
+                                
+                                att_html = f"""
+                                <script>
+                                    function downloadAttendanceExcel() {{
+                                        var table = document.getElementById("attendance_master_print_table");
+                                        var html = table.outerHTML;
+                                        var url = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+                                        var a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = '{sel_sub_name.replace(" ", "_")}_Attendance_Register.xls';
+                                        a.click();
+                                    }}
+                                </script>
+                                <style>
+                                    @page {{
+                                        size: landscape;
+                                        margin: 12mm 10mm 12mm 10mm;
+                                    }}
+                                    @media print {{
+                                        div[data-testid="stSidebar"], button, header, .stAppDeployButton, .no-print {{ display: none !important; }}
+                                        body, .main .block-container {{ padding: 0 !important; margin: 0 !important; background: #fff !important; }}
+                                        
+                                        /* Forces table headers to repeat across continuous page break increments cleanly */
+                                        .repeat-header {{ display: table-header-group !important; }}
+                                        .attendance-row {{ page-break-inside: avoid !important; break-inside: avoid !important; }}
+                                    }}
+                                    .download-btn {{
+                                        background-color: #10B981; color: white; padding: 8px 16px; 
+                                        border: none; border-radius: 4px; font-weight: bold; cursor: pointer;
+                                        font-size: 12px; margin-bottom: 15px; float: right; font-family: Arial, sans-serif;
+                                    }}
+                                    .print-table {{
+                                        width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; color: #111111;
+                                    }}
+                                    .print-table th, .print-table td {{
+                                        border: 1px solid #111111; padding: 5px; text-align: center; font-size: 11px;
+                                    }}
+                                    .text-left {{ text-align: left !important; }}
+                                    .absent-text {{ color: #dc2626 !important; font-weight: bold; background-color: #ffe4e6 !important; }}
+                                    .meta-title-block {{
+                                        text-align: center; font-weight: bold; line-height: 1.4; margin-bottom: 12px; font-family: Arial, sans-serif;
+                                    }}
+                                </style>
+                                
+                                <div style="background-color: #ffffff; padding: 15px; color: #111111;">
+                                    <button class="download-btn no-print" onclick="downloadAttendanceExcel()">📥 Download Excel Spreadsheet</button>
+                                    <button class="download-btn no-print" style="background-color: #3b82f6; margin-right: 10px;" onclick="window.print()">🖨️ Print / Save PDF</button>
+                                    <div style="clear: both;"></div>
+
+                                    <table class="print-table" id="attendance_master_print_table">
+                                        <thead class="repeat-header">
+                                            <tr>
+                                                <th colspan="{len(unique_dates) + 5}" style="background-color: #ffffff; border: none; padding-bottom: 15px;">
+                                                    <div class="meta-title-block">
+                                                        <div style="font-size: 16px; text-transform: uppercase;">{st.session_state.g_univ}</div>
+                                                        <div style="font-size: 13px;">{st.session_state.g_inst_body}</div>
+                                                        <div style="font-size: 15px; letter-spacing:0.3px;">{st.session_state.g_college}</div>
+                                                        <div style="font-size: 13px; font-weight: bold; margin-top: 3px;">Student Attendance Sheet Register</div>
+                                                    </div>
+                                                    
+                                                    <table style="width: 100%; font-size: 11px; font-weight: bold; border: none; text-align: left; line-height: 1.5;">
+                                                        <tr>
+                                                            <td style="width: 35%; border:none; padding: 2px 0;">Subject: {sel_sub_name.upper()}</td>
+                                                            <td style="width: 35%; border:none; padding: 2px 0;">Department/Batch: {st.session_state.g_dept} | Batch: {st.session_state.g_batch}</td>
+                                                            <td style="width: 30%; border:none; padding: 2px 0; text-align: right;">Section: {sel_section}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style="border:none; padding: 2px 0;">Subject Teacher: {st.session_state.g_teacher}</td>
+                                                            <td style="border:none; padding: 2px 0;">Year/Part: {st.session_state.g_yp}</td>
+                                                            <td style="border:none; padding: 2px 0; text-align: right;">Nature: {session_label} Session</td>
+                                                        </tr>
+                                                    </table>
+                                                </th>
+                                            </tr>
+                                            <tr style="background-color: #fafafa; font-weight: bold;">
+                                                <th style="width: 3%;">S.N.</th>
+                                                <th style="width: 12%;">CRN</th>
+                                                <th style="text-align: left; padding-left: 8px; width: 22%;">Student Name</th>
+                                                """
+                                for d in unique_dates:
+                                    formatted_month_day = d[5:].replace("-", "/")
+                                    att_html += f'<th style="font-size: 9px; padding: 4px 2px; width: 3.5%;">{formatted_month_day}</th>'
+                                    
+                                att_html += """
+                                                <th style="width: 6%;">Total Attd.</th>
+                                                <th style="width: 6%;">Score %</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                """
+                                
+                                # Compute student timeline arrays using sequence counters (1, 2, 3...)
+                                for s_idx, s_row in students_list.iterrows():
+                                    roll_no = s_row['Roll No.']
+                                    s_name = s_row['Student Name']
+                                    
+                                    att_html += f"""
+                                            <tr class="attendance-row">
+                                                <td>{s_idx + 1}</td>
+                                                <td style="font-family: monospace;">{roll_no}</td>
+                                                <td class="text-left" style="font-weight: bold; padding-left: 8px;">{s_name.upper()}</td>
+                                    """
+                                    
+                                    presence_counter = 0
+                                    total_logged_days = len(unique_dates)
+                                    
+                                    for d in unique_dates:
+                                        match_state = log_data[(log_data['Roll No.'] == roll_no) & (log_data['log_date'] == d)]
+                                        
+                                        if match_state.empty:
+                                            att_html += '<td>-</td>'
+                                        else:
+                                            status = match_state.iloc[0]['status']
+                                            if status == "Present":
+                                                presence_counter += 1
+                                                # Marks dynamic sequence increment count directly inside the matrix layout row
+                                                att_html += f'<td>{presence_counter}</td>'
+                                            else:
+                                                att_html += '<td class="absent-text">A</td>'
+                                                
+                                    pct_calc = (presence_counter / total_logged_days * 100) if total_logged_days > 0 else 0.0
+                                    
+                                    att_html += f"""
+                                                <td style="font-weight: bold; background-color: #fafafa;">{presence_counter} / {total_logged_days}</td>
+                                                <td style="font-weight: bold; background-color: #fafafa;">{pct_calc:.1f}%</td>
+                                            </tr>
+                                    """
+                                    
+                                att_html += f"""
+                                        </tbody>
+                                    </table>
+                                    
+                                    <table style="width: 100%; margin-top: 40px; font-size: 11px; font-weight: bold; font-family: Arial, sans-serif;">
+                                        <tr>
+                                            <td style="width: 50%; text-align: left; border: none;">
+                                                This Attendance sheet must be submitted to department.<br><br>
+                                                Issued Date: {current_date_str}
+                                            </td>
+                                            <td style="width: 50%; text-align: right; border: none; vertical-align: bottom;">
+                                                ...........................................................<br>
+                                                Certified Subject Teacher Signature
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                """
+                                
+                                import streamlit.components.v1 as components
+                                calc_height = 450 + (len(students_list) * 38)
+                                components.html(att_html, height=max(calc_height, 700), scrolling=True)
 
                         st.write("") # Spacer
-
-                        # ================= UPGRADED: CHOOSE DATE FOR ANY CLASS =================
                         st.write("") # Spacer
                         
                         # Freedom to pick any date (Defaults to today, but lets you backdate easily)
@@ -2928,14 +3614,12 @@ if role == "lecturer":
                             key="attendance_calendar_picker"
                         )
                         
-                        # Convert the chosen date object to string format for database entries
                         target_date_str = chosen_date.strftime("%Y-%m-%d")
 
                         if st.button(f"🚀 Submit & Log Attendance for {target_date_str}", use_container_width=True, type="primary"):
                             for _, r in edited_att_df.iterrows():
                                 s_id = int(r['student_id'])
                                 
-                                # 🛡️ Safe-eval checkout logic: handles raw byte strings or simple booleans cleanly
                                 val_present = r['Present']
                                 if isinstance(val_present, bytes):
                                     is_present = 1 if b'\x01' in val_present else 0
@@ -2944,7 +3628,7 @@ if role == "lecturer":
                                     
                                 status_str = "Present" if is_present else "Absent"
                                 
-                                # A. Write the entry for the SELECTED calendar date instead of forcing today's automatic date
+                                # A. Write entry into logs
                                 c.execute("""
                                     INSERT INTO attendance_logs (student_id, subject_id, log_date, session_type, status)
                                     VALUES (?, ?, ?, ?, ?)
@@ -2982,7 +3666,7 @@ if role == "lecturer":
                             st.rerun()
                         # ===================================================================
                         # ===================================================================
-        # ================= VIEW 2: INTERNAL THEORY LEDGER (FULL WIDTH) =================
+       # ================= Free-Standing Full Width Theory Ledger =================
         elif view_mode == "📝 Internal Theory Ledger (40 Marks)":
             st.markdown("## 📝 Internal Theory Assessment Ledger (40 Marks)")
             
@@ -2990,7 +3674,6 @@ if role == "lecturer":
             if sems_grading.empty:
                 st.warning("Please create a semester first.")
             else:
-                # 1. Dropdowns sit at the top in columns, then we close the column context
                 col_sel1, col_sel2 = st.columns(2)
                 with col_sel1:
                     sel_sem_name = st.selectbox("Semester", sems_grading["name"], key="grad_sem_sel_t")
@@ -3004,11 +3687,17 @@ if role == "lecturer":
                         sel_sub_name = st.selectbox("Subject", subjects_grading["name"], key="grad_sub_sel_t")
                         sel_sub_id = int(subjects_grading[subjects_grading["name"] == sel_sub_name]["id"].values[0])
 
-                # 2. We are OUTSIDE the columns now! The ledger will take up full screen width smoothly
-                if 'sel_sub_id' in locals() and sel_sub_id:
+                if sel_sub_id:
                     st.divider()
                     st.markdown("### 📊 Step 1: Input Raw Continuous Scores")
                     
+                    # 🛡️ Safe Extraction of Teacher's Custom Max Denominators
+                    active_cfg = pd.read_sql_query("SELECT * FROM subject_schemes WHERE subject_id = ?", conn, params=(int(sel_sub_id),))
+                    cfg_max_hw = float(active_cfg.iloc[0]['t_max_raw_hw']) if (not active_cfg.empty and 't_max_raw_hw' in active_cfg.columns and pd.notna(active_cfg.iloc[0]['t_max_raw_hw'])) else 50.0
+                    cfg_max_mid = float(active_cfg.iloc[0]['t_max_raw_mid']) if (not active_cfg.empty and 't_max_raw_mid' in active_cfg.columns and pd.notna(active_cfg.iloc[0]['t_max_raw_mid'])) else 40.0
+                    cfg_max_final = float(active_cfg.iloc[0]['t_max_raw_final']) if (not active_cfg.empty and 't_max_raw_final' in active_cfg.columns and pd.notna(active_cfg.iloc[0]['t_max_raw_final'])) else 40.0
+                    cfg_max_other = float(active_cfg.iloc[0]['t_max_raw_other']) if (not active_cfg.empty and 't_max_raw_other' in active_cfg.columns and pd.notna(active_cfg.iloc[0]['t_max_raw_other'])) else 100.0
+
                     query = """
                         SELECT u.id as student_id, u.username as Roll, u.full_name as Name,
                         IFNULL(m.t_att_present, 0) as t_att_present,
@@ -3024,7 +3713,6 @@ if role == "lecturer":
                     """
                     df_t = pd.read_sql_query(query, conn, params=(sel_sub_id, sel_sem_id))
                     
-                    # Full-Width Interactive Ledger
                     edited_t = st.data_editor(
                         df_t, 
                         column_config={
@@ -3033,11 +3721,11 @@ if role == "lecturer":
                             "Name": st.column_config.TextColumn("Student Name", disabled=True),
                             "t_att_present": st.column_config.NumberColumn("Attended", min_value=0, step=1),
                             "t_att_total": st.column_config.NumberColumn("Total Classes", min_value=1, step=1),
-                            "t_hw_raw": st.column_config.NumberColumn("Assignments"),
-                            "t_mid_raw": st.column_config.NumberColumn("Mid-Term (%)"),
-                            "t_final_raw": st.column_config.NumberColumn("Final Internal"),
-                            "t_other_raw": st.column_config.NumberColumn("Tutorials/Other"),
-                            "t_grace": st.column_config.NumberColumn("Grace (Max 5)", min_value=0.0, max_value=5.0)
+                            "t_hw_raw": st.column_config.NumberColumn(f"Assignments (Max {cfg_max_hw:.0f})", min_value=0.0, max_value=cfg_max_hw, step=0.5),
+                            "t_mid_raw": st.column_config.NumberColumn(f"Mid-Term (Max {cfg_max_mid:.0f})", min_value=0.0, max_value=cfg_max_mid, step=0.5),
+                            "t_final_raw": st.column_config.NumberColumn(f"Final Term (Max {cfg_max_final:.0f})", min_value=0.0, max_value=cfg_max_final, step=0.5),
+                            "t_other_raw": st.column_config.NumberColumn(f"Tutorials/Other (Max {cfg_max_other:.0f})", min_value=0.0, max_value=cfg_max_other, step=1.0),
+                            "t_grace": st.column_config.NumberColumn("Grace (Max 5)", min_value=0.0, max_value=5.0, step=0.5)
                         }, 
                         use_container_width=True, 
                         hide_index=True, 
@@ -3066,28 +3754,196 @@ if role == "lecturer":
                                 float(r['t_final_raw']), float(r['t_other_raw']), float(r['t_grace'])
                             ))
                         conn.commit()
-                        st.success("✅ Theory marks successfully synchronized and locked.")
+                        st.success("✅ Theory raw marks successfully synchronized and recalculated.")
                         st.rerun()
 
-                    # 3. Processed Report Cards displayed cleanly underneath the grid
+                    # 🌟 THE RESTORED PROCESSED THEORY TOTALS MATRIX VIEW
                     st.write("")
                     st.divider()
-                    st.subheader("🎯 Step 2: Processed Theory Totals")
+                    st.subheader("🎯 Step 2: Processed Theory Totals (Out of 40)")
                     
                     res_t = []
                     for _, r in edited_t.iterrows():
-                        # Using your exact internal calculation layout setup match
                         calc_res = calculate_internal_theory(r.to_dict(), sel_sub_id, conn)
                         res_t.append({
                             "Roll No.": r['Roll'],
                             "Student Name": r['Name'],
-                            "Total (/40)": f"{calc_res[0]:.2f}" if isinstance(calc_res[0], (int, float)) else calc_res[0],
-                            "Eligibility": "✅ Eligible" if calc_res[1] else "❌ Ineligible"
+                            "Total Score (/40)": f"{calc_res[0]:.2f}",
+                            "Exam Board Standing": "✅ Eligible" if calc_res[1] else "❌ Ineligible (Attendance < 70%)"
                         })
-                    
                     st.dataframe(res_t, use_container_width=True, hide_index=True)
+                # === REMOVED CLUTTERING LOCAL INPUT FIELDS - READS FROM REGISTRY ===
+                    st.write("")
+                    st.markdown("### 🖨️ Official Institutional Document Generator")
+                    st.info("💡 The print engine is fully connected. The ledger header below automatically uses the credentials set in your Global Registry panel at the top.")
+                    
+                    # Date picking manual entry
+                    ledger_date = st.date_input("Ledger Issue Date:", value=None, key="theory_ledger_date")
 
-        # ================= VIEW 3: PRACTICAL LEDGER (FULL WIDTH) =================
+                    if st.button("📄 Compile Standardized Theory Ledger Roster", use_container_width=True, type="primary", key="print_theory_ledger_btn"):
+                        sub_details = pd.read_sql_query("SELECT name FROM subjects WHERE id = ?", conn, params=(int(sel_sub_id),))
+                        s_name = sub_details.iloc[0]['name'] if not sub_details.empty else "Selected Subject"
+                        formatted_date = ledger_date.strftime("%Y-%m-%d") if ledger_date else "............................."
+                        
+                        t_html = f"""
+                        <script>
+                            function downloadExcel() {{
+                                var table = document.getElementById("theory_ledger_table");
+                                var html = table.outerHTML;
+                                var url = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+                                var a = document.createElement('a');
+                                a.href = url;
+                                a.download = '{s_name.replace(" ", "_")}_Theory_Ledger.xls';
+                                a.click();
+                            }}
+                        </script>
+                        <style>
+                            @page {{ 
+                                size: landscape; 
+                                margin: 12mm 10mm 12mm 10mm; 
+                            }}
+                            @media print {{
+                                div[data-testid="stSidebar"], button, header, .stAppDeployButton, .no-print {{ display: none !important; }}
+                                body, .main .block-container {{ padding: 0 !important; margin: 0 !important; background: #fff !important; }}
+                                .repeat-header {{ display: table-header-group !important; }}
+                                .ledger-row {{ page-break-inside: avoid !important; break-inside: avoid !important; }}
+                            }}
+                            .download-btn {{
+                                background-color: #10B981; color: white; padding: 8px 16px; 
+                                border: none; border-radius: 4px; font-weight: bold; cursor: pointer;
+                                font-size: 12px; margin-bottom: 15px; float: right; font-family: Arial, sans-serif;
+                            }}
+                            .print-table {{
+                                width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; color: #111111;
+                            }}
+                            /* EXCEL GRID CARRIER ENGINE: Forces borders on all headers and standard cells */
+                            .print-table th, .print-table td {{
+                                border: 1px solid #000000 !important; padding: 6px 4px; text-align: center; font-size: 11px;
+                            }}
+                            .text-left {{ text-align: left !important; }}
+                            .nq-text {{ color: #dc2626 !important; font-weight: bold; background-color: #fee2e2 !important; }}
+                        </style>
+                        
+                        <div style="background-color: #ffffff; padding: 15px; color: #111111;">
+                            <button class="download-btn no-print" onclick="downloadExcel()">📥 Download Excel Spreadsheet</button>
+                            <button class="download-btn no-print" style="background-color: #3b82f6; margin-right: 10px;" onclick="window.print()">🖨️ Print / Save PDF</button>
+                            <div style="clear: both;"></div>
+
+                            <table class="print-table" id="theory_ledger_table">
+                                <thead class="repeat-header">
+                                    <tr>
+                                        <th colspan="10" style="background-color: #ffffff; border: none !important; padding-bottom: 12px;">
+                                            <div style="text-align: center; font-weight: bold; line-height: 1.4; margin-bottom: 15px;">
+                                                <div style="font-size: 16px; text-transform: uppercase;">{st.session_state.g_univ}</div>
+                                                <div style="font-size: 14px;">{st.session_state.g_inst_body}</div>
+                                                <div style="font-size: 15px;">{st.session_state.g_college}</div>
+                                                <div style="font-size: 13px; margin-top: 4px; padding-bottom: 5px; font-weight: bold;">
+                                                    {st.session_state.g_exam_title}
+                                                </div>
+                                            </div>
+                                            
+                                            <table style="width: 100%; font-size: 12px; margin-bottom: 5px; font-weight: bold; border-collapse: collapse; text-align: left; line-height: 1.5;">
+                                                <tr>
+                                                    <td style="width: 40%; border: none !important; padding: 2px 0;">Batch: {st.session_state.g_batch}</td>
+                                                    <td style="width: 30%; border: none !important; padding: 2px 0;">Level: Bachelor</td>
+                                                    <td style="border: 1px solid #000000 !important; text-align: center; background-color: #ffffff; width: 30%; font-size: 11px;" colspan="2" rowspan="6">Marks Breakdown<br><br><span style="font-weight:normal; font-size:10px;">Attendance: 10%<br>Assignments: 25%<br>Mid-Term Exam: 25%<br>Final Internal: 25%<br>Tutorials: 15%</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="border: none !important; padding: 2px 0;">Year/Part: {st.session_state.g_yp}</td>
+                                                    <td style="border: none !important; padding: 2px 0;">Programme: {st.session_state.g_prog}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="border: none !important; padding: 2px 0;">Subject Name: {s_name.upper()}</td>
+                                                    <td style="border: none !important; padding: 2px 0;">Theory Ledger Matrix</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="border: none !important; padding: 2px 0;">Subject Code No: {st.session_state.g_sub_code}</td>
+                                                    <td style="border: none !important; padding: 2px 0;">Full Marks: 40</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="border: none !important; padding: 2px 0;">Department: {st.session_state.g_dept}</td>
+                                                    <td style="border: none !important; padding: 2px 0;">Pass Marks: 16</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="border: none !important; padding: 2px 0;">&nbsp;</td>
+                                                    <td style="border: none !important; padding: 2px 0;">&nbsp;</td>
+                                                </tr>
+                                            </table>
+                                        </th>
+                                    </tr>
+                                    <tr style="background-color: #fafafa; font-weight: bold;">
+                                        <th style="width: 4%;">S.N.</th>
+                                        <th style="text-align: left; padding-left: 8px; width: 26%;">Student Name</th>
+                                        <th style="width: 14%;">CRN</th>
+                                        <th style="width: 7%;">Att. (10%)</th>
+                                        <th style="width: 7%;">Asmt. (25%)</th>
+                                        <th style="width: 7%;">Mid (25%)</th>
+                                        <th style="width: 7%;">Final (25%)</th>
+                                        <th style="width: 7%;">Tut. (15%)</th>
+                                        <th style="width: 7%;">In Figures</th>
+                                        <th style="width: 14%;">In Words</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        """
+                        
+                        for idx, row in edited_t.iterrows():
+                            s_meta = row.to_dict()
+                            c_tot, is_elig = calculate_internal_theory(s_meta, sel_sub_id, conn)
+                            word_tot = score_to_words(c_tot) if is_elig else "RETAINED"
+                            fig_out = f"{c_tot:.0f}" if is_elig else "NQ"
+                            
+                            r_att = (s_meta['t_att_present'] / s_meta['t_att_total']) * 4.0 if s_meta['t_att_total'] > 0 else 0.0
+                            r_hw = (s_meta['t_hw_raw'] / cfg_max_hw) * 10.0
+                            r_mid = (s_meta['t_mid_raw'] / cfg_max_mid) * 10.0
+                            r_final = (s_meta['t_final_raw'] / cfg_max_final) * 10.0
+                            r_ot = (s_meta['t_other_raw'] / cfg_max_other) * 6.0
+
+                            row_class = 'class="nq-text"' if not is_elig else ''
+
+                            t_html += f'''
+                                    <tr class="ledger-row">
+                                        <td>{idx + 1}</td>
+                                        <td class="text-left" style="font-weight: bold; padding-left: 8px;">{s_meta['Name'].upper()}</td>
+                                        <td style="font-family: monospace;">{s_meta['Roll']}</td>
+                                        <td>{r_att:.1f}</td>
+                                        <td>{r_hw:.1f}</td>
+                                        <td>{r_mid:.1f}</td>
+                                        <td>{r_final:.1f}</td>
+                                        <td>{r_ot:.1f}</td>
+                                        <td {row_class}>{fig_out}</td>
+                                        <td class="text-left" style="font-size: 10px; font-weight: bold;" {row_class}>{word_tot}</td>
+                                    </tr>
+                            '''
+                            
+                        t_html += f"""
+                                    </tbody>
+                                </table>
+
+                                <table style="width: 100%; margin-top: 40px; font-size: 11px; line-height: 1.8; font-family: Arial, sans-serif; font-weight: bold;">
+                                    <tr>
+                                        <td style="width: 35%; vertical-align: top;"><strong>Date:</strong> {formatted_date}</td>
+                                        <td style="width: 35%; vertical-align: top;">
+                                            <strong>Name of Examiner:</strong> {st.session_state.g_teacher}<br>
+                                            <strong>Name of HoD:</strong> {st.session_state.g_hod}
+                                        </td>
+                                        <td style="width: 30%; vertical-align: top; text-align: right;">
+                                            <strong>Signature:</strong> ........................................<br>
+                                            <strong>Signature:</strong> ........................................
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-top: 15px; font-weight: bold;" colspan="2">Note: Absentees-A And Failed Marks must be incircled in red.</td>
+                                        <td style="padding-top: 15px; font-weight: bold; text-align: right;">Received Date (Exam Section) : .................</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        """
+                        import streamlit.components.v1 as components
+                        calc_height = 500 + (len(edited_t) * 45)
+                        components.html(t_html, height=max(calc_height, 700), scrolling=True)
+        # ================= Free-Standing Full Width Practical Ledger =================
         elif view_mode == "🧪 Practical Ledger (25 Marks)":
             st.markdown("## 🧪 Practical Assessment Ledger (25 Marks)")
             
@@ -3095,7 +3951,6 @@ if role == "lecturer":
             if sems_grading_p.empty:
                 st.warning("Please create a semester first.")
             else:
-                # 1. Dropdowns sit at the top in clean horizontal columns
                 col_sel_p1, col_sel_p2 = st.columns(2)
                 with col_sel_p1:
                     sel_sem_name_p = st.selectbox("Semester", sems_grading_p["name"], key="grad_sem_sel_p")
@@ -3109,11 +3964,17 @@ if role == "lecturer":
                         sel_sub_name_p = st.selectbox("Subject", subjects_grading_p["name"], key="grad_sub_sel_p")
                         sel_sub_id_p = int(subjects_grading_p[subjects_grading_p["name"] == sel_sub_name_p]["id"].values[0])
 
-                # 2. OUTSIDE the column layouts - Taking up beautiful 100% container width
-                if 'sel_sub_id_p' in locals() and sel_sub_id_p:
+                if sel_sub_id_p:
                     st.divider()
                     st.markdown("### 📊 Step 1: Input Raw Practical & Lab Scores")
                     
+                    # 🛡️ Safe Extraction of Teacher's Custom Max Practical Denominators
+                    active_lab_cfg = pd.read_sql_query("SELECT * FROM subject_schemes WHERE subject_id = ?", conn, params=(int(sel_sub_id_p),))
+                    cfg_max_perf = float(active_lab_cfg.iloc[0]['p_max_raw_perf']) if (not active_lab_cfg.empty and 'p_max_raw_perf' in active_lab_cfg.columns and pd.notna(active_lab_cfg.iloc[0]['p_max_raw_perf'])) else 100.0
+                    cfg_max_report = float(active_lab_cfg.iloc[0]['p_max_raw_report']) if (not active_lab_cfg.empty and 'p_max_raw_report' in active_lab_cfg.columns and pd.notna(active_lab_cfg.iloc[0]['p_max_raw_report'])) else 100.0
+                    cfg_max_test = float(active_lab_cfg.iloc[0]['p_max_raw_test']) if (not active_lab_cfg.empty and 'p_max_raw_test' in active_lab_cfg.columns and pd.notna(active_lab_cfg.iloc[0]['p_max_raw_test'])) else 100.0
+                    cfg_max_viva = float(active_lab_cfg.iloc[0]['p_max_raw_viva']) if (not active_lab_cfg.empty and 'p_max_raw_viva' in active_lab_cfg.columns and pd.notna(active_lab_cfg.iloc[0]['p_max_raw_viva'])) else 100.0
+
                     query_p = """
                         SELECT u.id as student_id, u.username as Roll, u.full_name as Name,
                         IFNULL(m.p_att_present, 0) as p_att_present,
@@ -3128,7 +3989,6 @@ if role == "lecturer":
                     """
                     df_p = pd.read_sql_query(query_p, conn, params=(sel_sub_id_p, sel_sem_id_p))
                     
-                    # Full-Width Interactive Laboratory Data Editor
                     edited_p = st.data_editor(
                         df_p, 
                         column_config={
@@ -3137,10 +3997,10 @@ if role == "lecturer":
                             "Name": st.column_config.TextColumn("Student Name", disabled=True),
                             "p_att_present": st.column_config.NumberColumn("Lab Attended", min_value=0, step=1),
                             "p_att_total": st.column_config.NumberColumn("Total Labs", min_value=1, step=1),
-                            "p_perf_raw": st.column_config.NumberColumn("Lab Performance"),
-                            "p_report_raw": st.column_config.NumberColumn("Lab Reports"),
-                            "p_test_raw": st.column_config.NumberColumn("Practical Test"),
-                            "p_viva_raw": st.column_config.NumberColumn("Viva Voce")
+                            "p_perf_raw": st.column_config.NumberColumn(f"Lab Performance (Max {cfg_max_perf:.0f})", min_value=0.0, max_value=cfg_max_perf, step=0.5),
+                            "p_report_raw": st.column_config.NumberColumn(f"Lab Reports (Max {cfg_max_report:.0f})", min_value=0.0, max_value=cfg_max_report, step=0.5),
+                            "p_test_raw": st.column_config.NumberColumn(f"Practical Test (Max {cfg_max_test:.0f})", min_value=0.0, max_value=cfg_max_test, step=0.5),
+                            "p_viva_raw": st.column_config.NumberColumn(f"Viva Voce (Max {cfg_max_viva:.0f})", min_value=0.0, max_value=cfg_max_viva, step=0.5)
                         }, 
                         use_container_width=True, 
                         hide_index=True, 
@@ -3171,10 +4031,10 @@ if role == "lecturer":
                         st.success("✅ Practical lab records successfully synchronized and locked.")
                         st.rerun()
 
-                    # 3. Processed Tabulation Output
+                    # 🌟 THE RESTORED PROCESSED PRACTICAL TOTALS MATRIX VIEW
                     st.write("")
                     st.divider()
-                    st.subheader("🧪 Step 2: Processed Practical Totals")
+                    st.subheader("🧪 Step 2: Processed Practical Totals (Out of 25)")
                     
                     res_p = []
                     for _, r in edited_p.iterrows():
@@ -3182,12 +4042,183 @@ if role == "lecturer":
                         res_p.append({
                             "Roll No.": r['Roll'],
                             "Student Name": r['Name'],
-                            "Total (/25)": f"{calc_res_p[0]:.2f}" if isinstance(calc_res_p[0], (int, float)) else calc_res_p[0],
-                            "Eligibility": "✅ Eligible" if calc_res_p[1] else "❌ Ineligible"
+                            "Total Score (/25)": f"{calc_res_p[0]:.2f}",
+                            "Lab Standing": "✅ Eligible" if calc_res_p[1] else "❌ Ineligible (Lab Attendance < 70%)"
                         })
-                    
                     st.dataframe(res_p, use_container_width=True, hide_index=True)
-            # ================= MANAGE STUDENTS (TABS[6] - SECTION AWARE) =================
+
+                # === REMOVED CLUTTERING LOCAL INPUT FIELDS - READS FROM REGISTRY ===
+                    st.write("")
+                    st.markdown("### 🖨️ Official Institutional Document Generator")
+                    st.info("💡 The print engine is fully connected. The ledger header below automatically uses the credentials set in your Global Registry panel at the top.")
+                    
+                    # Date picking manual entry
+                    ledger_date_p = st.date_input("Ledger Issue Date:", value=None, key="prac_ledger_date")
+
+                    if st.button("📄 Compile Standardized Practical Ledger Roster", use_container_width=True, type="primary", key="print_prac_ledger_btn"):
+                        sub_details_p = pd.read_sql_query("SELECT name FROM subjects WHERE id = ?", conn, params=(int(sel_sub_id_p),))
+                        s_name_p = sub_details_p.iloc[0]['name'] if not sub_details_p.empty else "Engineering Hydrology"
+                        formatted_date_p = ledger_date_p.strftime("%Y-%m-%d") if ledger_date_p else "............................."
+                        
+                        p_html = f"""
+                        <script>
+                            function downloadExcelPrac() {{
+                                var table = document.getElementById("practical_ledger_table");
+                                var html = table.outerHTML;
+                                var url = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+                                var a = document.createElement('a');
+                                a.href = url;
+                                a.download = '{s_name_p.replace(" ", "_")}_Practical_Ledger.xls';
+                                a.click();
+                            }}
+                        </script>
+                        <style>
+                            @page {{ 
+                                size: landscape; 
+                                margin: 12mm 10mm 12mm 10mm; 
+                            }}
+                            @media print {{
+                                div[data-testid="stSidebar"], button, header, .stAppDeployButton, .no-print {{ display: none !important; }}
+                                body, .main .block-container {{ padding: 0 !important; margin: 0 !important; background: #fff !important; }}
+                                .repeat-header {{ display: table-header-group !important; }}
+                                .ledger-row {{ page-break-inside: avoid !important; break-inside: avoid !important; }}
+                            }}
+                            .download-btn {{
+                                background-color: #10B981; color: white; padding: 8px 16px; 
+                                border: none; border-radius: 4px; font-weight: bold; cursor: pointer;
+                                font-size: 12px; margin-bottom: 15px; float: right; font-family: Arial, sans-serif;
+                            }}
+                            .print-table {{
+                                width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; color: #111111;
+                            }}
+                            /* EXCEL GRID CARRIER ENGINE: Forces borders on all headers and standard cells */
+                            .print-table th, .print-table td {{
+                                border: 1px solid #000000 !important; padding: 6px 4px; text-align: center; font-size: 11px;
+                            }}
+                            .text-left {{ text-align: left !important; }}
+                            .nq-text {{ color: #dc2626 !important; font-weight: bold; background-color: #fee2e2 !important; }}
+                        </style>
+                        
+                        <div style="background-color: #ffffff; padding: 15px; color: #111111;">
+                            <button class="download-btn no-print" onclick="downloadExcelPrac()">📥 Download Excel Spreadsheet</button>
+                            <button class="download-btn no-print" style="background-color: #3b82f6; margin-right: 10px;" onclick="window.print()">🖨️ Print / Save PDF</button>
+                            <div style="clear: both;"></div>
+
+                            <table class="print-table" id="practical_ledger_table">
+                                <thead class="repeat-header">
+                                    <tr>
+                                        <th colspan="10" style="background-color: #ffffff; border: none !important; padding-bottom: 12px;">
+                                            <div style="text-align: center; font-weight: bold; line-height: 1.4; margin-bottom: 15px;">
+                                                <div style="font-size: 16px; text-transform: uppercase;">{st.session_state.g_univ}</div>
+                                                <div style="font-size: 14px;">{st.session_state.g_inst_body}</div>
+                                                <div style="font-size: 15px;">{st.session_state.g_college}</div>
+                                                <div style="font-size: 13px; margin-top: 4px; padding-bottom: 5px; font-weight: bold;">
+                                                    {st.session_state.g_exam_title}
+                                                </div>
+                                            </div>
+                                            
+                                            <table style="width: 100%; font-size: 12px; margin-bottom: 5px; font-weight: bold; border-collapse: collapse; text-align: left; line-height: 1.5;">
+                                                <tr>
+                                                    <td style="width: 40%; padding: 2px 0; border: none !important;">Batch: {st.session_state.g_batch}</td>
+                                                    <td style="width: 30%; padding: 2px 0; border: none !important;">Level: {st.session_state.g_prog}</td>
+                                                    <td style="border: 1px solid #000000 !important; text-align: center; background-color: #ffffff; width: 30%; font-size: 11px;" colspan="2" rowspan="6">Marks Breakdown<br><br><span style="font-weight:normal; font-size:10px;">Attd. & Lab Performance: 20%<br>Initial Reports: 20%<br>Final Reports: 20%<br>Viva-Voce / Quiz: 20%<br>Practical Test Exam: 20%</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 2px 0; border: none !important;">Year/Part: {st.session_state.g_yp}</td>
+                                                    <td style="padding: 2px 0; border: none !important;">Programme: {st.session_state.g_prog}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 2px 0; border: none !important;">Subject Name: {s_name_p.upper()}</td>
+                                                    <td style="padding: 2px 0; border: none !important;">Practical Ledger Board</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 2px 0; border: none !important;">Subject Code No: {st.session_state.g_sub_code}</td>
+                                                    <td style="padding: 2px 0; border: none !important;">Full Marks: {st.session_state.g_f_marks}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 2px 0; border: none !important;">Department: {st.session_state.g_dept}</td>
+                                                    <td style="padding: 2px 0; border: none !important;">Pass Marks: {st.session_state.g_p_marks}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="border: none !important; padding: 2px 0;">&nbsp;</td>
+                                                    <td style="border: none !important; padding: 2px 0;">&nbsp;</td>
+                                                </tr>
+                                            </table>
+                                        </th>
+                                    </tr>
+                                    <tr style="background-color: #fafafa; font-weight: bold;">
+                                        <th style="border: 1px solid #111111; padding: 8px; width: 4%;">S.N.</th>
+                                        <th style="border: 1px solid #111111; text-align: left; padding-left: 8px; width: 25%;">Student Name</th>
+                                        <th style="border: 1px solid #111111; padding: 8px; width: 15%;">CRN</th>
+                                        <th style="border: 1px solid #111111; padding: 6px; font-size: 11px;">Attendance/Lab Performance</th>
+                                        <th style="border: 1px solid #111111; padding: 6px; font-size: 11px;">Initial Report</th>
+                                        <th style="border: 1px solid #111111; padding: 6px; font-size: 11px;">Final Report</th>
+                                        <th style="border: 1px solid #111111; padding: 6px; font-size: 11px;">Viva/Quizz</th>
+                                        <th style="border: 1px solid #111111; padding: 6px; font-size: 11px;">Lab Test/Presentation /Case Study</th>
+                                        <th style="border: 1px solid #111111; padding: 8px; width: 8%;">In Figures</th>
+                                        <th style="border: 1px solid #111111; padding: 8px; width: 15%;">In Words</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        """
+                        
+                        for idx, row in edited_p.iterrows():
+                            s_meta_p = row.to_dict()
+                            c_tot_p, is_elig_p = calculate_internal_practical(s_meta_p, sel_sub_id_p, conn)
+                            word_tot_p = score_to_words(c_tot_p) if is_elig_p else "RETAINED"
+                            fig_out_p = f"{c_tot_p:.0f}" if is_elig_p else "NQ"
+                            
+                            r_p_att = (s_meta_p['p_att_present'] / s_meta_p['p_att_total']) * 5.0 if s_meta_p['p_att_total'] > 0 else 0.0
+                            r_p_perf = (s_meta_p['p_perf_raw'] / cfg_max_perf) * 5.0
+                            r_p_rep = (s_meta_p['p_report_raw'] / cfg_max_report) * 5.0
+                            r_p_tst = (s_meta_p['p_test_raw'] / cfg_max_test) * 5.0
+                            r_p_viv = (s_meta_p['p_viva_raw'] / cfg_max_viva) * 5.0
+
+                            row_class_p = 'class="nq-text"' if not is_elig_p else ''
+
+                            p_html += f'''
+                                    <tr class="ledger-row">
+                                        <td>{idx + 1}</td>
+                                        <td class="text-left" style="font-weight: bold; padding-left: 8px;">{s_meta_p['Name'].upper()}</td>
+                                        <td style="font-family: monospace;">{s_meta_p['Roll']}</td>
+                                        <td>{(r_p_att + r_p_perf):.1f}</td>
+                                        <td>{r_p_rep:.1f}</td>
+                                        <td>{r_p_rep:.1f}</td>
+                                        <td>{r_p_viv:.1f}</td>
+                                        <td>{r_p_tst:.1f}</td>
+                                        <td {row_class_p}>{fig_out_p}</td>
+                                        <td class="text-left" style="font-size: 10px; font-weight: bold;" {row_class_p}>{word_tot_p}</td>
+                                    </tr>
+                            '''
+                            
+                        p_html += f"""
+                                    </tbody>
+                                </table>
+
+                                <table style="width: 100%; margin-top: 40px; font-size: 11px; line-height: 1.8; font-family: Arial, sans-serif; font-weight: bold;">
+                                    <tr>
+                                        <td style="width: 35%; vertical-align: top;"><strong>Date:</strong> {formatted_date_p}</td>
+                                        <td style="width: 35%; vertical-align: top;">
+                                            <strong>Name of Examiner:</strong> {st.session_state.g_teacher}<br>
+                                            <strong>Name of HoD:</strong> {st.session_state.g_hod}
+                                        </td>
+                                        <td style="width: 30%; vertical-align: top; text-align: right;">
+                                            <strong>Signature:</strong> ........................................<br>
+                                            <strong>Signature:</strong> ........................................
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-top: 15px; font-weight: bold;" colspan="2">Note: Absentees-A And Failed Marks must be incircled in red.</td>
+                                        <td style="padding-top: 15px; font-weight: bold; text-align: right;">Received Date (Exam Section) : .................</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        """
+                        import streamlit.components.v1 as components
+                        calc_height_p = 500 + (len(edited_p) * 45)
+                        components.html(p_html, height=max(calc_height_p, 700), scrolling=True)
+           # ================= MANAGE STUDENTS (TABS[6] - SECTION AWARE) =================
     with tabs[6]:
         st.subheader("⚠️ Emergency Fix for Existing Students")
         col_fix1, col_fix2 = st.columns(2)
@@ -4040,31 +5071,29 @@ if role == "lecturer":
                         'size_kb': 'Size (KB)'
                     }
                 )
-    # STUDENT PROFILES
+    # ===================================================================
+    # 🎓 360° STUDENT BIO PORTFOLIO & CONTINUOUS ASSESSMENT SCORECARD
+    # ===================================================================
     with tabs[9]:
+        st.markdown("## 🔍 Student Profile & Performance Analytics Hub")
+        st.write("Search for any individual student to review their complete institutional bio, assignment statistics, and cross-subject exam ledger cards.")
         
-        st.title("👤 Student Profile Viewer")
-        
-        # Select student
+        # 1. Harvest overall student lists dynamically from database architecture
         all_students = pd.read_sql_query("""
-        SELECT users.id, users.username, users.full_name, semesters.name as semester
-        FROM users
-        LEFT JOIN semesters ON users.semester_id = semesters.id
-        WHERE users.role='student'
-        ORDER BY users.username ASC
+            SELECT users.id, users.username, users.full_name, semesters.name as semester, users.semester_id
+            FROM users
+            LEFT JOIN semesters ON users.semester_id = semesters.id
+            WHERE users.role='student'
+            ORDER BY users.username ASC
         """, conn)
         
         if all_students.empty:
-            st.info("No students registered yet.")
+            st.info("No students registered yet in the system roster.")
         else:
-            # Search or select
+            # Search filter blocks
             col_profile1, col_profile2 = st.columns([2, 1])
-            
             with col_profile1:
-                search_profile = st.text_input(
-                    "🔍 Search student by name or username",
-                    key="search_profile"
-                )
+                search_profile = st.text_input("🔍 Search student by name or username ID handle:", key="search_profile_input")
             
             with col_profile2:
                 if search_profile:
@@ -4076,109 +5105,205 @@ if role == "lecturer":
                     filtered = all_students
             
             if filtered.empty:
-                st.warning("No students found")
+                st.warning("No matching student entities discovered.")
             else:
+                # Map dynamic handles onto drop selector metrics
                 student_options = {
-                    "{} ({}) - {}".format(row['username'], row['full_name'], row['semester']): row['id']
+                    f"{row['username'].upper()} ({row['full_name'].upper()}) — {row['semester']}": row.to_dict()
                     for _, row in filtered.iterrows()
                 }
                 
-                selected = st.selectbox("Select Student", list(student_options.keys()))
+                selected_key = st.selectbox("🎯 Target Select Student Record Viewport:", list(student_options.keys()))
                 
-                if selected:
-                    student_id = student_options[selected]
+                if selected_key:
+                    selected_student_meta = student_options[selected_key]
+                    student_id = int(selected_student_meta['id'])
+                    active_semester_id = selected_student_meta['semester_id']
+                    
+                    # Package execution parameters into structural dictionary matching original bio engine assumptions
                     profile = get_student_profile(student_id)
                     
                     if profile:
-                        st.divider()
-                        
-                        # Header
-                        st.markdown("""
-                        <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                    padding: 20px; border-radius: 10px; color: white;'>
-                            <h2 style='margin:0;'>{}</h2>
-                            <p style='margin:5px 0 0 0;'>@{} | {}</p>
+                        st.write("")
+                        # Premium Corporate Bio Identity Banner
+                        st.markdown(f"""
+                        <div style='background: linear-gradient(135deg, #004b87 0%, #002845 100%); 
+                                    padding: 25px; border-radius: 8px; color: white; font-family: Arial, sans-serif; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>
+                            <h2 style='margin:0; text-transform: uppercase; letter-spacing: 0.5px;'>{profile['info']['full_name']}</h2>
+                            <p style='margin:6px 0 0 0; font-size:14px; opacity:0.9;'>
+                                <strong>CRN / Username:</strong> {profile['info']['username']} | 
+                                <strong>Current Stage:</strong> {profile['info']['semester']} | 
+                                <strong>Program:</strong> Civil Engineering
+                            </p>
                         </div>
-                        """.format(
-                            profile['info']['full_name'],
-                            profile['info']['username'],
-                            profile['info']['semester']
-                        ), unsafe_allow_html=True)
-                        st.divider()
-                        st.subheader("📊 Personal Growth & Performance")
-                        
-                        submissions_df = profile['submissions']
-
-                        # Filter only the assignments that have actually been graded by the AI
-                        graded_df = submissions_df[submissions_df['marks'].notna() & (submissions_df['marks'] != '')].copy()
-
-                        if not graded_df.empty:
-                            # Safely convert marks to numbers
-                            graded_df['Marks'] = pd.to_numeric(graded_df['marks'], errors='coerce')
-                            # Sort by deadline to show chronological growth over the semester
-                            graded_df = graded_df.sort_values(by='deadline')
-                            # Create a clean chart data table
-                            chart_data = graded_df[['assignment', 'Marks']].set_index('assignment')
-                            # Display a line chart showing their progress
-                            st.line_chart(chart_data)
-                        else:
-                            st.info("Waiting for more graded assignments to generate a growth chart.")
+                        """, unsafe_allow_html=True)
                         
                         st.write("")
                         
-                        # Statistics
-                        col_stat1, col_stat2, col_stat3, col_stat4 = st.columns(4)
+                        # 📊 SECTION A: ORIGINAL AI QUIZ / ASSIGNMENT ANALYSIS ENGINE
+                        st.subheader("📊 Personal Growth & Assignment Performance")
+                        submissions_df = profile['submissions']
+                        graded_df = submissions_df[submissions_df['marks'].notna() & (submissions_df['marks'] != '')].copy()
+
+                        if not graded_df.empty:
+                            graded_df['Marks'] = pd.to_numeric(graded_df['marks'], errors='coerce')
+                            graded_df = graded_df.sort_values(by='deadline')
+                            chart_data = graded_df[['assignment', 'Marks']].set_index('assignment')
+                            st.line_chart(chart_data)
+                        else:
+                            st.info("Awaiting graded platform assignments to generate growth trends.")
                         
+                        # KPI Badges
+                        col_stat1, col_stat2, col_stat3, col_stat4 = st.columns(4)
                         with col_stat1:
                             st.metric("📤 Total Submissions", profile['stats']['total_submissions'])
-                        
                         with col_stat2:
-                            st.metric("✅ Graded", profile['stats']['total_graded'])
-                        
+                            st.metric("✅ Graded Items", profile['stats']['total_graded'])
                         with col_stat3:
-                            st.metric("📊 Average Score", "{}/10".format(profile['stats']['average']))
-                        
+                            st.metric("📊 Average Quiz Score", f"{profile['stats']['average']}/10")
                         with col_stat4:
-                            st.metric("🏆 Best Score", "{}/10".format(profile['stats']['highest']))
+                            st.metric("🏆 Best Quiz Score", f"{profile['stats']['highest']}/10")
+                        
+                        # 📋 Submission Tab History Dataframe
+                        with st.expander("📋 Review AI Quiz & Assignment Submission History Log", expanded=False):
+                            if profile['submissions'].empty:
+                                st.info("No submissions entered yet.")
+                            else:
+                                def get_status(row):
+                                    if row['marks'] and str(row['marks']).strip():
+                                        return f"✅ Graded ({float(row['marks']):.1f}/10)"
+                                    return "⏳ Pending Evaluation"
+                                
+                                display_df = profile['submissions'].copy()
+                                display_df['Status'] = display_df.apply(get_status, axis=1)
+                                st.dataframe(
+                                    display_df[['subject', 'assignment', 'deadline', 'submission_time', 'Status']],
+                                    use_container_width=True, hide_index=True
+                                )
                         
                         st.divider()
                         
-                        # Submissions
-                        st.subheader("📋 Submission History")
+                        # 🏢 SECTION B: UNIVERSITY INTERNAL EXAM LEDGER MATRIX INSIGHTS
+                        st.subheader("🏢 Official University Internal Assessment Scorecard")
+                        st.write("Below are the current verified continuous internal assessment entries logged across departments for this semester tier.")
                         
-                        if profile['submissions'].empty:
-                            st.info("No submissions yet")
+                        # 📝 1. Cross-Subject Theory Mark Aggregator Ledger Card
+                        st.markdown("#### 📝 Internal Theory Performance (Scaled to 40 Marks Matrix)")
+                        
+                        theory_marks_query = """
+                            SELECT sub.name as subject_name, sub.code as subject_code, sm.*
+                            FROM student_marks sm
+                            JOIN subjects sub ON sm.subject_id = sub.id
+                            WHERE sm.student_id = ? AND sub.semester_id = ?
+                        """
+                        tm_df = pd.read_sql_query(theory_marks_query, conn, params=(student_id, active_semester_id))
+                        
+                        if tm_df.empty:
+                            st.info("No standardized internal theory entries registered for this semester layer yet.")
                         else:
-                            # Add status column
-                            def get_status(row):
-                                if row['marks'] and str(row['marks']).strip():
-                                    return "✅ Graded ({}/10)".format(row['marks'])
-                                else:
-                                    return "⏳ Pending"
+                            theory_profile_rows = []
+                            for _, tm_row in tm_df.iterrows():
+                                c_tot, is_elig = calculate_internal_theory(tm_row.to_dict(), tm_row['subject_id'], conn)
+                                word_tot = score_to_words(c_tot) if is_elig else "RETAINED"
+                                fig_out = f"{c_tot:.0f}" if is_elig else "NQ"
+                                
+                                t_total_classes = tm_row['t_att_total'] if tm_row['t_att_total'] > 0 else 34
+                                attendance_rate = (tm_row['t_att_present'] / t_total_classes * 100)
+                                eligibility_status = "🟢 QUALIFIED" if is_elig else "🔴 NQ / RETAINED"
+                                
+                                active_cfg = pd.read_sql_query("SELECT * FROM subject_schemes WHERE subject_id = ?", conn, params=(int(tm_row['subject_id']),))
+                                cfg_max_hw = float(active_cfg.iloc[0]['t_max_raw_hw']) if (not active_cfg.empty and 't_max_raw_hw' in active_cfg.columns) else 50.0
+                                cfg_max_mid = float(active_cfg.iloc[0]['t_max_raw_mid']) if (not active_cfg.empty and 't_max_raw_mid' in active_cfg.columns) else 40.0
+                                cfg_max_final = float(active_cfg.iloc[0]['t_max_raw_final']) if (not active_cfg.empty and 't_max_raw_final' in active_cfg.columns) else 40.0
+                                cfg_max_other = float(active_cfg.iloc[0]['t_max_raw_other']) if (not active_cfg.empty and 't_max_raw_other' in active_cfg.columns) else 100.0
+
+                                r_att = (tm_row['t_att_present'] / t_total_classes) * 4.0
+                                r_hw = (tm_row['t_hw_raw'] / cfg_max_hw) * 10.0
+                                r_mid = (tm_row['t_mid_raw'] / cfg_max_mid) * 10.0
+                                r_final = (tm_row['t_final_raw'] / cfg_max_final) * 10.0
+                                r_ot = (tm_row['t_other_raw'] / cfg_max_other) * 6.0
+
+                                theory_profile_rows.append({
+                                    "Code": tm_row['subject_code'],
+                                    "Subject Name": tm_row['subject_name'].upper(),
+                                    "Attendance %": f"{attendance_rate:.1f}%",
+                                    "Att (4)": f"{r_att:.1f}",
+                                    "Asmt (10)": f"{r_hw:.1f}",
+                                    "Mid (10)": f"{r_mid:.1f}",
+                                    "Final (10)": f"{r_final:.1f}",
+                                    "Tut (6)": f"{r_ot:.1f}",
+                                    "Score (40)": fig_out,
+                                    "Status": eligibility_status
+                                })
                             
-                            display_df = profile['submissions'].copy()
-                            display_df['Status'] = display_df.apply(get_status, axis=1)
-                            
+                            theory_df_display = pd.DataFrame(theory_profile_rows)
                             st.dataframe(
-                                display_df[['subject', 'assignment', 'deadline', 'submission_time', 'Status']],
-                                use_container_width=True,
-                                hide_index=True
+                                theory_df_display.style.map(
+                                    lambda val: 'background-color: #fee2e2; color: #dc2626; font-weight: bold;' if '🔴' in str(val) else None,
+                                    subset=['Status']
+                                ),
+                                use_container_width=True, hide_index=True
                             )
-                            
-                            # Performance chart
-                            graded = display_df[display_df['marks'].notna() & (display_df['marks'] != '')]
-                            
-                            if not graded.empty:
-                                st.divider()
-                                st.subheader("📈 Performance Over Time")
+
+                        st.write("")
+                        
+                        # 🧪 2. Cross-Subject Practical Mark Aggregator Ledger Card
+                        st.markdown("#### 🧪 Practical Ledger Performance (Scaled to 25 Marks Matrix)")
+                        
+                        prac_marks_query = """
+                            SELECT sub.name as subject_name, sub.code as subject_code, sm.*
+                            FROM student_marks sm
+                            JOIN subjects sub ON sm.subject_id = sub.id
+                            WHERE sm.student_id = ? AND sub.semester_id = ?
+                        """
+                        pm_df = pd.read_sql_query(prac_marks_query, conn, params=(student_id, active_semester_id))
+                        
+                        if pm_df.empty:
+                            st.info("No standardized practical tracking entries registered for this semester layer yet.")
+                        else:
+                            practical_profile_rows = []
+                            for _, pm_row in pm_df.iterrows():
+                                c_tot_p, is_elig_p = calculate_internal_practical(pm_row.to_dict(), pm_row['subject_id'], conn)
+                                word_tot_p = score_to_words(c_tot_p) if is_elig_p else "RETAINED"
+                                fig_out_p = f"{c_tot_p:.0f}" if is_elig_p else "NQ"
+
+                                p_total_classes = pm_row['p_att_total'] if pm_row['p_att_total'] > 0 else 12
+                                prac_attendance_rate = (pm_row['p_att_present'] / p_total_classes * 100)
+                                eligibility_status_p = "🟢 QUALIFIED" if is_elig_p else "🔴 NQ / RETAINED"
                                 
-                                graded['marks_numeric'] = pd.to_numeric(graded['marks'], errors='coerce')
-                                graded_sorted = graded.sort_values('submission_time')
-                                
-                                st.line_chart(
-                                    graded_sorted.set_index('assignment')['marks_numeric']
-                                )
-# ==========================================================
+                                active_lab_cfg = pd.read_sql_query("SELECT * FROM subject_schemes WHERE subject_id = ?", conn, params=(int(pm_row['subject_id']),))
+                                cfg_max_perf = float(active_lab_cfg.iloc[0]['p_max_raw_perf']) if (not active_lab_cfg.empty and 'p_max_raw_perf' in active_lab_cfg.columns) else 100.0
+                                cfg_max_report = float(active_lab_cfg.iloc[0]['p_max_raw_report']) if (not active_lab_cfg.empty and 'p_max_raw_report' in active_lab_cfg.columns) else 100.0
+                                cfg_max_test = float(active_lab_cfg.iloc[0]['p_max_raw_test']) if (not active_lab_cfg.empty and 'p_max_raw_test' in active_lab_cfg.columns) else 100.0
+                                cfg_max_viva = float(active_lab_cfg.iloc[0]['p_max_raw_viva']) if (not active_lab_cfg.empty and 'p_max_raw_viva' in active_lab_cfg.columns) else 100.0
+
+                                r_p_att = (pm_row['p_att_present'] / p_total_classes) * 5.0
+                                r_p_perf = (pm_row['p_perf_raw'] / cfg_max_perf) * 5.0
+                                r_p_rep = (pm_row['p_report_raw'] / cfg_max_report) * 5.0
+                                r_p_tst = (pm_row['p_test_raw'] / cfg_max_test) * 5.0
+                                r_p_viv = (pm_row['p_viva_raw'] / cfg_max_viva) * 5.0
+
+                                practical_profile_rows.append({
+                                    "Code": pm_row['subject_code'],
+                                    "Subject Name": pm_row['subject_name'].upper(),
+                                    "Attendance %": f"{prac_attendance_rate:.1f}%",
+                                    "Lab Perf (5)": f"{(r_p_att + r_p_perf):.1f}",
+                                    "Init Report (5)": f"{r_p_rep:.1f}",
+                                    "Final Report (5)": f"{r_p_rep:.1f}",
+                                    "Viva/Quiz (5)": f"{r_p_viv:.1f}",
+                                    "Lab Test (5)": f"{r_p_tst:.1f}",
+                                    "Score (25)": fig_out_p,
+                                    "Status": eligibility_status_p
+                                })
+                            
+                            practical_df_display = pd.DataFrame(practical_profile_rows)
+                            st.dataframe(
+                                practical_df_display.style.map(
+                                    lambda val: 'background-color: #fee2e2; color: #dc2626; font-weight: bold;' if '🔴' in str(val) else None,
+                                    subset=['Status']
+                                ),
+                                use_container_width=True, hide_index=True
+                            )
 # ===================== STUDENT =============================
 # ==========================================================
 
@@ -4610,69 +5735,178 @@ elif role == "student":
                                     st.error("File not found")
                     
                     st.divider()
-    # ================= STUDENT RESULTS (ENHANCED ACCOUNTABILITY) =================
+    # ===================================================================
+        # 🎓 PREMIUM CRASH-PROOF VISUAL PORTFOLIO LAYOUT (STUDENT VIEW)
+        # ===================================================================
     with tabs[2]:
         st.header("📝 My Official Internal Performance")
         
+        # 🌟 CSS FIX FOR EXPANDER FOCUS/OPEN BLINDING WHITE STATE
+        st.markdown("""
+        <style>
+            div[data-testid="stExpander"] [data-testid="stMarkdownContainer"] p {
+                color: #00E5FF !important;
+                font-weight: 600 !important;
+            }
+            .streamlit-expanderHeader {
+                background-color: rgba(10, 15, 30, 0.8) !important;
+                border: 1px solid rgba(0, 229, 255, 0.2) !important;
+                transition: all 0.3s ease !important;
+            }
+            .streamlit-expanderHeader:hover, .streamlit-expanderHeader:focus {
+                background-color: rgba(0, 229, 255, 0.1) !important;
+                border-color: #00E5FF !important;
+            }
+            .caption-white {
+                color: #FFFFFF !important;
+                font-size: 0.9rem !important;
+                font-weight: 500;
+                margin-bottom: 4px;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+        
         # 1. Core Data Retrieval
         student_id = int(st.session_state.user_id)
-        # Use the sem_id already defined in your student section
         
-        # Define the Hydraulics weightages for calculations
-        hyd_scheme = {
-            'theory_full_marks': 40, 'prac_full_marks': 25,
-            't_weight_att': 0.10, 't_weight_hw': 0.25, 't_weight_other': 0.15, 
-            't_weight_mid': 0.25, 't_weight_final': 0.25,
-            'p_weight_att': 0.20, 'p_weight_perf': 0.20, 'p_weight_report': 0.20, 
-            'p_weight_test': 0.20, 'p_weight_viva': 0.20
-        }
-
-        # 2. Display Official Internal Summary
-        st.subheader("📊 Official Internal Totals")
+        st.subheader("📊 Subject Standing & Marks Breakdown")
         subjects = pd.read_sql_query("SELECT id, name FROM subjects WHERE semester_id=?", conn, params=(sem_id,))
         
         for _, sub in subjects.iterrows():
-            with st.expander(f"📘 {sub['name']} - Official Standing"):
-                # Fetch official internal marks
+            with st.container(border=True):
+                # Dynamic Title Header
+                st.markdown(f"### 📘 {sub['name'].upper()}")
+                
+                # Fetch official internal marks from the consolidated student_marks table
                 m = pd.read_sql_query("SELECT * FROM student_marks WHERE student_id=? AND subject_id=?", 
                                      conn, params=(student_id, sub['id']))
                 
+                # Fetch dynamic subject configurations to calculate progress scales cleanly
+                active_cfg = pd.read_sql_query("SELECT * FROM subject_schemes WHERE subject_id = ?", conn, params=(int(sub['id']),))
+                cfg_max_hw = float(active_cfg.iloc[0]['t_max_raw_hw']) if (not active_cfg.empty and 't_max_raw_hw' in active_cfg.columns and pd.notna(active_cfg.iloc[0]['t_max_raw_hw'])) else 50.0
+                cfg_max_mid = float(active_cfg.iloc[0]['t_max_raw_mid']) if (not active_cfg.empty and 't_max_raw_mid' in active_cfg.columns and pd.notna(active_cfg.iloc[0]['t_max_raw_mid'])) else 40.0
+                cfg_max_final = float(active_cfg.iloc[0]['t_max_raw_final']) if (not active_cfg.empty and 't_max_raw_final' in active_cfg.columns and pd.notna(active_cfg.iloc[0]['t_max_raw_final'])) else 40.0
+                cfg_max_other = float(active_cfg.iloc[0]['t_max_raw_other']) if (not active_cfg.empty and 't_max_raw_other' in active_cfg.columns and pd.notna(active_cfg.iloc[0]['t_max_raw_other'])) else 100.0
+                
+                cfg_max_perf = float(active_cfg.iloc[0]['p_max_raw_perf']) if (not active_cfg.empty and 'p_max_raw_perf' in active_cfg.columns and pd.notna(active_cfg.iloc[0]['p_max_raw_perf'])) else 100.0
+                cfg_max_report = float(active_cfg.iloc[0]['p_max_raw_report']) if (not active_cfg.empty and 'p_max_raw_report' in active_cfg.columns and pd.notna(active_cfg.iloc[0]['p_max_raw_report'])) else 100.0
+                cfg_max_test = float(active_cfg.iloc[0]['p_max_raw_test']) if (not active_cfg.empty and 'p_max_raw_test' in active_cfg.columns and pd.notna(active_cfg.iloc[0]['p_max_raw_test'])) else 100.0
+                cfg_max_viva = float(active_cfg.iloc[0]['p_max_raw_viva']) if (not active_cfg.empty and 'p_max_raw_viva' in active_cfg.columns and pd.notna(active_cfg.iloc[0]['p_max_raw_viva'])) else 100.0
+
                 if m.empty:
-                    st.info("The lecturer has not finalized official internal totals for this subject yet.")
+                    st.info("⏳ The lecturer has not finalized internal marks scores for this subject yet.")
                 else:
-                    row = m.iloc[0].to_dict()
-                    t_total, t_eligible = calculate_internal_theory(row, sub['id'], conn)
-                    p_total, p_eligible = calculate_internal_practical(row, sub['id'], conn)
-                    
-                    # Calculate attendance percentages for display
-                    t_pct = round((row['t_att_present'] / row['t_att_total'] * 100), 1) if row['t_att_total'] > 0 else 0.0
-                    p_pct = round((row['p_att_present'] / row['p_att_total'] * 100), 1) if row['p_att_total'] > 0 else 0.0
-
-                    c1, c2 = st.columns(2)
-                    with c1:
-                        st.markdown("#### 📝 Theory Evaluation")
-                        st.metric("Theory Internal Mark", f"{t_total} / 40")
-                        # Explicit Attendance Count Display
-                        st.markdown(f"**Lecture Attendance:** `{row['t_att_present']}` / `{row['t_att_total']}` classes ({t_pct}%)")
+                    try:
+                        # 2. Extract database values safely using Pandas row dictionary formats
+                        db_row = m.iloc[0]
                         
-                        if t_eligible: 
-                            st.success("✅ Eligible (Theory)")
-                        else: 
-                            st.error("❌ Ineligible (Attendance < 70%)")
-                            
-                    with c2:
-                        st.markdown("#### 🧪 Practical Evaluation")
-                        st.metric("Practical Internal Mark", f"{p_total} / 25")
-                        # Explicit Attendance Count Display
-                        st.markdown(f"**Laboratory Attendance:** `{row['p_att_present']}` / `{row['p_att_total']}` labs ({p_pct}%)")
+                        # 🛡️ Safe Extraction Fallbacks to avoid key crashes
+                        att_present_t = int(db_row['t_att_present']) if 't_att_present' in db_row and pd.notna(db_row['t_att_present']) else 0
+                        att_total_t = int(db_row['t_att_total']) if 't_att_total' in db_row and pd.notna(db_row['t_att_total']) else 34
+                        hw_raw_t = float(db_row['t_hw_raw']) if 't_hw_raw' in db_row and pd.notna(db_row['t_hw_raw']) else 0.0
+                        mid_raw_t = float(db_row['t_mid_raw']) if 't_mid_raw' in db_row and pd.notna(db_row['t_mid_raw']) else 0.0
+                        final_raw_t = float(db_row['t_final_raw']) if 't_final_raw' in db_row and pd.notna(db_row['t_final_raw']) else 0.0
+                        other_raw_t = float(db_row['t_other_raw']) if 't_other_raw' in db_row and pd.notna(db_row['t_other_raw']) else 0.0
                         
-                        if p_eligible: 
-                            st.success("✅ Eligible (Lab)")
-                        else: 
-                            st.error("❌ Ineligible (Lab Attendance < 70%)")
+                        att_present_p = int(db_row['p_att_present']) if 'p_att_present' in db_row and pd.notna(db_row['p_att_present']) else 0
+                        att_total_p = int(db_row['p_att_total']) if 'p_att_total' in db_row and pd.notna(db_row['p_att_total']) else 12
+                        perf_raw_p = float(db_row['p_perf_raw']) if 'p_perf_raw' in db_row and pd.notna(db_row['p_perf_raw']) else 0.0
+                        report_raw_p = float(db_row['p_report_raw']) if 'p_report_raw' in db_row and pd.notna(db_row['p_report_raw']) else 0.0
+                        test_raw_p = float(db_row['p_test_raw']) if 'p_test_raw' in db_row and pd.notna(db_row['p_test_raw']) else 0.0
+                        viva_raw_p = float(db_row['p_viva_raw']) if 'p_viva_raw' in db_row and pd.notna(db_row['p_viva_raw']) else 0.0
 
-        # 3. Individual Assignment Breakdown (Your Original Accountability Logic)
-        st.subheader("📑 Individual Assignment Breakdown")
+                        # Calculate totals from master math functions using the safe database row Series directly
+                        t_total, t_eligible = calculate_internal_theory(db_row, sub['id'], conn)
+                        p_total, p_eligible = calculate_internal_practical(db_row, sub['id'], conn)
+                        
+                        t_pct = (att_present_t / att_total_t * 100) if att_total_t > 0 else 0.0
+                        p_pct = (att_present_p / att_total_p * 100) if att_total_p > 0 else 0.0
+
+                        status_badge_t = "🟢 QUALIFIED" if t_eligible else "🔴 NOT QUALIFIED (NQ)"
+                        status_badge_p = "🟢 QUALIFIED" if p_eligible else "🔴 NOT QUALIFIED (NQ)"
+                        
+                        # 🏛️ THEORY PORTFOLIO VISUAL BLOCKS
+                        st.markdown("#### 📝 Theory Marks Breakdown")
+                        col_t1, col_t2, col_t3 = st.columns([1, 1, 2])
+                        with col_t1:
+                            fig_out = f"{t_total:.0f}" if t_eligible else "NQ"
+                            st.metric("Final Score", f"{fig_out} / 40")
+                        with col_t2:
+                            st.metric("Attendance Rate", f"{t_pct:.1f}%", f"{att_present_t}/{att_total_t} Days")
+                        with col_t3:
+                            st.write("") 
+                            if t_eligible:
+                                st.success(f"Exam Board Status: {status_badge_t}")
+                            else:
+                                st.error(f"Exam Board Status: {status_badge_t}")
+
+                        # Scale parameters to fractional weights cleanly
+                        r_att = (att_present_t / att_total_t) * 4.0 if att_total_t > 0 else 0.0
+                        r_hw = (hw_raw_t / cfg_max_hw) * 10.0
+                        r_mid = (mid_raw_t / cfg_max_mid) * 10.0
+                        r_final = (final_raw_t / cfg_max_final) * 10.0
+                        r_ot = (other_raw_t / cfg_max_other) * 6.0
+
+                        col_p1, col_p2, col_p3, col_p4, col_p5 = st.columns(5)
+                        with col_p1:
+                            st.markdown(f'<p class="caption-white">Attendance: <b>{r_att:.1f}/4.0</b></p>', unsafe_allow_html=True)
+                            st.progress(min(max(r_att / 4.0, 0.0), 1.0))
+                        with col_p2:
+                            st.markdown(f'<p class="caption-white">Assignments: <b>{r_hw:.1f}/10.0</b></p>', unsafe_allow_html=True)
+                            st.progress(min(max(r_hw / 10.0, 0.0), 1.0))
+                        with col_p3:
+                            st.markdown(f'<p class="caption-white">Mid-Term: <b>{r_mid:.1f}/10.0</b></p>', unsafe_allow_html=True)
+                            st.progress(min(max(r_mid / 10.0, 0.0), 1.0))
+                        with col_p4:
+                            st.markdown(f'<p class="caption-white">Final Term: <b>{r_final:.1f}/10.0</b></p>', unsafe_allow_html=True)
+                            st.progress(min(max(r_final / 10.0, 0.0), 1.0))
+                        with col_p5:
+                            st.markdown(f'<p class="caption-white">Tutorial: <b>{r_ot:.1f}/6.0</b></p>', unsafe_allow_html=True)
+                            st.progress(min(max(r_ot / 6.0, 0.0), 1.0))
+
+                        st.write("") 
+                        
+                        # 🔬 PRACTICAL PORTFOLIO VISUAL BLOCKS
+                        st.markdown("#### 🧪 Practical Labs Breakdown")
+                        col_p_a, col_p_b, col_p_c = st.columns([1, 1, 2])
+                        with col_p_a:
+                            fig_out_p = f"{p_total:.0f}" if p_eligible else "NQ"
+                            st.metric("Practical Score", f"{fig_out_p} / 25")
+                        with col_p_b:
+                            st.metric("Lab Attendance", f"{p_pct:.1f}%", f"{att_present_p}/{att_total_p} Labs")
+                        with col_p_c:
+                            st.write("")
+                            if p_eligible:
+                                st.success(f"Lab Standing Status: {status_badge_p}")
+                            else:
+                                st.error(f"Lab Standing Status: {status_badge_p}")
+
+                        r_p_att = (att_present_p / att_total_p) * 5.0 if att_total_p > 0 else 0.0
+                        r_p_perf = (perf_raw_p / cfg_max_perf) * 5.0
+                        r_p_rep = (report_raw_p / cfg_max_report) * 5.0
+                        r_p_tst = (test_raw_p / cfg_max_test) * 5.0
+                        r_p_viv = (viva_raw_p / cfg_max_viva) * 5.0
+
+                        col_pb1, col_pb2, col_pb3, col_pb4 = st.columns(4)
+                        with col_pb1:
+                            st.markdown(f'<p class="caption-white">Lab Performance: <b>{(r_p_att + r_p_perf):.1f}/5.0</b></p>', unsafe_allow_html=True)
+                            st.progress(min(max((r_p_att + r_p_perf) / 5.0, 0.0), 1.0))
+                        with col_pb2:
+                            st.markdown(f'<p class="caption-white">Lab Reports: <b>{r_p_rep:.1f}/5.0</b></p>', unsafe_allow_html=True)
+                            st.progress(min(max(r_p_rep / 5.0, 0.0), 1.0))
+                        with col_pb3:
+                            st.markdown(f'<p class="caption-white">Viva/Quiz: <b>{r_p_viv:.1f}/5.0</b></p>', unsafe_allow_html=True)
+                            st.progress(min(max(r_p_viv / 5.0, 0.0), 1.0))
+                        with col_pb4:
+                            st.markdown(f'<p class="caption-white">Practical Test: <b>{r_p_tst:.1f}/5.0</b></p>', unsafe_allow_html=True)
+                            st.progress(min(max(r_p_tst / 5.0, 0.0), 1.0))
+                    except Exception as loop_error:
+                        st.error(f"Error parsing metrics for {sub['name']}: {str(loop_error)}")
+
+        # 3. Individual Assignment Breakdown History Table (Clean Bottom Section)
+        st.write("")
+        st.divider()
+        st.subheader("📑 Chronological Assignment Upload History")
         query_assignments = """
         SELECT s.name as Subject, a.title as Assignment, a.deadline as Deadline, 
                sub.marks as Marks, sub.submission_time as Submitted_On
@@ -4695,10 +5929,13 @@ elif role == "student":
                 
                 if row['Submitted_On'] is not None:
                     status = "✅ Graded" if has_marks else "⏳ Pending"
-                    score = f"{raw_marks}/10" if has_marks else "N/A"
+                    try:
+                        score = f"{float(raw_marks):.1f}/10" if has_marks else "N/A"
+                    except:
+                        score = "N/A"
                 elif current_date > deadline_date:
                     status = "❌ MISSED"
-                    score = "0/10"
+                    score = "0.0/10"
                 else:
                     status = "📖 Open"
                     score = "Pending"
