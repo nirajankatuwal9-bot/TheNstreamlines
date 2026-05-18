@@ -400,6 +400,10 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 89702cd7caedd684876dcce447fb8996d8db3ff6
 # ================= TIMEZONE CONFIG =================
 NST = timezone(timedelta(hours=5, minutes=45))
 # ================= CONFIG =================
@@ -3617,6 +3621,11 @@ if role == "lecturer":
                         target_date_str = chosen_date.strftime("%Y-%m-%d")
 
                         if st.button(f"🚀 Submit & Log Attendance for {target_date_str}", use_container_width=True, type="primary"):
+                            # ===================================================================
+                            # 🛡️ CRITICAL RUNTIME FIX: DEFINED EXPLICITLY INSIDE THE EXECUTION PATH
+                            # ===================================================================
+                            session_label = "Theory" if att_type == "📝 Theory Class" else "Practical"
+                            
                             for _, r in edited_att_df.iterrows():
                                 s_id = int(r['student_id'])
                                 
