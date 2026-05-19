@@ -18,391 +18,75 @@ from email.mime.multipart import MIMEMultipart
 import time 
 from streamlit_autorefresh import st_autorefresh
 
-# ========== BEAUTIFUL REFINED CYBERPUNK UI ==========
+# ========== MINIMALIST MODE-ADAPTIVE PROFESSIONAL UI SKIN ==========
 st.markdown("""
 <style>
-    /* 1. High-Readability Minimalist Font */
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght=400;500;600;700&display=swap');
-
-    /* 2. Classic Neutral Dark Canvas (Eliminates All Glare & Accent Light Pollution) */
+    /* 1. Reset Main Canvas back to native flexible templates */
     .stApp {
-        background-color: #0D0E12 !important;
-        background-image: none !important; /* Zero distracting glowing gradients */
+        background-color: transparent !important;
+        background-image: none !important;
     }
 
-    /* 3. Crisp Secondary Text and Label Balancing Layers */
-    html, body, [class*="css"], 
-    [data-testid="stWidgetLabel"], 
-    [data-testid="stMarkdownContainer"] p,
-    [data-testid="stRadio"] label span,
-    span p, label,
-    div[data-testid="stCaptionContainer"],
-    [data-testid="stSidebar"] .element-container small {
-        font-family: 'Space Grotesk', sans-serif !important;
-        font-size: 1.01em;
-        color: #E5E7EB !important; /* Premium crisp off-white for text clarity */
+    /* 2. Target the specific header block with an adaptive blue neon glow that reads on both modes */
+    .neon-blue-title {
+        color: #0088FF !important; /* Vivid brand blue for text structure */
+        text-shadow: 0 0 4px rgba(0, 136, 255, 0.6), 
+                     0 0 12px rgba(0, 136, 255, 0.4) !important;
+        font-weight: 800 !important;
+        letter-spacing: 1.5px;
+        text-align: center;
+        margin-bottom: 0px !important;
     }
 
-    /* Fix the faded sidebar role text visibility */
-    div[data-testid="stCaptionContainer"] {
-        font-size: 0.9em !important;
-        color: #9CA3AF !important; /* Solid iron dust grey for clean secondary text rendering */
-        font-weight: 500 !important;
-    }
-
-    /* 4. Enterprise-Grade Accent Headers (Zero Light Bleeding) */
-    h1, h2, h3, h4 {
-        font-family: 'Space Grotesk', sans-serif !important;
-        color: #10B981 !important; /* Institutional Emerald Mint */
-        font-weight: 700 !important;
-        letter-spacing: 0.3px;
-        text-shadow: none !important; /* Stripped out all harsh text-glow glare */
-    }
-    
-    h1 { font-size: 1.8rem !important; margin-bottom: 0.8rem !important; }
-    h2 { font-size: 1.35rem !important; margin-bottom: 0.6rem !important; }
-    h3 { font-size: 1.1rem !important; margin-bottom: 0.4rem !important; }
-
-    /* 5. Solid Obsidian Ash Inputs — MAXIMUM VISIBILITY FOR TYPING */
-    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div, .stNumberInput>div>div>input {
-        background-color: #181A20 !important; /* Matte dark steel slate */
-        color: #F9FAFB !important; /* Pure high-contrast white text */
-        border: 1px solid rgba(156, 163, 175, 0.25) !important;
-        border-radius: 6px !important;
-        font-family: 'Space Grotesk', sans-serif;
-        transition: all 0.2s ease;
-    }
-
-    /* Active Input Focus Configurations */
-    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus, .stNumberInput>div>div>input:focus,
-    .stTextInput>div>div>input:active, .stTextArea>div>div>textarea:active, .stNumberInput>div>div>input:active {
-        background-color: #1F222A !important;
-        color: #10B981 !important;
-        border-color: #10B981 !important;
-        box-shadow: 0 0 6px rgba(16, 185, 129, 0.2) !important;
-    }
-
-    /* Input text placeholder color configuration */
-    input::placeholder, textarea::placeholder {
-        color: #4B5563 !important;
-        opacity: 1 !important;
-    }
-
-    /* Dropdown menu item selections */
-    div[data-baseweb="select"] * { color: #10B981 !important; }
-    div[role="listbox"] ul li { background-color: #181A20 !important; color: #10B981 !important; }
-    div[role="listbox"] ul li:hover { background-color: rgba(16, 185, 129, 0.08) !important; }
-
-    /* 6. 🚀 ANTI-FADE HOVER STATE BUTTON ENGINE (STOPS BLINDING WHITE STATE) */
-    .stButton>button, .stForm [data-testid="stFormSubmitButton"] button, .stDownloadButton>button {
-        background-color: #181A20 !important;
-        border: 1px solid rgba(16, 185, 129, 0.4) !important;
-        color: #F9FAFB !important; /* Crisp, readable high-contrast white */
-        font-family: 'Space Grotesk', sans-serif !important;
-        font-weight: 600 !important;
-        border-radius: 6px !important;
-        letter-spacing: 0.3px;
-        padding: 8px 20px !important;
-        transition: all 0.2s ease-in-out !important;
-    }
-
-    /* Solid Hover Inversion: Floods background to solid mint green, text flips to dark charcoal void */
-    .stButton>button:hover, .stForm [data-testid="stFormSubmitButton"] button:hover, .stDownloadButton>button:hover,
-    .stButton>button:focus, .stForm [data-testid="stFormSubmitButton"] button:focus, .stDownloadButton>button:focus,
-    .stButton>button:active, .stForm [data-testid="stFormSubmitButton"] button:active, .stDownloadButton>button:active {
-        background-color: #10B981 !important; /* Solid mint green flood */
-        color: #0D0E12 !important; /* High-contrast dark charcoal text */
-        border-color: #10B981 !important;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
-        transform: none !important;
-    }
-
-    /* 7. 🔒 SOLID STEEL EXPANDER HEADER ENGINE (FULL FLASH CONTROL) */
-    .streamlit-expanderHeader, div[data-testid="stExpander"] button {
-        background-color: #181A20 !important;
-        border: 1px solid rgba(156, 163, 175, 0.15) !important;
-        border-radius: 6px !important;
-        color: #10B981 !important;
-        transition: all 0.2s ease-in-out !important;
-    }
-    
-    /* Ensure open or active expanders stay anchored to safe dark surfaces */
-    .streamlit-expanderHeader:hover, div[data-testid="stExpander"] button:hover,
-    .streamlit-expanderHeader:focus, div[data-testid="stExpander"] button:focus,
-    .streamlit-expanderHeader[aria-expanded="true"], div[data-testid="stExpander"] button[aria-expanded="true"] {
-        background-color: #22252E !important;
-        border-color: #10B981 !important;
-        color: #10B981 !important;
-        box-shadow: 0 0 8px rgba(16, 185, 129, 0.15) !important;
-    }
-    
-    .streamlit-expanderHeader p, div[data-testid="stExpander"] button p, div[data-testid="stExpander"] span {
-        color: #10B981 !important; /* Locks text directly to crisp green */
-        font-weight: 600 !important;
-    }
-    
-    div[data-testid="stExpander"] div[role="tabpanel"] {
-        background-color: rgba(24, 26, 32, 0.4) !important;
-        padding: 18px !important;
-        border: 1px solid rgba(156, 163, 175, 0.1) !important;
-        border-top: none !important;
-        border-radius: 0 0 6px 6px !important;
-    }
-
-    /* Sidebar Matte Surface */
-    [data-testid="stSidebar"] {
-        background-color: #07080B !important;
-        border-right: 1px solid rgba(156, 163, 175, 0.1);
-    }
-
-    /* Main Navigation Top Tabs */
-    button[data-baseweb="tab"] {
-        color: #6B7280 !important;
-        font-family: 'Space Grotesk', sans-serif !important;
-    }
-    button[data-baseweb="tab"]:hover {
-        color: #10B981 !important;
-    }
-    button[aria-selected="true"] {
-        color: #10B981 !important;
-        border-bottom: 2px solid #10B981 !important;
-    }
-    [data-testid="stTabs"] div[role="tablist"] div { background-color: transparent !important; }
-
-    /* Custom Form Containers & Information Box adjustments */
-    div[data-testid="stForm"] {
-        background-color: #181A20 !important;
-        border: 1px solid rgba(156, 163, 175, 0.15) !important;
-    }
-    div[data-testid="stNotification"] {
-        background-color: #181A20 !important;
-        color: #F9FAFB !important;
-        border: 1px solid rgba(16, 185, 129, 0.2) !important;
-    }
-
-    /* Fixed Sidebar Clock Panel alignment */
-    .sidebar-clock {
-        background: rgba(16, 185, 129, 0.02) !important;
-        border: 1px solid rgba(16, 185, 129, 0.15) !important;
-        border-radius: 6px !important;
-        color: #10B981 !important;
-        font-family: 'Space Grotesk', sans-serif !important;
-        font-weight: 600 !important;
-        text-shadow: none !important;
-    }
-
-    /* 8. Premium Roster Styling for Eclipse Brand Card Containers */
+    /* 3. Clean Standard UI Institutional Cards for Platform Branding */
     .brand-card-dark {
         text-align: center; 
         padding: 20px; 
-        background-color: #181A20; 
-        border: 1px solid rgba(156, 163, 175, 0.15); 
-        border-radius: 10px; 
-        border-top: 4px solid #10B981;
+        background-color: rgba(128, 128, 128, 0.05); 
+        border: 1px solid rgba(128, 128, 128, 0.2); 
+        border-radius: 8px; 
+        border-top: 4px solid #0088FF; 
         margin-top: 15px;
     }
     .brand-inner-box {
-        background-color: #0D0E12; 
+        background-color: rgba(128, 128, 128, 0.03); 
         padding: 10px; 
         border-radius: 6px;
-        border: 1px solid rgba(156, 163, 175, 0.05);
-    }
-</style>
-""", unsafe_allow_html=True)# ========== BEAUTIFUL REFINED CYBERPUNK UI ==========
-st.markdown("""
-<style>
-    /* 1. High-Readability Minimalist Font */
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght=400;500;600;700&display=swap');
-
-    /* 2. Classic Neutral Dark Canvas (Eliminates All Glare & Accent Light Pollution) */
-    .stApp {
-        background-color: #0D0E12 !important;
-        background-image: none !important; /* Zero distracting glowing gradients */
-    }
-
-    /* 3. Crisp Secondary Text and Label Balancing Layers */
-    html, body, [class*="css"], 
-    [data-testid="stWidgetLabel"], 
-    [data-testid="stMarkdownContainer"] p,
-    [data-testid="stRadio"] label span,
-    span p, label,
-    div[data-testid="stCaptionContainer"],
-    [data-testid="stSidebar"] .element-container small {
-        font-family: 'Space Grotesk', sans-serif !important;
-        font-size: 1.01em;
-        color: #E5E7EB !important; /* Premium crisp off-white for text clarity */
-    }
-
-    /* Fix the faded sidebar role text visibility */
-    div[data-testid="stCaptionContainer"] {
-        font-size: 0.9em !important;
-        color: #9CA3AF !important; /* Solid iron dust grey for clean secondary text rendering */
-        font-weight: 500 !important;
-    }
-
-    /* 4. Enterprise-Grade Accent Headers (Zero Light Bleeding) */
-    h1, h2, h3, h4 {
-        font-family: 'Space Grotesk', sans-serif !important;
-        color: #10B981 !important; /* Institutional Emerald Mint */
-        font-weight: 700 !important;
-        letter-spacing: 0.3px;
-        text-shadow: none !important; /* Stripped out all harsh text-glow glare */
+        border: 1px solid rgba(128, 128, 128, 0.1);
     }
     
-    h1 { font-size: 1.8rem !important; margin-bottom: 0.8rem !important; }
-    h2 { font-size: 1.35rem !important; margin-bottom: 0.6rem !important; }
-    h3 { font-size: 1.1rem !important; margin-bottom: 0.4rem !important; }
-
-    /* 5. Solid Obsidian Ash Inputs — MAXIMUM VISIBILITY FOR TYPING */
-    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div, .stNumberInput>div>div>input {
-        background-color: #181A20 !important; /* Matte dark steel slate */
-        color: #F9FAFB !important; /* Pure high-contrast white text */
-        border: 1px solid rgba(156, 163, 175, 0.25) !important;
-        border-radius: 6px !important;
-        font-family: 'Space Grotesk', sans-serif;
-        transition: all 0.2s ease;
+    .brand-card-dark h4, .brand-card-dark p, .brand-card-dark strong {
+        color: inherit !important;
     }
 
-    /* Active Input Focus Configurations */
-    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus, .stNumberInput>div>div>input:focus,
-    .stTextInput>div>div>input:active, .stTextArea>div>div>textarea:active, .stNumberInput>div>div>input:active {
-        background-color: #1F222A !important;
-        color: #10B981 !important;
-        border-color: #10B981 !important;
-        box-shadow: 0 0 6px rgba(16, 185, 129, 0.2) !important;
-    }
-
-    /* Input text placeholder color configuration */
-    input::placeholder, textarea::placeholder {
-        color: #4B5563 !important;
-        opacity: 1 !important;
-    }
-
-    /* Dropdown menu item selections */
-    div[data-baseweb="select"] * { color: #10B981 !important; }
-    div[role="listbox"] ul li { background-color: #181A20 !important; color: #10B981 !important; }
-    div[role="listbox"] ul li:hover { background-color: rgba(16, 185, 129, 0.08) !important; }
-
-    /* 6. 🚀 ANTI-FADE HOVER STATE BUTTON ENGINE (STOPS BLINDING WHITE STATE) */
-    .stButton>button, .stForm [data-testid="stFormSubmitButton"] button, .stDownloadButton>button {
-        background-color: #181A20 !important;
-        border: 1px solid rgba(16, 185, 129, 0.4) !important;
-        color: #F9FAFB !important; /* Crisp, readable high-contrast white */
-        font-family: 'Space Grotesk', sans-serif !important;
+    /* 4. Force high text contrast for progress bar titles on BOTH Light & Dark canvas layers */
+    .caption-white {
+        color: inherit !important;
+        font-size: 0.95rem !important;
         font-weight: 600 !important;
-        border-radius: 6px !important;
-        letter-spacing: 0.3px;
-        padding: 8px 20px !important;
-        transition: all 0.2s ease-in-out !important;
+        margin-bottom: 6px;
     }
 
-    /* Solid Hover Inversion: Floods background to solid mint green, text flips to dark charcoal void */
-    .stButton>button:hover, .stForm [data-testid="stFormSubmitButton"] button:hover, .stDownloadButton>button:hover,
-    .stButton>button:focus, .stForm [data-testid="stFormSubmitButton"] button:focus, .stDownloadButton>button:focus,
-    .stButton>button:active, .stForm [data-testid="stFormSubmitButton"] button:active, .stDownloadButton>button:active {
-        background-color: #10B981 !important; /* Solid mint green flood */
-        color: #0D0E12 !important; /* High-contrast dark charcoal text */
-        border-color: #10B981 !important;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
-        transform: none !important;
+    /* Ensure secondary paragraphs and small metric tracking figures obey flexible theme variables */
+    div[data-testid="stMarkdownContainer"] p, 
+    div[data-testid="stText"] p,
+    .element-container p,
+    [data-testid="stMetricLabel"] div,
+    [data-testid="stMetricValue"] div {
+        color: inherit !important;
     }
 
-    /* 7. 🔒 SOLID STEEL EXPANDER HEADER ENGINE (FULL FLASH CONTROL) */
-    .streamlit-expanderHeader, div[data-testid="stExpander"] button {
-        background-color: #181A20 !important;
-        border: 1px solid rgba(156, 163, 175, 0.15) !important;
-        border-radius: 6px !important;
-        color: #10B981 !important;
-        transition: all 0.2s ease-in-out !important;
+    /* 🎨 RE-COLOR THE STREAMLIT PROGRESS BARS TO ROYAL BLUE */
+    div[data-testid="stProgress"] > div > div > div > div {
+        background-color: #0055FF !important; /* Premium Royal Blue Fill */
     }
     
-    /* Ensure open or active expanders stay anchored to safe dark surfaces */
-    .streamlit-expanderHeader:hover, div[data-testid="stExpander"] button:hover,
-    .streamlit-expanderHeader:focus, div[data-testid="stExpander"] button:focus,
-    .streamlit-expanderHeader[aria-expanded="true"], div[data-testid="stExpander"] button[aria-expanded="true"] {
-        background-color: #22252E !important;
-        border-color: #10B981 !important;
-        color: #10B981 !important;
-        box-shadow: 0 0 8px rgba(16, 185, 129, 0.15) !important;
-    }
-    
-    .streamlit-expanderHeader p, div[data-testid="stExpander"] button p, div[data-testid="stExpander"] span {
-        color: #10B981 !important; /* Locks text directly to crisp green */
-        font-weight: 600 !important;
-    }
-    
-    div[data-testid="stExpander"] div[role="tabpanel"] {
-        background-color: rgba(24, 26, 32, 0.4) !important;
-        padding: 18px !important;
-        border: 1px solid rgba(156, 163, 175, 0.1) !important;
-        border-top: none !important;
-        border-radius: 0 0 6px 6px !important;
-    }
-
-    /* Sidebar Matte Surface */
-    [data-testid="stSidebar"] {
-        background-color: #07080B !important;
-        border-right: 1px solid rgba(156, 163, 175, 0.1);
-    }
-
-    /* Main Navigation Top Tabs */
-    button[data-baseweb="tab"] {
-        color: #6B7280 !important;
-        font-family: 'Space Grotesk', sans-serif !important;
-    }
-    button[data-baseweb="tab"]:hover {
-        color: #10B981 !important;
-    }
-    button[aria-selected="true"] {
-        color: #10B981 !important;
-        border-bottom: 2px solid #10B981 !important;
-    }
-    [data-testid="stTabs"] div[role="tablist"] div { background-color: transparent !important; }
-
-    /* Custom Form Containers & Information Box adjustments */
-    div[data-testid="stForm"] {
-        background-color: #181A20 !important;
-        border: 1px solid rgba(156, 163, 175, 0.15) !important;
-    }
-    div[data-testid="stNotification"] {
-        background-color: #181A20 !important;
-        color: #F9FAFB !important;
-        border: 1px solid rgba(16, 185, 129, 0.2) !important;
-    }
-
-    /* Fixed Sidebar Clock Panel alignment */
-    .sidebar-clock {
-        background: rgba(16, 185, 129, 0.02) !important;
-        border: 1px solid rgba(16, 185, 129, 0.15) !important;
-        border-radius: 6px !important;
-        color: #10B981 !important;
-        font-family: 'Space Grotesk', sans-serif !important;
-        font-weight: 600 !important;
-        text-shadow: none !important;
-    }
-
-    /* 8. Premium Roster Styling for Eclipse Brand Card Containers */
-    .brand-card-dark {
-        text-align: center; 
-        padding: 20px; 
-        background-color: #181A20; 
-        border: 1px solid rgba(156, 163, 175, 0.15); 
-        border-radius: 10px; 
-        border-top: 4px solid #10B981;
-        margin-top: 15px;
-    }
-    .brand-inner-box {
-        background-color: #0D0E12; 
-        padding: 10px; 
-        border-radius: 6px;
-        border: 1px solid rgba(156, 163, 175, 0.05);
+    /* Adaptive track background color channel */
+    div[data-testid="stProgress"] > div > div {
+        background-color: rgba(128, 128, 128, 0.2) !important;
     }
 </style>
 """, unsafe_allow_html=True)
-
-
-
-
 
 # ================= TIMEZONE CONFIG =================
 NST = timezone(timedelta(hours=5, minutes=45))
@@ -415,7 +99,6 @@ st.set_page_config(
 )
 
 
-# ----------------------------------------
 
 # --- CUSTOM CSS ANIMATIONS ---
 st.markdown("""
@@ -1093,7 +776,7 @@ if not st.session_state.get("logged_in", False):
 
     st.markdown("""
         <div style='text-align: center; padding-bottom: 20px;'>
-            <h1 style='color: #004b87; font-size: 3em; margin-bottom: 0px;'>🌊 THE N-STREAMLINES</h1>
+            <h1 class='neon-blue-title' style='font-size: 3em;'>🌊 THE N-STREAMLINES</h1>
             <p style='color: #555; font-size: 1.2em; font-weight: 500; margin-top: 5px;'>
                 Developed by Nirajan Katuwal
             </p>
@@ -2008,8 +1691,11 @@ def calculate_internal_theory(row, subject_id, db_conn):
                 except ValueError: 
                     pass
 
-    # Normalized homework formula: (Earned / Max cumulative ceiling) * weight allocation envelope
-    hw_score = (cumulative_raw_earned / max_cumulative_raw_ceiling) * (scheme['theory_full_marks'] * scheme['t_weight_hw'])
+    # ✅ TRULY DYNAMIC REPLACEMENT: Respects the Advanced Configuration Tab settings directly
+    cfg_max_hw = float(scheme.get('t_max_raw_hw', 50.0)) if (scheme.get('t_max_raw_hw') and float(scheme.get('t_max_raw_hw')) > 0) else 50.0
+    
+    # Calculate assignment score dynamically using your Advanced configuration setting denominator
+    hw_score = (float(cumulative_raw_earned) / cfg_max_hw) * 10.0
     
     # 4. 🎛️ UNIVERSAL EXAM/TEST NORMALIZATION MATHEMATICS
     # Scale Mid-Term Exam using its dynamic testing ceiling denominator
@@ -3114,216 +2800,270 @@ if role == "lecturer":
         else:
             st.info("No assignments created yet.")                         
     
-    # ================= SUBMISSIONS & AI (TABS[4] - COMPREHENSIVE SECTION REWRITE) =================
+    # ================= SUBMISSIONS & AI (TABS[4] - FIXED VARIABLE MAPPING) =================
     with tabs[4]:
-
-        st.subheader("Student Submissions & AI Grading")
+        st.subheader("📥 Centralized Submission & Assessment Desk")
+        st.write("Select a specific course metric assignment below to audit, grade, or execute automated AI evaluations row-by-row.")
 
         # Pull available semesters to construct dynamic UI selectors
         sems = pd.read_sql_query("SELECT * FROM semesters ORDER BY name ASC", conn)
 
-        if not sems.empty:
-            c_sub1, c_sub2 = st.columns(2)
-            with c_sub1:
-                selected_sem = st.selectbox("Filter by Semester", ["All"] + sems["name"].tolist(), key="filter_sem")
-            with c_sub2:
-                # ➕ Integrated Section Selection Dropdown
-                selected_sec = st.selectbox("Filter by Section", ["All Sections", "Section A", "Section B"], key="filter_sec_submissions")
-
-            # Dynamically build standard SQL conditional parameters
-            params = []
-            where_clauses = ["1=1"]
-
-            if selected_sem != "All":
-                sem_id = int(sems[sems["name"] == selected_sem]["id"].values[0])
-                where_clauses.append("semesters.id = ?")
-                params.append(sem_id)
-
-            if selected_sec != "All Sections":
-                sec_letter = "A" if selected_sec == "Section A" else "B"
-                where_clauses.append("users.section = ?")
-                params.append(sec_letter)
-
-            where_stmt = " AND ".join(where_clauses)
-
-            # Master database execution query matching assignment keys and user section designations
-            df = pd.read_sql_query(f"""
-                SELECT
-                    submissions.id,
-                    users.username,
-                    users.full_name,
-                    users.section,
-                    semesters.name as semester,
-                    subjects.name as subject,
-                    assignments.title as assignment,
-                    assignments.rubric,
-                    submissions.submission_time,
-                    submissions.submission_file,
-                    submissions.marks,
-                    submissions.ai_summary
-                FROM submissions
-                JOIN users ON submissions.student_id = users.id 
-                JOIN assignments ON submissions.assignment_id = assignments.id
-                JOIN subjects ON assignments.subject_id = subjects.id
-                JOIN semesters ON subjects.semester_id = semesters.id
-                WHERE {where_stmt}
-                ORDER BY submissions.submission_time DESC
-            """, conn, params=params)
+        if sems.empty:
+            st.info("No active courses or semesters registered in the platform yet.")
         else:
-            df = pd.DataFrame()
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                # ✅ FIX: Use the existing user selections to safely map out the true operational ID
+                selected_sem_name = st.selectbox("Filter by Semester", sems["name"].tolist(), key="sem_eval_filter_v4")
+                active_semester_id = int(sems[sems["name"] == selected_sem_name]["id"].values[0])
+            
+            # 1️⃣ Core Filter Clusters linked cleanly to active_semester_id
+            subjects_df = pd.read_sql_query("SELECT id, name, code FROM subjects WHERE semester_id = ?", conn, params=(int(active_semester_id),))
 
-        if df.empty:
-            st.info("No student assignment uploads found matching those filter selections.")
-        else:
-            # Display interactive overview dataframe featuring the new Section metric tracker
-            st.dataframe(
-                df[["semester", "section", "subject", "assignment", "username", "full_name", "submission_time", "marks"]],
-                column_config={
-                    "semester": "Semester",
-                    "section": "Sec",
-                    "subject": "Subject",
-                    "assignment": "Assignment",
-                    "username": "Roll No.",
-                    "full_name": "Student Name",
-                    "submission_time": "Submission Time",
-                    "marks": "Marks"
-                },
-                use_container_width=True,
-                hide_index=True
-            )
-            st.divider()
-            st.subheader("AI Grading Tool")
-
-            # Generate individual assessment workspaces for each row item matched
-            for _, row in df.iterrows():
-                # Expander text updated to show distinct student sections instantly
-                expander_title = "{} [Sec {}] - {} ({})".format(row['username'], row['section'], row['assignment'], row['subject'])
+            if subjects_df.empty:
+                st.warning("⚠️ No active subjects found for this semester. Please configure subjects in Tab 2 first.")
+            else:
+                with col1:
+                    # Move subject picker directly into its column lane cleanly
+                    subject_options = {f"{row['code']} - {row['name'].upper()}": row['id'] for _, row in subjects_df.iterrows()}
+                    selected_sub_label = st.selectbox("Select Target Course", list(subject_options.keys()), key="sub_eval_filter_v4")
+                    selected_sub_id = subject_options[selected_sub_label]
                 
-                with st.expander(expander_title):
-                    col1, col2 = st.columns([2, 1])
-
-                    with col1:
-                        st.write("**Student:** {} ({})".format(row['full_name'], row['username']))
-                        st.write("**Class Group:** {} | **Section:** {}".format(row['semester'], row['section']))
-                        st.write("**Subject:** {}".format(row['subject']))
-                        st.write("**Assignment:** {}".format(row['assignment']))
-                        st.write("**Submitted:** {}".format(row['submission_time']))
-
-                        if row['marks'] and str(row['marks']).strip():
-                            st.metric("Current Marks", "{}/10".format(row['marks']))
-                        else:
-                            st.info("Not graded yet")
-
+                # Dynamically pull assignments linked only to the selected subject
+                asg_df = pd.read_sql_query("SELECT id, title, rubric FROM assignments WHERE subject_id = ?", conn, params=(int(selected_sub_id),))
+                
+                if asg_df.empty:
+                    st.warning("⚠️ No assignments have been created or published for this subject track yet.")
+                else:
                     with col2:
-                        if row["submission_file"] and os.path.exists(row["submission_file"]):
-                            with open(row["submission_file"], "rb") as f:
-                                st.download_button(
-                                    "Download Submission", 
-                                    f,
-                                    file_name=os.path.basename(row["submission_file"]),
-                                    key="dl_{}".format(row['id'])
-                                )
-                    
+                        asg_options = {row['title']: (row['id'], row['rubric']) for _, row in asg_df.iterrows()}
+                        selected_asg_title = st.selectbox("Select Assignment Module", list(asg_options.keys()), key="asg_eval_filter_v4")
+                        selected_asg_id, selected_rubric = asg_options[selected_asg_title]
+                    with col3:
+                        status_filter = st.selectbox("Grading Lifecycle Status", ["All Submissions", "⏳ Pending Evaluation Only", "🟢 Evaluated Only"], key="status_eval_filter_v4")
+
                     st.divider()
 
-                    # AI Grading Engine Interface Layer
-                    if row["submission_file"] and os.path.exists(row["submission_file"]):
-                        col_a, col_b = st.columns(2)
-                            
-                        with col_a:
-                            if st.button("AI Grade", key="grade_{}".format(row['id'])):
-                                if not row['rubric'] or not str(row['rubric']).strip():
-                                    st.warning("Please enter a rubric/model answer first")
-                                else:
-                                    with st.spinner("AI is grading..."):
-                                        try:
-                                            result = vision_grade(row["submission_file"], row["rubric"])
-                                            with st.expander("**AI Response:**", expanded=True):
-                                                st.write(result)
+                    # 2️⃣ Direct Vertical SQL Join Query for all 73 Students (Continues seamlessly below)
+                    # 2️⃣ Direct Vertical SQL Join Query for all 73 Students (Aligned with submission_file and submission_time)
+                query_submissions = """
+                    SELECT 
+                        s.id as student_id,
+                        s.username as roll_no, 
+                        s.full_name as student_name, 
+                        s.section,
+                        sub.id as submission_id,
+                        sub.submission_file as file_path, 
+                        sub.submission_time as submitted_at, 
+                        sub.marks,
+                        sub.ai_summary
+                    FROM users s
+                    LEFT JOIN submissions sub ON s.id = sub.student_id AND sub.assignment_id = ?
+                    WHERE s.role = 'student' AND s.semester_id = ?
+                    ORDER BY s.username ASC
+                """
+                submissions_df = pd.read_sql_query(query_submissions, conn, params=(int(selected_asg_id), int(active_semester_id)))
 
-                                            # Verify that the response text doesn't contain errors
-                                            if result and "Error" not in str(result):
-                                                marks = extract_marks(result)
-                                                
-                                                if marks is not None:
-                                                    final_ai_score = float(marks)
-                                                    penalty_msg = ""
-                                                    
-                                                    # Apply late deduction to AI score before database entry
-                                                    sub_time_str = str(row['submission_time'])
-                                                    if "[LATE-10%]" in sub_time_str:
-                                                        final_ai_score = final_ai_score * 0.9
-                                                        penalty_msg = " (-10% Late Penalty applied)"
-                                                    elif "[LATE-50%]" in sub_time_str:
-                                                        final_ai_score = final_ai_score * 0.5
-                                                        penalty_msg = " (-50% Late Penalty applied)"
+                # 3️⃣ Apply Pandas Status Filter constraints
+                if status_filter == "⏳ Pending Evaluation Only":
+                    display_df = submissions_df[submissions_df['marks'].isna() | (submissions_df['marks'] == '') | (submissions_df['marks'].astype(str).str.lower() == 'none')]
+                elif status_filter == "🟢 Evaluated Only":
+                    display_df = submissions_df[submissions_df['marks'].notna() & (submissions_df['marks'] != '') & (submissions_df['marks'].astype(str).str.lower() != 'none')]
+                else:
+                    display_df = submissions_df
 
-                                                    c.execute(
-                                                        "UPDATE submissions SET marks=?, ai_summary=? WHERE id=?",
-                                                        (round(final_ai_score, 2), result, row["id"])
-                                                    )
-                                                    conn.commit()
-                                                    st.success(f"Updated marks via AI: {final_ai_score:.1f}/10{penalty_msg}")
-                                                    st.rerun()
-                                                else:
-                                                    st.warning("Could not extract marks from AI response. Please enter manually below")
-                                                    st.info("Tip: Make sure AI response contains 'FINAL_MARKS: X/10'")
-                                                    # Still save the telemetry response evaluation to log
-                                                    c.execute(
-                                                        "UPDATE submissions SET ai_summary=? WHERE id=?",
-                                                        (str(result), int(row["id"]))
-                                                    )
-                                                    conn.commit()
-                                            else:
-                                                st.error("AI returned an error. Check the response above.")
-                                        except Exception as e:
-                                            st.error("Error during AI grading: {}".format(str(e)))
-                                            import traceback 
-                                            st.code(traceback.format_exc())
+                # 4️⃣ Render scannable vertical list data frame matrix
+                if display_df.empty:
+                    st.info("✨ No submission entries match your selected filter criteria.")
+                else:
+                    st.markdown(f"#### 📊 Showing **{len(display_df)}** Student Records for *{selected_asg_title}*")
+                    
+                    list_rows = []
+                    for _, row in display_df.iterrows():
+                        m_val = row['marks']
+                        mark_status = f"🟢 {m_val} / 10.0" if (m_val is not None and str(m_val).strip() != "" and str(m_val).strip().lower() != "none") else "⏳ Pending"
                         
-                        with col_b:
-                            # Manual Grade Override System Panel
-                            default_marks = 0
-                            if row['marks'] and str(row['marks']).strip():
-                                try:
-                                    default_marks = int(row['marks'])
-                                except:
-                                    default_marks = 0
+                        # ✅ FIXED PLACEMENT: Define the boolean logic BEFORE opening the list row dictionary object
+                        is_valid_path = pd.notna(row['file_path']) and str(row['file_path']).strip() != "" and str(row['file_path']).strip().lower() != "none"
+                        
+                        list_rows.append({
+                            "Roll Number": row['roll_no'],
+                            "Student Name": row['student_name'].upper(),
+                            "Section": f"Sec {row['section']}",
+                            "Submitted Document": os.path.basename(str(row['file_path'])) if is_valid_path else "❌ No Submission",
+                            "Assigned Score": mark_status,
+                            "Timestamp": row['submitted_at'] if (pd.notna(row['submitted_at']) and str(row['submitted_at']).strip() != "") else "—"
+                        })
+                    
+                    st.dataframe(pd.DataFrame(list_rows), use_container_width=True, hide_index=True)
+                    
+
+                    # ===================================================================
+                    # 🚀 NEW FEATURE: BATCH AI GRADING ENGINE (ALL 73 STUDENTS AT ONCE)
+                    # ===================================================================
+                    st.markdown("### 🚀 Batch AI Assessment Operations")
+                    st.write("Clicking the batch engine below will automatically scan through all students who have uploaded files but do not have a recorded grade yet, running a consecutive professor-rubric evaluation pass.")
+                    
+                    # Count un-evaluated submissions
+                    pending_batch_count = len(display_df[display_df['file_path'].notna() & (display_df['file_path'] != '') & (display_df['marks'].isna() | (display_df['marks'] == ''))])
+                    
+                    if st.button(f"🤖 Run Batch AI Grading ({pending_batch_count} Files Pending)", key="run_batch_ai_grading_btn", type="secondary", disabled=(pending_batch_count == 0)):
+                        if not selected_rubric or not str(selected_rubric).strip():
+                            st.warning("⚠️ Please provide a dynamic evaluation marking rubric model answer first in Tab 3.")
+                        else:
+                            batch_success_count = 0
+                            progress_bar = st.progress(0.0)
+                            status_text = st.empty()
                             
+                            # Filter down to the rows that can be evaluated automatically
+                            batch_eligible_df = display_df[display_df['file_path'].notna() & (display_df['file_path'] != '') & (display_df['marks'].isna() | (display_df['marks'] == ''))]
+                            
+                            for idx, batch_row in enumerate(batch_eligible_df.iterrows()):
+                                brow = batch_row[1]
+                                status_text.text(f"Processing student file {idx+1}/{pending_batch_count}: {brow['student_name'].upper()}")
+                                
+                                try:
+                                    result = vision_grade(brow["file_path"], selected_rubric)
+                                    if result and "Error" not in str(result):
+                                        extracted_m = extract_marks(result)
+                                        final_score = float(extracted_m) if extracted_m is not None else 0.0
+                                        
+                                        # Deduct dynamic penalties for late entries inside batch loops
+                                        sub_time_str = str(brow['submitted_at'])
+                                        if "[LATE-10%]" in sub_time_str:
+                                            final_score = final_score * 0.9
+                                        elif "[LATE-50%]" in sub_time_str:
+                                            final_score = final_score * 0.5
+                                            
+                                        cursor = conn.cursor()
+                                        cursor.execute("UPDATE submissions SET marks = ?, ai_summary = ? WHERE id = ?", (round(final_score, 2), result, int(brow['submission_id'])))
+                                        conn.commit()
+                                        batch_success_count += 1
+                                except Exception as e:
+                                    pass # Skip corrupted file objects gracefully
+                                    
+                                progress_bar.progress((idx + 1) / pending_batch_count)
+                            
+                            status_text.empty()
+                            progress_bar.empty()
+                            st.success(f"🎉 Batch evaluation complete! Successfully graded {batch_success_count} student assignments automatically.")
+                            st.rerun()
+
+                    # ===================================================================
+                    # 📝 INDIVIDUAL STUDENT WORKSPACE (RESTORED MANUAL & AI DESK)
+                    # ===================================================================
+                    st.markdown("---")
+                    st.markdown("### 📝 Individual Quick Evaluation Workspace")
+                    
+                    # Create dictionary mapping for dropdown selectors
+                    eligible_students = {f"{r['roll_no']} - {r['student_name'].upper()} [Sec {r['section']}]": r for _, r in display_df.iterrows()}
+                    selected_student_key = st.selectbox("Select Target Student to Grade or View Feedback Logs:", list(eligible_students.keys()), key="student_eval_picker_v5")
+                    
+                    if selected_student_key:
+                        target_row = eligible_students[selected_student_key]
+                        
+                        pane1, pane2 = st.columns([1, 1])
+                        with pane1:
+                            st.markdown(f"#### 👤 {target_row['student_name'].upper()}")
+                            st.caption(f"Roll Reference: {target_row['roll_no']} | Section: {target_row['section']}")
+                            
+                            # ✅ FIXED: Safe type checking ensures pandas NaN float drops out cleanly before hitting os.path.exists
+                            is_file_path_valid = pd.notna(target_row['file_path']) and str(target_row['file_path']).strip() != "" and str(target_row['file_path']).strip().lower() != "none"
+                            
+                            # Document Download Handler
+                            if is_file_path_valid and os.path.exists(str(target_row['file_path'])):
+                                st.success("📄 Submission file is valid and online.")
+                                with open(target_row['file_path'], "rb") as f:
+                                    st.download_button(
+                                        "📥 Open & Download Student Answer Sheet",
+                                        f,
+                                        file_name=os.path.basename(target_row['file_path']),
+                                        key=f"dl_vertical_btn_{target_row['student_id']}",
+                                        use_container_width=True
+                                    )
+                            else:
+                                st.error("⚠️ No uploaded PDF assignment document found for this student.")
+
+                            st.write("")
+                            st.markdown("##### ✏️ Manual Score Input / Override")
+                            
+                            # Match current marks cleanly to handle defaults
+                            current_mark_raw = ""
+                            if target_row['marks'] is not None and str(target_row['marks']).strip() != "" and str(target_row['marks']).lower() != 'none':
+                                try:
+                                    current_mark_raw = float(target_row['marks'])
+                                except ValueError:
+                                    current_mark_raw = 0.0
+                                    
                             manual_marks = st.number_input(
-                                "Or enter marks manually",
-                                min_value=0,
-                                max_value=10,
-                                value=default_marks,
-                                key="manual_{}".format(row['id'])
+                                "Assign Final Mark (Scale 0.0 - 10.0)",
+                                min_value=0.0,
+                                max_value=10.0,
+                                value=float(current_mark_raw) if isinstance(current_mark_raw, float) else 0.0,
+                                step=0.5,
+                                key=f"v_num_mark_in_{target_row['student_id']}"
                             )
-                            if st.button("Save Manual Marks", key="save_{}".format(row['id'])):
+                            
+                            if st.button("💾 Save Verified Grade", key=f"v_save_btn_{target_row['student_id']}", use_container_width=True, type="primary"):
                                 final_score = float(manual_marks)
                                 penalty_msg = ""
                                 
-                                # Check the submission timestamp for our custom late penalty tags
-                                sub_time_str = str(row['submission_time'])
+                                # Process submission logs context to apply penalty tags dynamically if present
+                                sub_time_str = str(target_row['submitted_at'])
                                 if "[LATE-10%]" in sub_time_str:
                                     final_score = final_score * 0.9
-                                    penalty_msg = " (Includes automatic 10% late penalty deduction)"
+                                    penalty_msg = " (-10% Late Penalty Applied)"
                                 elif "[LATE-50%]" in sub_time_str:
                                     final_score = final_score * 0.5
-                                    penalty_msg = " (Includes automatic 50% late penalty deduction)"
+                                    penalty_msg = " (-50% Late Penalty Applied)"
                                     
-                                c.execute(
-                                    "UPDATE submissions SET marks=? WHERE id=?",
-                                    (round(final_score, 2), row["id"])
-                                )
+                                cursor = conn.cursor()
+                                if target_row['submission_id'] is not None and pd.notna(target_row['submission_id']):
+                                    cursor.execute("UPDATE submissions SET marks = ? WHERE id = ?", (round(final_score, 2), int(target_row['submission_id'])))
+                                else:
+                                    on_time_tag = datetime.now(NST).strftime("%Y-%m-%d %H:%M:%S")
+                                    cursor.execute(
+                                        "INSERT INTO submissions (assignment_id, student_id, submission_time, submission_file, marks, ai_summary) VALUES (?, ?, ?, '', ?, '')",
+                                        (int(selected_asg_id), int(target_row['student_id']), on_time_tag, round(final_score, 2))
+                                    )
                                 conn.commit()
-                                st.success(f"Marks updated to {final_score:.1f}/10{penalty_msg}")
+                                st.success(f"Successfully recorded score of {final_score:.1f}/10.0{penalty_msg} for {target_row['student_name'].upper()}!")
                                 st.rerun()
-                    
-                    # Display historical calculation feedback logs if present
-                    if row['ai_summary'] and str(row['ai_summary']).strip():
-                        with st.expander("Previous AI Feedback"):
-                            st.write(row['ai_summary'])
-    
-    # ANALYTICS & GRADING HUB
+
+                        with pane2:
+                            st.markdown("##### 🤖 Single AI Co-Pilot Grading Engine")
+                            
+                            if st.button("🚀 Run Single AI Evaluation", key=f"v_single_ai_btn_{target_row['student_id']}", use_container_width=True, disabled=not target_row['file_path']):
+                                if not selected_rubric or not str(selected_rubric).strip():
+                                    st.warning("⚠️ Please fill in the assignment marking rubric answer key template inside Tab 3.")
+                                else:
+                                    with st.spinner("Executing LLM computer vision scoring analysis pass..."):
+                                        result = vision_grade(target_row["file_path"], selected_rubric)
+                                        if result and "Error" not in str(result):
+                                            extracted_m = extract_marks(result)
+                                            final_ai_score = float(extracted_m) if extracted_m is not None else 0.0
+                                            
+                                            sub_time_str = str(target_row['submitted_at'])
+                                            if "[LATE-10%]" in sub_time_str:
+                                                final_ai_score = final_ai_score * 0.9
+                                            elif "[LATE-50%]" in sub_time_str:
+                                                final_ai_score = final_ai_score * 0.5
+                                                
+                                            cursor = conn.cursor()
+                                            cursor.execute("UPDATE submissions SET marks = ?, ai_summary = ? WHERE id = ?", (round(final_ai_score, 2), result, int(target_row['submission_id'])))
+                                            conn.commit()
+                                            st.success(f"AI Analysis successfully stored: {final_ai_score:.1f}/10.0")
+                                            st.rerun()
+                                        else:
+                                            st.error(f"AI Engine Tracing Failure: {result}")
+                            
+                            st.write("")
+                            st.markdown("##### 📜 Active Feedback Logs & Analysis Records")
+                            if target_row['ai_summary'] and str(target_row['ai_summary']).strip().lower() != 'none':
+                                st.info(target_row['ai_summary'])
+                            else:
+                                st.caption("No historical feedback notes or AI breakdown descriptions logged for this record.")
+   # ANALYTICS & GRADING HUB
     with tabs[5]:
         st.title("📊 Performance & Grading Hub")
         
@@ -3888,7 +3628,7 @@ if role == "lecturer":
                         }, 
                         use_container_width=True, 
                         hide_index=True, 
-                        key="theory_editor"
+                        key="theory_editor_v6_force"
                     )
 
                     if st.button("💾 Synchronize Theory Marks", use_container_width=True, type="primary"):
@@ -3923,27 +3663,60 @@ if role == "lecturer":
                     
                     res_t = []
                     for _, r in edited_t.iterrows():
-                        calc_res = calculate_internal_theory(r.to_dict(), sel_sub_id, conn)
-                        t_score_calc = calc_res[0]
+                        s_meta = r.to_dict()
                         
-                        t_pct_val = (r['t_att_present'] / r['t_att_total'] * 100) if r['t_att_total'] > 0 else 0.0
+                        # 🧠 1. Fetch live accumulated assignment scores from submissions for this specific student
+                        q_stud_marks_hub = """
+                        SELECT NULLIF(marks, '') as marks FROM submissions 
+                        WHERE assignment_id IN (SELECT id FROM assignments WHERE subject_id = ?) AND student_id = ?
+                        """
+                        m_df_hub = pd.read_sql_query(q_stud_marks_hub, conn, params=(int(sel_sub_id), int(s_meta['student_id'])))
+                        live_cum_earned_hub = 0.0
+                        if not m_df_hub.empty:
+                            for _, m_row_hub in m_df_hub.iterrows():
+                                if m_row_hub['marks'] is not None and str(m_row_hub['marks']).strip() != "":
+                                    try: 
+                                        live_cum_earned_hub += float(m_row_hub['marks'])
+                                    except ValueError: 
+                                        pass
+
+                        # 📦 2. Pull denominators cleanly from schema, using your advanced configuration parameters
+                        cfg_max_hw = float(active_cfg.iloc[0]['t_max_raw_hw']) if (not active_cfg.empty and 't_max_raw_hw' in active_cfg.columns and pd.notna(active_cfg.iloc[0]['t_max_raw_hw'])) else 50.0
+                        cfg_max_mid = float(active_cfg.iloc[0]['t_max_raw_mid']) if (not active_cfg.empty and 't_max_raw_mid' in active_cfg.columns and pd.notna(active_cfg.iloc[0]['t_max_raw_mid'])) else 40.0
+                        cfg_max_final = float(active_cfg.iloc[0]['t_max_raw_final']) if (not active_cfg.empty and 't_max_raw_final' in active_cfg.columns and pd.notna(active_cfg.iloc[0]['t_max_raw_final'])) else 40.0
+                        cfg_max_other = float(active_cfg.iloc[0]['t_max_raw_other']) if (not active_cfg.empty and 't_max_raw_other' in active_cfg.columns and pd.notna(active_cfg.iloc[0]['t_max_raw_other'])) else 100.0
+
+                        # 🧮 3. Pure Explicit Normalization Calculations
+                        r_att = (s_meta['t_att_present'] / s_meta['t_att_total']) * 4.0 if s_meta['t_att_total'] > 0 else 0.0
                         
-                        # Evaluate strictly for Theory Eligibility parameters
-                        if t_pct_val < 70.0:
-                            t_standing = "❌ NQ (Attendance < 70%)"
-                        elif t_score_calc < 16.0:
-                            t_standing = "❌ NQ (Internal Score < 16)"
-                        else:
-                            t_standing = "✅ Eligible"
+                        # Use your precise assignment conversion rule directly in the view loop
+                        r_hw = (live_cum_earned_hub / cfg_max_hw) * 10.0
+                        
+                        r_mid = (s_meta['t_mid_raw'] / cfg_max_mid) * 10.0 if cfg_max_mid > 0 else 0.0
+                        r_final = (s_meta['t_final_raw'] / cfg_max_final) * 10.0 if cfg_max_final > 0 else 0.0
+                        r_ot = (s_meta['t_other_raw'] / cfg_max_other) * 6.0 if cfg_max_other > 0 else 0.0
+
+                        # Sum up all assessment weight heads out of exactly 40 marks max
+                        t_score_calc = r_att + r_hw + r_mid + r_final + r_ot
+                        
+                        # Add structural grace points securely if thresholds match
+                        t_pct_val = (s_meta['t_att_present'] / s_meta['t_att_total'] * 100) if s_meta['t_att_total'] > 0 else 0.0
+                        is_elig = t_pct_val >= 70.0
+                        
+                        if is_elig and s_meta['t_grace'] > 0:
+                            t_score_calc += min(s_meta['t_grace'], 5.0)
+
+                        t_standing = "✅ Eligible" if (is_elig and t_score_calc >= 16.0) else "❌ NQ"
 
                         res_t.append({
-                            "Roll No.": r['Roll'],
-                            "Student Name": r['Name'],
+                            "Roll No.": s_meta['Roll'],
+                            "Student Name": s_meta['Name'].upper(),
                             "Total Score (/40)": f"{t_score_calc:.2f}",
                             "Theory Exam Standing": t_standing
                         })
-                    st.dataframe(res_t, use_container_width=True, hide_index=True)
-                # === REMOVED CLUTTERING LOCAL INPUT FIELDS - READS FROM REGISTRY ===
+                    
+                    st.dataframe(pd.DataFrame(res_t), use_container_width=True, hide_index=True,key="theory_totals_preview_v6")
+               # === REMOVED CLUTTERING LOCAL INPUT FIELDS - READS FROM REGISTRY ===
                     st.write("")
                     st.markdown("### 🖨️ Official Institutional Document Generator")
                     st.info("💡 The print engine is fully connected. The ledger header below automatically uses the credentials set in your Global Registry panel at the top.")
@@ -5483,13 +5256,14 @@ if role == "lecturer":
                         # 📝 1. Cross-Subject Theory Mark Aggregator Ledger Card
                         st.markdown("#### 📝 Internal Theory Performance (Scaled to 40 Marks Matrix)")
                         
+                        # ✅ DEFINED FIRST: Run the query right here to create tm_df securely!
                         theory_marks_query = """
                             SELECT sub.name as subject_name, sub.code as subject_code, sm.*
                             FROM student_marks sm
                             JOIN subjects sub ON sm.subject_id = sub.id
                             WHERE sm.student_id = ? AND sub.semester_id = ?
                         """
-                        tm_df = pd.read_sql_query(theory_marks_query, conn, params=(student_id, active_semester_id))
+                        tm_df = pd.read_sql_query(theory_marks_query, conn, params=(int(student_id), int(active_semester_id)))
                         
                         if tm_df.empty:
                             st.info("No standardized internal theory entries registered for this semester layer yet.")
@@ -5510,11 +5284,31 @@ if role == "lecturer":
                                 cfg_max_final = float(active_cfg.iloc[0]['t_max_raw_final']) if (not active_cfg.empty and 't_max_raw_final' in active_cfg.columns) else 40.0
                                 cfg_max_other = float(active_cfg.iloc[0]['t_max_raw_other']) if (not active_cfg.empty and 't_max_raw_other' in active_cfg.columns) else 100.0
 
-                                r_att = (tm_row['t_att_present'] / t_total_classes) * 4.0
-                                r_hw = (tm_row['t_hw_raw'] / cfg_max_hw) * 10.0
-                                r_mid = (tm_row['t_mid_raw'] / cfg_max_mid) * 10.0
-                                r_final = (tm_row['t_final_raw'] / cfg_max_final) * 10.0
-                                r_ot = (tm_row['t_other_raw'] / cfg_max_other) * 6.0
+                                # 🧠 LIVE CUMULATIVE ASSIGNMENT CALCULATOR FOR PROFILE HUB
+                                q_stud_marks_l = """
+                                SELECT NULLIF(marks, '') as marks FROM submissions 
+                                WHERE assignment_id IN (SELECT id FROM assignments WHERE subject_id = ?) AND student_id = ?
+                                """
+                                m_df_l = pd.read_sql_query(q_stud_marks_l, conn, params=(int(tm_row['subject_id']), int(student_id)))
+                                live_cum_earned_l = 0.0
+                                if not m_df_l.empty:
+                                    for _, m_row_l in m_df_l.iterrows():
+                                        m_val = m_row_l['marks']
+                                        if m_val is not None and str(m_val).strip() != "" and str(m_val).strip().lower() != "none":
+                                            try: 
+                                                live_cum_earned_l += float(m_val)
+                                            except ValueError: 
+                                                pass
+
+                                # Calculate scaled weights based on your stable infrastructure conversions
+                                r_att = (tm_row['t_att_present'] / t_total_classes) * 4.0 if t_total_classes > 0 else 0.0
+                                
+                                # 🎯 FIXED CUMULATIVE MATH: Scales raw assignment sum out of 50.0 to its 10-mark ledger weight
+                                r_hw = (float(live_cum_earned_l) / 50.0) * 10.0
+                                
+                                r_mid = (float(tm_row['t_mid_raw']) / float(cfg_max_mid)) * 10.0 if (cfg_max_mid and float(cfg_max_mid) > 0) else 0.0
+                                r_final = (float(tm_row['t_final_raw']) / float(cfg_max_final)) * 10.0 if (cfg_max_final and float(cfg_max_final) > 0) else 0.0
+                                r_ot = (float(tm_row['t_other_raw']) / float(cfg_max_other)) * 6.0 if (cfg_max_other and float(cfg_max_other) > 0) else 0.0
 
                                 theory_profile_rows.append({
                                     "Code": tm_row['subject_code'],
@@ -5529,13 +5323,15 @@ if role == "lecturer":
                                     "Status": eligibility_status
                                 })
                             
+                            # Render structured student dataframe matrix cleanly
                             theory_df_display = pd.DataFrame(theory_profile_rows)
                             st.dataframe(
                                 theory_df_display.style.map(
                                     lambda val: 'background-color: #fee2e2; color: #dc2626; font-weight: bold;' if '🔴' in str(val) else None,
                                     subset=['Status']
                                 ),
-                                use_container_width=True, hide_index=True
+                                use_container_width=True, 
+                                hide_index=True
                             )
 
                         st.write("")
@@ -5556,25 +5352,27 @@ if role == "lecturer":
                         else:
                             practical_profile_rows = []
                             for _, pm_row in pm_df.iterrows():
+                                # 🔥 Force the unified practical calculator engine to execute live
                                 c_tot_p, is_elig_p = calculate_internal_practical(pm_row.to_dict(), pm_row['subject_id'], conn)
-                                word_tot_p = score_to_words(c_tot_p) if is_elig_p else "RETAINED"
                                 fig_out_p = f"{c_tot_p:.0f}" if is_elig_p else "NQ"
 
                                 p_total_classes = pm_row['p_att_total'] if pm_row['p_att_total'] > 0 else 12
                                 prac_attendance_rate = (pm_row['p_att_present'] / p_total_classes * 100)
                                 eligibility_status_p = "🟢 QUALIFIED" if is_elig_p else "🔴 NQ / RETAINED"
                                 
+                                # Fetch custom denominators set for this specific subject scheme template
                                 active_lab_cfg = pd.read_sql_query("SELECT * FROM subject_schemes WHERE subject_id = ?", conn, params=(int(pm_row['subject_id']),))
                                 cfg_max_perf = float(active_lab_cfg.iloc[0]['p_max_raw_perf']) if (not active_lab_cfg.empty and 'p_max_raw_perf' in active_lab_cfg.columns) else 100.0
                                 cfg_max_report = float(active_lab_cfg.iloc[0]['p_max_raw_report']) if (not active_lab_cfg.empty and 'p_max_raw_report' in active_lab_cfg.columns) else 100.0
                                 cfg_max_test = float(active_lab_cfg.iloc[0]['p_max_raw_test']) if (not active_lab_cfg.empty and 'p_max_raw_test' in active_lab_cfg.columns) else 100.0
                                 cfg_max_viva = float(active_lab_cfg.iloc[0]['p_max_raw_viva']) if (not active_lab_cfg.empty and 'p_max_raw_viva' in active_lab_cfg.columns) else 100.0
 
-                                r_p_att = (pm_row['p_att_present'] / p_total_classes) * 5.0
-                                r_p_perf = (pm_row['p_perf_raw'] / cfg_max_perf) * 5.0
-                                r_p_rep = (pm_row['p_report_raw'] / cfg_max_report) * 5.0
-                                r_p_tst = (pm_row['p_test_raw'] / cfg_max_test) * 5.0
-                                r_p_viv = (pm_row['p_viva_raw'] / cfg_max_viva) * 5.0
+                                # Process localized weight fractions out of 5.0 marks per category envelope safely
+                                r_p_att = (pm_row['p_att_present'] / p_total_classes) * 5.0 if p_total_classes > 0 else 0.0
+                                r_p_perf = (float(pm_row['p_perf_raw']) / float(cfg_max_perf)) * 5.0 if (cfg_max_perf and float(cfg_max_perf) > 0) else 0.0
+                                r_p_rep = (float(pm_row['p_report_raw']) / float(cfg_max_report)) * 5.0 if (cfg_max_report and float(cfg_max_report) > 0) else 0.0
+                                r_p_tst = (float(pm_row['p_test_raw']) / float(cfg_max_test)) * 5.0 if (cfg_max_test and float(cfg_max_test) > 0) else 0.0
+                                r_p_viv = (float(pm_row['p_viva_raw']) / float(cfg_max_viva)) * 5.0 if (cfg_max_viva and float(cfg_max_viva) > 0) else 0.0
 
                                 practical_profile_rows.append({
                                     "Code": pm_row['subject_code'],
@@ -5597,6 +5395,7 @@ if role == "lecturer":
                                 ),
                                 use_container_width=True, hide_index=True
                             )
+                            
 # ===================== STUDENT =============================
 # ==========================================================
 
@@ -5646,12 +5445,19 @@ elif role == "student":
                     color = '#004b87'
                     icon = '📢'
                 
+                # ✅ FIXED: Mode-Adaptive container handles both Light and Dark backgrounds seamlessly
                 st.markdown("""
-                <div style='background-color: #f8f9fa; padding: 15px; border-radius: 8px; 
-                            border-left: 6px solid {}; margin-bottom: 10px;'>
-                    <h4 style='margin:0; color: {};'>{} {}</h4>
-                    <p style='color: #333333; margin: 10px 0; font-size: 1.1em;'>{}</p>
-                    <small style='color: #666666;'>Posted by {} on {}</small>
+                <div style='background-color: rgba(128, 128, 128, 0.08); 
+                            padding: 15px; 
+                            border-radius: 8px; 
+                            border-left: 6px solid {}; 
+                            margin-bottom: 10px;
+                            border-top: 1px solid rgba(128, 128, 128, 0.15);
+                            border-right: 1px solid rgba(128, 128, 128, 0.15);
+                            border-bottom: 1px solid rgba(128, 128, 128, 0.15);'>
+                    <h4 style='margin:0; color: {}; font-weight: 700;'>{} {}</h4>
+                    <p style='color: inherit; margin: 10px 0; font-size: 1.1em; font-weight: 500;'>{}</p>
+                    <small style='color: inherit; opacity: 0.7; font-weight: 400;'>Posted by {} on {}</small>
                 </div>
                 """.format(
                     color, 
