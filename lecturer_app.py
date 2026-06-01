@@ -4,7 +4,6 @@ import sqlite3
 from datetime import datetime, timezone, timedelta
 import os
 import re
-from google import genai
 from pdf2image import convert_from_path
 import io
 import base64
